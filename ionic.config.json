@@ -1,0 +1,7 @@
+{
+  "name": "PuntoDuocApp",
+  "integrations": {
+    "capacitor": {}
+  },
+  "type": "angular"
+}

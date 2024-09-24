@@ -1,0 +1,61 @@
+<ion-header [translucent]="true" >
+  <ion-toolbar >
+    <ion-buttons slot="end">
+      <ion-button size="large" >
+        <ion-icon name="person-circle-outline"></ion-icon>
+      </ion-button>
+      <ion-menu-button ></ion-menu-button>
+    </ion-buttons>
+    <ion-title >PuntoDuoc</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true">
+  <ion-header collapse="condense">
+    <ion-toolbar>
+      <ion-title size="large">{{ folder }}</ion-title>
+    </ion-toolbar>
+  </ion-header>
+
+  <div class="search-container">
+    <ion-searchbar animated="true" placeholder="Buscar eventos"></ion-searchbar>
+    <ion-button color="light" aria-label="Favorite" class="heart-button">
+      <ion-icon name="options-outline"></ion-icon>
+    </ion-button>
+  </div>
+
+  <!-- Contenedor con scroll para las tarjetas -->
+  <div class="card-container">
+    <div class="card" style="width: 18rem;">
+      <img src="../../assets/img/Duoca.png" class="card-img-top" alt="...">
+      <div class="card-body">
+        <h6>26 de Agosto 9:00</h6>
+        <h5 class="card-title">Celebración del Mes Técnico Profesional: Innovación y Energía en Duoc UC sede Maipú</h5>
+        <ion-button (click)="showEvent1 = !showEvent1">Ver evento</ion-button>
+
+        <div *ngIf="showEvent1">
+          <p class="card-text">Únete a la celebración del Mes Técnico Profesional en Duoc UC Maipú el 26 de agosto de 2024. Desde las 9:00 a 13:00 horas, te invitamos a una jornada llena de aprendizaje y actividades, destacando una charla sobre Hidrógeno Verde por Ángel Caviedes Cabezas del Ministerio de Energía.</p>
+          <ion-button (click)="presentAlert()">Inscribirse</ion-button>
+        </div>
+      </div>
+    </div>
+
+
+
+    <div class="card" style="width: 18rem;">
+      <img src="../../assets/img/duocp.png" class="card-img-top" alt="...">
+      <div class="card-body">
+        <h6>26 de Agosto 9:00</h6>
+        <h5 class="card-title">Mes Educación TP: Seminario Conecta Región Especial </h5>
+        <ion-button (click)="showEvent2 = !showEvent2">Ver evento</ion-button>
+
+        <div *ngIf="showEvent2">
+          <p class="card-text">Some quick example text to build on the card title and make up the bulk of the card's content.</p>
+          <p></p>
+          <ion-button (click)="presentAlert()">Inscribirse</ion-button>
+        </div>
+      </div>
+    </div>
+  </div>
+</ion-content>
+
