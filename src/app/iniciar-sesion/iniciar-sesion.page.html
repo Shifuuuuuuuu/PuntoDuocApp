@@ -11,7 +11,6 @@
     </ion-buttons>
   </ion-toolbar>
 </ion-header>
-
 <ion-content [fullscreen]="true" class="ion-padding">
   <div class="form-container">
     <div class="mb-3">
@@ -25,6 +24,15 @@
         Your password must be 8-20 characters long, contain letters and numbers, and must not contain spaces, special characters, or emoji.
       </div>
     </div>
+    <!-- Recordar contraseña automáticamente -->
+    <div class="mb-3 remember-me">
+      <ion-checkbox slot="start" [(ngModel)]="rememberMe"></ion-checkbox>
+      <label for="rememberMe">Recordar contraseña automáticamente</label>
+    </div>
+    <!-- Recordar contraseña olvidada -->
+    <div class="forgot-password">
+      <a [routerLink]="['/recuperar-contraseña']">¿Olvidaste tu contraseña?</a>
+    </div>
     <!-- Botones -->
     <div class="button-group">
       <ion-button expand="block" color="primary">Iniciar sesión</ion-button>
@@ -33,4 +41,6 @@
     </div>
   </div>
 </ion-content>
+
+
 
