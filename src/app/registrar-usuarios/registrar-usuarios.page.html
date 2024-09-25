@@ -1,13 +1,50 @@
 <ion-header [translucent]="true">
   <ion-toolbar>
-    <ion-title>registrar_usuarios</ion-title>
+    <!-- Botón de retroceso y botón para abrir el menú -->
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/iniciar-sesion"></ion-back-button>
+    </ion-buttons>
+    <ion-title>Registrar usuario</ion-title>
+    <ion-buttons slot="end">
+      <!-- Botón para abrir el menú -->
+      <ion-menu-button></ion-menu-button>
+    </ion-buttons>
   </ion-toolbar>
 </ion-header>
 
 <ion-content [fullscreen]="true">
-  <ion-header collapse="condense">
-    <ion-toolbar>
-      <ion-title size="large">registrar_usuarios</ion-title>
-    </ion-toolbar>
-  </ion-header>
+  <br>
+  <ion-content [fullscreen]="true" class="ion-padding">
+    <div class="form-container">
+      <div class="mb-3">
+        <label for="exampleFormControlInput1" class="form-label">Nombre completo</label>
+        <input type="text" class="form-control" id="exampleFormControlInput1" placeholder="Juan Pérez">
+      </div>
+      <div class="mb-3">
+        <label for="exampleFormControlInput2" class="form-label">RUT</label>
+        <input type="text" class="form-control" id="exampleFormControlInput2" placeholder="12345678-9">
+      </div>
+      <div class="mb-3">
+        <label for="exampleFormControlInput3" class="form-label">Teléfono</label>
+        <input type="tel" class="form-control" id="exampleFormControlInput3" placeholder="+56 9 1234 5678">
+      </div>
+      <div class="mb-3">
+        <label for="exampleFormControlInput4" class="form-label">Correo electrónico</label>
+        <input type="email" class="form-control" id="exampleFormControlInput4" placeholder="nombre@ejemplo.com">
+      </div>
+      <div class="mb-3">
+        <label for="inputPassword5" class="form-label">Contraseña</label>
+        <input type="password" id="inputPassword5" class="form-control" aria-describedby="passwordHelpBlock">
+        <div id="passwordHelpBlock" class="form-text">
+          La contraseña debe tener entre 8 y 20 caracteres, contener letras y números, y no debe incluir espacios ni caracteres especiales.
+        </div>
+      </div>
+      <!-- Botones -->
+      <div class="button-group">
+        <ion-button expand="block" color="primary">Registrar</ion-button>
+        <ion-button expand="block" color="light" [routerLink]="['/iniciar-sesion']">Volver al inicio</ion-button>
+      </div>
+    </div>
+  </ion-content>
+  
 </ion-content>

@@ -1,13 +1,36 @@
 <ion-header [translucent]="true">
   <ion-toolbar>
-    <ion-title>iniciar_sesion</ion-title>
+    <!-- Botón de retroceso y botón para abrir el menú -->
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/"></ion-back-button>
+    </ion-buttons>
+    <ion-title>Iniciar sesion</ion-title>
+    <ion-buttons slot="end">
+      <!-- Botón para abrir el menú -->
+      <ion-menu-button></ion-menu-button>
+    </ion-buttons>
   </ion-toolbar>
 </ion-header>
 
-<ion-content [fullscreen]="true">
-  <ion-header collapse="condense">
-    <ion-toolbar>
-      <ion-title size="large">iniciar_sesion</ion-title>
-    </ion-toolbar>
-  </ion-header>
+<ion-content [fullscreen]="true" class="ion-padding">
+  <div class="form-container">
+    <div class="mb-3">
+      <label for="exampleFormControlInput1" class="form-label">Email address</label>
+      <input type="email" class="form-control" id="exampleFormControlInput1" placeholder="name@example.com">
+    </div>
+    <div class="mb-3">
+      <label for="inputPassword5" class="form-label">Password</label>
+      <input type="password" id="inputPassword5" class="form-control" aria-describedby="passwordHelpBlock">
+      <div id="passwordHelpBlock" class="form-text">
+        Your password must be 8-20 characters long, contain letters and numbers, and must not contain spaces, special characters, or emoji.
+      </div>
+    </div>
+    <!-- Botones -->
+    <div class="button-group">
+      <ion-button expand="block" color="primary">Iniciar sesión</ion-button>
+      <ion-button expand="block" color="secondary" [routerLink]="['/registrar-usuarios']">Registrar cuenta</ion-button>
+      <ion-button expand="block" color="secondary">Modo invitado</ion-button>
+    </div>
+  </div>
 </ion-content>
+
