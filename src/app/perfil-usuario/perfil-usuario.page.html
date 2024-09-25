@@ -1,0 +1,64 @@
+<ion-header [translucent]="true">
+  <ion-toolbar>
+    <!-- Botón de retroceso y botón para abrir el menú -->
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/"></ion-back-button>
+    </ion-buttons>
+    <ion-title>Perfil Usuario</ion-title>
+    <ion-buttons slot="end">
+      <!-- Botón para abrir el menú -->
+      <ion-menu-button></ion-menu-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true">
+  <ion-header collapse="condense">
+    <ion-toolbar>
+      <ion-title size="large">Perfil Usuario</ion-title>
+    </ion-toolbar>
+  </ion-header>
+
+  <!-- Contenedor del perfil -->
+  <ion-card>
+    <!-- Icono de usuario grande en el centro -->
+    <div class="profile-icon-container">
+      <ion-icon name="person-circle-outline" size="large"></ion-icon>
+    </div>
+
+    <!-- Información del perfil ficticio -->
+    <ion-item>
+      <ion-label>
+        <h2>Nombre Completo</h2>
+        <p>Juan Pérez González</p>
+      </ion-label>
+    </ion-item>
+
+    <ion-item>
+      <ion-label>
+        <h2>Correo Electrónico</h2>
+        <p>juan.perez</p>
+      </ion-label>
+    </ion-item>
+
+    <ion-item>
+      <ion-label>
+        <h2>RUT</h2>
+        <p>12.345.678-9</p>
+      </ion-label>
+    </ion-item>
+
+    <ion-item>
+      <ion-label>
+        <h2>Teléfono</h2>
+        <p>+56 9 8765 4321</p>
+      </ion-label>
+    </ion-item>
+  </ion-card>
+
+  <!-- Botones de Editar y Cerrar Sesión fuera del contenedor -->
+  <div class="button-container">
+    <ion-button expand="block" color="primary">Editar</ion-button>
+    <ion-button expand="block" color="danger">Cerrar Sesión</ion-button>
+  </div>
+</ion-content>

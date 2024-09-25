@@ -83,3 +83,16 @@ ion-searchbar {
 .card {
   margin-bottom: 2rem;      /* Añadir espacio adicional entre las tarjetas si es necesario */
 }
+.filter-container {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.3s ease-in-out;
+}
+
+.filter-container.expanded {
+  max-height: 200px; /* Ajusta esta altura según la cantidad de contenido */
+}
+
+.filter-container ion-list {
+  padding: 10px;
+}

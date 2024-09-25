@@ -32,6 +32,11 @@ export class FolderPage implements OnInit {
 
   await alert.present();
 }
+showFilters = false;
+
+  toggleFilters() {
+    this.showFilters = !this.showFilters;
+  }
   public alertButtons = [
     {
       text: 'No',
