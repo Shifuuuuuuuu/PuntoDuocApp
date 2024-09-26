@@ -17,7 +17,7 @@ export class EstudianteService {
   }
 
   verificarEstudiantePorCorreo(correo: string) {
-    return this.firestore.collection('estudiantes', ref => ref.where('Correo_electronico', '==', correo))
+    return this.firestore.collection('estudiantes', ref => ref.where('email', '==', correo))
       .snapshotChanges()
       .pipe(
         map(estudiantes=> estudiantes.length > 0)  // Devuelve true si hay un estudiante registrado con ese correo

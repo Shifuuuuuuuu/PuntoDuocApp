@@ -1,6 +1,8 @@
 import { Component, inject, OnInit } from '@angular/core';
+import { AngularFirestore } from '@angular/fire/compat/firestore';
 import { ActivatedRoute, Router } from '@angular/router';
 import { AlertController } from '@ionic/angular';
+import { Observable } from 'rxjs';
 
 @Component({
   selector: 'app-folder',
@@ -8,11 +10,44 @@ import { AlertController } from '@ionic/angular';
   styleUrls: ['./folder.page.scss'],
 })
 export class FolderPage implements OnInit {
-  public folder!: string;
-  private activatedRoute = inject(ActivatedRoute);
-  constructor(private alertController: AlertController, private router: Router) {}
-  showEvent1: boolean = false;  // Inicialmente oculto
-  showEvent2: boolean = false;
+  Eventos: Observable<any[]> = new Observable(); // Inicializar como Observable vacío
+  filteredEvents: any[] = [];
+  searchText: string = '';
+  showFilters: boolean = false;
+  folder: string = ''; // Inicializar como cadena vacía
+
+  constructor(
+    private firestore: AngularFirestore,
+    private alertController: AlertController,
+    private router: Router,
+    private activatedRoute: ActivatedRoute
+  ) {
+    this.loadEvents();
+  }
+
+  ngOnInit() {
+    this.folder = this.activatedRoute.snapshot.paramMap.get('id') as string;
+  }
+
+  loadEvents() {
+    this.Eventos = this.firestore.collection('Eventos').valueChanges();
+    this.Eventos.subscribe(data => {
+      this.filteredEvents = data;
+    });
+  }
+
+  toggleFilters() {
+    this.showFilters = !this.showFilters;
+  }
+
+  filterEvents() {
+    this.Eventos.subscribe(data => {
+      this.filteredEvents = data.filter(evento =>
+        evento.titulo.toLowerCase().includes(this.searchText.toLowerCase())
+      );
+    });
+  }
+
   async presentAlert() {
     const alert = await this.alertController.create({
       header: '¿Quieres inscribirte al evento?',
@@ -24,31 +59,13 @@ export class FolderPage implements OnInit {
         {
           text: 'Sí',
           handler: () => {
-            this.router.navigate(['/pagina-principal']);
+            this.router.navigate(['/pagina-principal']); // Redirige a la página principal
           }
         }
       ]
     });
 
-  await alert.present();
-}
-showFilters = false;
-
-  toggleFilters() {
-    this.showFilters = !this.showFilters;
-  }
-  public alertButtons = [
-    {
-      text: 'No',
-      cssClass: 'alert-button-cancel',
-    },
-    {
-      text: 'Yes',
-      cssClass: 'alert-button-confirm',
-    },
-  ];
-  ngOnInit() {
-    this.folder = this.activatedRoute.snapshot.paramMap.get('id') as string;
+    await alert.present();
   }
 }
 

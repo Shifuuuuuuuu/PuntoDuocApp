@@ -16,26 +16,30 @@
       <ion-title size="large">{{ folder }}</ion-title>
     </ion-toolbar>
   </ion-header>
-  <div class="search-container">
-    <ion-searchbar animated="true" placeholder="Buscar eventos"></ion-searchbar>
 
-    <!-- Botón de Filtros -->
+  <div class="search-container">
+    <ion-searchbar
+      animated="true"
+      placeholder="Buscar eventos"
+      [(ngModel)]="searchText"
+      (ionInput)="filterEvents()">
+    </ion-searchbar>
+
     <ion-button color="light" aria-label="Filter" class="heart-button" (click)="toggleFilters()">
       <ion-icon name="options-outline"></ion-icon>
     </ion-button>
   </div>
 
-  <!-- Contenedor de Filtros que se desliza -->
   <div class="filter-container" [class.expanded]="showFilters">
     <ion-list>
       <ion-item>
-        <ion-label>Region</ion-label>
+        <ion-label>Región</ion-label>
         <ion-select placeholder="Seleccionar">
           <ion-select-option>Región Metropolitana</ion-select-option>
           <ion-select-option>Región de la Araucanía: Villarrica</ion-select-option>
           <ion-select-option>Región de Los Lagos: Puerto Montt</ion-select-option>
-          <ion-select-option>Región de de Valparaíso: Valparaíso y Viña del Mar</ion-select-option>
-          <ion-select-option>Región de del Biobío: Concepción, Arauco y Nacimiento</ion-select-option>
+          <ion-select-option>Región de Valparaíso: Valparaíso y Viña del Mar</ion-select-option>
+          <ion-select-option>Región del Biobío: Concepción, Arauco y Nacimiento</ion-select-option>
         </ion-select>
       </ion-item>
       <ion-item>
@@ -44,39 +48,22 @@
     </ion-list>
   </div>
 
-
   <!-- Contenedor con scroll para las tarjetas -->
   <div class="card-container">
-    <div class="card" style="width: 18rem;">
-      <img src="../../assets/img/Duoca.png" class="card-img-top" alt="...">
+    <div *ngFor="let event of filteredEvents" class="card" style="width: 18rem;">
+      <img [src]="event.imagen" class="card-img-top" alt="Imagen del evento"> <!-- Cambia la imagen según sea necesario -->
       <div class="card-body">
-        <h6>26 de Agosto 9:00</h6>
-        <h5 class="card-title">Celebración del Mes Técnico Profesional: Innovación y Energía en Duoc UC sede Maipú</h5>
-        <ion-button (click)="showEvent1 = !showEvent1">Ver evento</ion-button>
+        <h6>{{ event.fecha | date: 'short' }}</h6>
+        <h5 class="card-title">{{ event.titulo }}</h5>
+        <ion-button (click)="event.show = !event.show">Ver evento</ion-button>
 
-        <div *ngIf="showEvent1">
-          <p class="card-text">Únete a la celebración del Mes Técnico Profesional en Duoc UC Maipú el 26 de agosto de 2024. Desde las 9:00 a 13:00 horas, te invitamos a una jornada llena de aprendizaje y actividades, destacando una charla sobre Hidrógeno Verde por Ángel Caviedes Cabezas del Ministerio de Energía. Además, contaremos con la participación de estudiantes</p>
-          <ion-button (click)="presentAlert()">Inscribirse</ion-button>
-        </div>
-      </div>
-    </div>
-
-
-
-    <div class="card" style="width: 18rem;">
-      <img src="../../assets/img/duocp.png" class="card-img-top" alt="...">
-      <div class="card-body">
-        <h6>26 de Agosto 9:00</h6>
-        <h5 class="card-title">Mes Educación TP: Seminario Conecta Región Especial </h5>
-        <ion-button (click)="showEvent2 = !showEvent2">Ver evento</ion-button>
-
-        <div *ngIf="showEvent2">
-          <p class="card-text">Únete a la celebración del Mes Técnico Profesional en Duoc UC Maipú el 26 de agosto de 2024. Desde las 9:00 a 13:00 horas, te invitamos a una jornada llena de aprendizaje y actividades, destacando una charla sobre Hidrógeno Verde por Ángel Caviedes Cabezas del Ministerio de Energía.</p>
-          <p></p>
+        <div *ngIf="event.show">
+          <p class="card-text">{{ event.descripcion }}</p>
           <ion-button (click)="presentAlert()">Inscribirse</ion-button>
         </div>
       </div>
     </div>
   </div>
 </ion-content>
+
 

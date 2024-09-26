@@ -1,7 +1,7 @@
 export interface Estudiante {
   id_estudiante: string;
-  Contrasena: string;
-  Correo_electronico: string;
+  password: string;
+  email: string;
   Nombre_completo: string;
   Rut: string;
   Telefono: string;

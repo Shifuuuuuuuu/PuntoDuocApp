@@ -13,8 +13,8 @@ export class RegistrarUsuariosPage implements OnInit {
 
   estudiante: Estudiante = {
     id_estudiante: '',
-    Contrasena: '',
-    Correo_electronico: '',
+    password: '',
+    email: '',
     Nombre_completo: '',
     Rut: '',
     Telefono: ''
@@ -26,7 +26,7 @@ export class RegistrarUsuariosPage implements OnInit {
 
   registrar() {
     this.errorMessage = '';  // Resetear el mensaje de error
-    this.estudianteService.verificarEstudiantePorCorreo(this.estudiante.Correo_electronico)
+    this.estudianteService.verificarEstudiantePorCorreo(this.estudiante.email)
       .subscribe(yaRegistrado => {
         if (yaRegistrado) {
           this.errorMessage = 'El correo electrónico ya está registrado.';

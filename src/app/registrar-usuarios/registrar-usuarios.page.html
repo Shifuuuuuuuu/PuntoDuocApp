@@ -35,14 +35,14 @@
       </div>
       <div class="mb-3">
         <label for="exampleFormControlInput4" class="form-label">Correo electrónico</label>
-        <input type="email" [(ngModel)]="estudiante.Correo_electronico" name="correo" class="form-control" id="exampleFormControlInput4" placeholder="nombre@ejemplo.com" required email>
+        <input type="email" [(ngModel)]="estudiante.email" name="correo" class="form-control" id="exampleFormControlInput4" placeholder="nombre@ejemplo.com" required email>
         <div *ngIf="registroForm.controls['correo']?.invalid && registroForm.controls['correo']?.touched" class="text-danger">
           Introduce un correo electrónico válido.
         </div>
       </div>
       <div class="mb-3">
         <label for="inputPassword5" class="form-label">Contraseña</label>
-        <input type="password" [(ngModel)]="estudiante.Contrasena" name="contrasena" id="inputPassword5" class="form-control" aria-describedby="passwordHelpBlock" required minlength="8" maxlength="20">
+        <input type="password" [(ngModel)]="estudiante.password" name="password" id="inputPassword5" class="form-control" aria-describedby="passwordHelpBlock" required minlength="8" maxlength="20">
         <div *ngIf="registroForm.controls['contrasena']?.invalid && registroForm.controls['contrasena']?.touched" class="text-danger">
           La contraseña debe tener entre 8 y 20 caracteres.
         </div>
