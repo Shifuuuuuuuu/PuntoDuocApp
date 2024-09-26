@@ -1,11 +1,12 @@
 export const environment = {
-  production: true,
+  production: false,
   firebaseConfig: {
-    apiKey: "AIzaSyAAZbKeKyOlMbRDG36TfY8WhJ0Tv80gCRw",
-    authDomain: "generador-reportes.firebaseapp.com",
-    projectId: "generador-reportes",
-    storageBucket: "generador-reportes.appspot.com",
-    messagingSenderId: "908863305170",
-    appId: "1:908863305170:web:e43e9ab7215db268c6c40b"
+      apiKey: "AIzaSyDo7PfmgYR63N_f-_QGxJsY-BeDFjWWd3E",
+  authDomain: "puntoduoc-894e9.firebaseapp.com",
+  projectId: "puntoduoc-894e9",
+  storageBucket: "puntoduoc-894e9.appspot.com",
+  messagingSenderId: "445454255986",
+  appId: "1:445454255986:web:33d22798835dd6d0d0ffeb",
+  measurementId: "G-LBNH8NQWKG"
   }
 };

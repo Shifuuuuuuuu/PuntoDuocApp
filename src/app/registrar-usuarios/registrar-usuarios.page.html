@@ -12,39 +12,51 @@
   </ion-toolbar>
 </ion-header>
 
-<ion-content [fullscreen]="true">
-  <br>
-  <ion-content [fullscreen]="true" class="ion-padding">
-    <div class="form-container">
+<ion-content [fullscreen]="true" class="ion-padding">
+  <div class="form-container">
+    <form #registroForm="ngForm" (ngSubmit)="registrar()" novalidate>
       <div class="mb-3">
         <label for="exampleFormControlInput1" class="form-label">Nombre completo</label>
-        <input type="text" class="form-control" id="exampleFormControlInput1" placeholder="Juan Pérez">
+        <input type="text" [(ngModel)]="estudiante.Nombre_completo" name="nombre" class="form-control" id="exampleFormControlInput1" placeholder="Juan Pérez" required>
       </div>
       <div class="mb-3">
         <label for="exampleFormControlInput2" class="form-label">RUT</label>
-        <input type="text" class="form-control" id="exampleFormControlInput2" placeholder="12345678-9">
+        <input type="text" [(ngModel)]="estudiante.Rut" name="rut" class="form-control" id="exampleFormControlInput2" placeholder="12345678-9" required pattern="^[0-9]+-[0-9kK]{1}$">
+        <div *ngIf="registroForm.controls['rut']?.invalid && registroForm.controls['rut']?.touched" class="text-danger">
+          El RUT debe tener el formato correcto (ej: 12345678-9).
+        </div>
       </div>
       <div class="mb-3">
         <label for="exampleFormControlInput3" class="form-label">Teléfono</label>
-        <input type="tel" class="form-control" id="exampleFormControlInput3" placeholder="+56 9 1234 5678">
+        <input type="tel" [(ngModel)]="estudiante.Telefono" name="telefono" class="form-control" id="exampleFormControlInput3" placeholder="+56 9 1234 5678" required pattern="^[0-9]{11}$">
+        <div *ngIf="registroForm.controls['telefono']?.invalid && registroForm.controls['telefono']?.touched" class="text-danger">
+          El teléfono debe contener exactamente 11 dígitos.
+        </div>
       </div>
       <div class="mb-3">
         <label for="exampleFormControlInput4" class="form-label">Correo electrónico</label>
-        <input type="email" class="form-control" id="exampleFormControlInput4" placeholder="nombre@ejemplo.com">
+        <input type="email" [(ngModel)]="estudiante.Correo_electronico" name="correo" class="form-control" id="exampleFormControlInput4" placeholder="nombre@ejemplo.com" required email>
+        <div *ngIf="registroForm.controls['correo']?.invalid && registroForm.controls['correo']?.touched" class="text-danger">
+          Introduce un correo electrónico válido.
+        </div>
       </div>
       <div class="mb-3">
         <label for="inputPassword5" class="form-label">Contraseña</label>
-        <input type="password" id="inputPassword5" class="form-control" aria-describedby="passwordHelpBlock">
-        <div id="passwordHelpBlock" class="form-text">
-          La contraseña debe tener entre 8 y 20 caracteres, contener letras y números, y no debe incluir espacios ni caracteres especiales.
+        <input type="password" [(ngModel)]="estudiante.Contrasena" name="contrasena" id="inputPassword5" class="form-control" aria-describedby="passwordHelpBlock" required minlength="8" maxlength="20">
+        <div *ngIf="registroForm.controls['contrasena']?.invalid && registroForm.controls['contrasena']?.touched" class="text-danger">
+          La contraseña debe tener entre 8 y 20 caracteres.
         </div>
       </div>
       <!-- Botones -->
       <div class="button-group">
-        <ion-button expand="block" color="primary">Registrar</ion-button>
+        <ion-button expand="block" color="primary" [disabled]="registroForm.invalid" type="submit">Registrar</ion-button>
         <ion-button expand="block" color="light" [routerLink]="['/iniciar-sesion']">Volver al inicio</ion-button>
       </div>
-    </div>
-  </ion-content>
-  
+      <!-- Mensaje de error -->
+      <div *ngIf="errorMessage" class="text-danger">
+        {{ errorMessage }}
+      </div>
+    </form>
+  </div>
 </ion-content>
+
