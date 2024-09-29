@@ -25,7 +25,7 @@ export class IniciarSesionPage implements OnInit {
 
     this.authService.login(this.user.email, this.user.password)
       .then(() => {
-        this.router.navigate(['/home']);
+        this.router.navigate(['/perfil-usuario']);
       })
       .catch((error) => {
         this.errorMessage = this.getErrorMessage(error.code);
