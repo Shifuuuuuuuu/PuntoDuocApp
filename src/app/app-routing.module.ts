@@ -4,7 +4,7 @@ import { PreloadAllModules, RouterModule, Routes } from '@angular/router';
 const routes: Routes = [
   {
     path: '',
-    redirectTo: 'folder/Inicio',
+    redirectTo: 'iniciar-sesion',
     pathMatch: 'full'
   },
   {
@@ -22,7 +22,11 @@ const routes: Routes = [
   {
     path: 'registrar-usuarios',
     loadChildren: () => import('./registrar-usuarios/registrar-usuarios.module').then( m => m.RegistrarUsuariosPageModule)
+  },  {
+    path: 'registrar-invitado',
+    loadChildren: () => import('./registrar-invitado/registrar-invitado.module').then( m => m.RegistrarInvitadoPageModule)
   }
+
 
 ];
 

@@ -25,13 +25,8 @@ export class IniciarSesionPage implements OnInit {
     console.log('Contraseña:', this.user.password); // Log de la contraseña
 
     this.authService.login(this.user.email, this.user.password)
-      .then((estudiante: Estudiante | null) => {
-        if (estudiante) {
-          console.log('Inicio de sesión exitoso:', estudiante);
-          this.router.navigate(['/folder/Inicio']);
-        } else {
-          this.errorMessage = 'Usuario o contraseña incorrectos.';
-        }
+      .then(() => {
+        this.router.navigate(['/home']);
       })
       .catch((error) => {
         this.errorMessage = 'Ocurrió un error inesperado. Intenta de nuevo.';
