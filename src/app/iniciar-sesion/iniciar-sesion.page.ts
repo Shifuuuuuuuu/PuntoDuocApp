@@ -26,7 +26,7 @@ export class IniciarSesionPage implements OnInit {
 
     this.authService.login(this.user.email, this.user.password)
       .then(() => {
-        this.router.navigate(['/home']);
+        this.router.navigate(['/folder/Inicio']);
       })
       .catch((error) => {
         this.errorMessage = 'Ocurrió un error inesperado. Intenta de nuevo.';
