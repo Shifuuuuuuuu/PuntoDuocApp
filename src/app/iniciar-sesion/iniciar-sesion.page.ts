@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { AuthService } from '../services/auth.service';
 import { Router } from '@angular/router';
+import { Estudiante } from '../interface/IEstudiante';
 
 
 @Component({
@@ -24,31 +25,21 @@ export class IniciarSesionPage implements OnInit {
     console.log('Contraseña:', this.user.password); // Log de la contraseña
 
     this.authService.login(this.user.email, this.user.password)
-      .then(() => {
-        this.router.navigate(['/home']);
+      .then((estudiante: Estudiante | null) => {
+        if (estudiante) {
+          console.log('Inicio de sesión exitoso:', estudiante);
+          this.router.navigate(['/folder/Inicio']);
+        } else {
+          this.errorMessage = 'Usuario o contraseña incorrectos.';
+        }
       })
       .catch((error) => {
-        this.errorMessage = this.getErrorMessage(error.code);
+        this.errorMessage = 'Ocurrió un error inesperado. Intenta de nuevo.';
         console.error('Error de inicio de sesión:', error); // Log del error
       });
   }
 
+  ngOnInit() {}
 
-  // Método para obtener mensajes de error personalizados
-  getErrorMessage(errorCode: string): string {
-    switch (errorCode) {
-      case 'auth/user-not-found':
-        return 'Usuario no encontrado. Verifica tu correo o regístrate.';
-      case 'auth/wrong-password':
-        return 'Contraseña incorrecta.';
-      case 'auth/invalid-email':
-        return 'Correo electrónico no válido.';
-      default:
-        return 'Ocurrió un error inesperado. Intenta de nuevo.';
-    }
-  }
-
-  ngOnInit() {
-  }
 
 }
