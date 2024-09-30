@@ -1,46 +1,52 @@
 import { Injectable } from '@angular/core';
-import { AngularFireAuth } from '@angular/fire/compat/auth';
 import { AngularFirestore } from '@angular/fire/compat/firestore';
 import { Estudiante } from '../interface/IEstudiante';
+
 
 @Injectable({
   providedIn: 'root'
 })
 export class AuthService {
 
+  public currentUserEmail!: string; // Agregamos esta variable para almacenar el email del usuario actual
   constructor(private firestore: AngularFirestore) {}
 
   // Método para iniciar sesión basado en Firestore
-  login(email: string, password: string): Promise<Estudiante | null> {
-    return this.firestore.collection<Estudiante>('estudiantes', ref =>
+  async login(email: string, password: string): Promise<Estudiante | null> {
+    const querySnapshot = await this.firestore.collection<Estudiante>('estudiantes', ref =>
       ref.where('email', '==', email).where('password', '==', password)
-    )
-    .get()
-    .toPromise()
-    .then((querySnapshot) => {
-      // Verificar que querySnapshot no sea undefined y tenga documentos
-      if (querySnapshot && !querySnapshot.empty) {
-        const studentData = querySnapshot.docs[0].data() as Estudiante;
-        return studentData; // Devuelve el objeto del estudiante si coincide
-      } else {
-        return null; // No coincide ningún documento, usuario no encontrado
-      }
-    })
-    .catch(error => {
-      console.error('Error al consultar Firestore:', error);
-      throw error;
-    });
+    ).get().toPromise();
+
+    if (querySnapshot && !querySnapshot.empty) {
+      const studentData = querySnapshot.docs[0].data() as Estudiante;
+      this.currentUserEmail = studentData.email; // Establece el email del usuario
+      return studentData; // Devuelve el objeto del estudiante
+    } else {
+      return null; // No coincide ningún documento, usuario no encontrado
+    }
   }
 
-  // Método para registrar un nuevo estudiante (opcional)
-  register(estudiante: Estudiante): Promise<void> {
-    const id = this.firestore.createId(); // Generar un ID único para el nuevo estudiante
-    return this.firestore.collection('estudiantes').doc(id).set(estudiante);
+  // Obtener estudiante por email
+  async getEstudianteByEmail(email: string): Promise<Estudiante | undefined> {
+    const snapshot = await this.firestore.collection<Estudiante>('estudiantes', ref => ref.where('email', '==', email)).get().toPromise();
+
+    if (snapshot && !snapshot.empty) {
+      const estudianteData = snapshot.docs[0].data() as Estudiante;
+      estudianteData.id_estudiante = snapshot.docs[0].id; // Guarda el ID para las actualizaciones
+      return estudianteData;
+    }
+    return undefined;
   }
 
-  // Método para cerrar sesión (puedes vaciar cualquier almacenamiento local si lo implementas)
-  logout(): Promise<void> {
-    // Si estás usando localStorage para recordar la sesión, puedes limpiarlo aquí.
-    return Promise.resolve();
+  // Actualizar estudiante
+  async updateEstudiante(estudiante: Estudiante): Promise<void> {
+    await this.firestore.collection('estudiantes').doc(estudiante.id_estudiante).update(estudiante);
+  }
+
+  // Método para cerrar sesión
+  async logout(): Promise<void> {
+    // Implementa la lógica de cierre de sesión
+    this.currentUserEmail = ""; // Limpia el email del usuario actual
+    return Promise.resolve(); // Ajusta esto según tu implementación
   }
 }
