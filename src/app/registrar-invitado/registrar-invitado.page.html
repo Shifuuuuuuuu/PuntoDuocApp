@@ -1,0 +1,48 @@
+<ion-header [translucent]="true">
+  <ion-toolbar>
+    <ion-title>registrar-invitado</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+
+<ion-content [fullscreen]="true" class="ion-padding">
+<div class="form-container">
+  <form #registroForm="ngForm" (ngSubmit)="registrar-invitado()" novalidate>
+    <div class="mb-3">
+      <label for="exampleFormControlInput1" class="form-label">Nombre completo</label>
+      <input type="text" [(ngModel)]="estudiante.Nombre_completo" name="nombre" class="form-control" id="exampleFormControlInput1" placeholder="Juan Pérez" required>
+    </div>
+    <div class="mb-3">
+      <label for="exampleFormControlInput2" class="form-label">RUT</label>
+      <input type="text" [(ngModel)]="estudiante.Rut" name="rut" class="form-control" id="exampleFormControlInput2" placeholder="12345678-9" required pattern="^[0-9]+-[0-9kK]{1}$">
+      <div *ngIf="registroForm.controls['rut']?.invalid && registroForm.controls['rut']?.touched" class="text-danger">
+        El RUT debe tener el formato correcto (ej: 12345678-9).
+      </div>
+    </div>
+    <div class="mb-3">
+      <label for="exampleFormControlInput4" class="form-label">Correo electrónico</label>
+      <input type="email" [(ngModel)]="estudiante.email" name="correo" class="form-control" id="exampleFormControlInput4" placeholder="nombre@ejemplo.com" required email>
+      <div *ngIf="registroForm.controls['correo']?.invalid && registroForm.controls['correo']?.touched" class="text-danger">
+        Introduce un correo electrónico válido.
+      </div>
+    </div>
+    <div class="mb-3">
+      <label for="inputPassword5" class="form-label">Contraseña</label>
+      <input type="password" [(ngModel)]="estudiante.password" name="password" id="inputPassword5" class="form-control" aria-describedby="passwordHelpBlock" required minlength="8" maxlength="20">
+      <div *ngIf="registroForm.controls['contrasena']?.invalid && registroForm.controls['contrasena']?.touched" class="text-danger">
+        La contraseña debe tener entre 8 y 20 caracteres.
+      </div>
+    </div>
+    <!-- Botones -->
+    <div class="button-group">
+      <ion-button expand="block" color="primary" [disabled]="registroForm.invalid" type="submit">Registrar</ion-button>
+      <ion-button expand="block" color="light" [routerLink]="['/iniciar-sesion']">Volver al inicio</ion-button>
+    </div>
+    <!-- Mensaje de error -->
+    <div *ngIf="errorMessage" class="text-danger">
+      {{ errorMessage }}
+    </div>
+  </form>
+</div>
+</ion-content>
+
