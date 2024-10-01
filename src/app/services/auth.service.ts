@@ -12,19 +12,27 @@ export class AuthService {
   constructor(private firestore: AngularFirestore) {}
 
   // Método para iniciar sesión basado en Firestore
-  async login(email: string, password: string): Promise<Estudiante | null> {
-    const querySnapshot = await this.firestore.collection<Estudiante>('estudiantes', ref =>
-      ref.where('email', '==', email).where('password', '==', password)
-    ).get().toPromise();
+async login(email: string, password: string): Promise<Estudiante | null> {
+  const querySnapshot = await this.firestore.collection<Estudiante>('estudiantes', ref =>
+    ref.where('email', '==', email)
+  ).get().toPromise();
 
-    if (querySnapshot && !querySnapshot.empty) {
-      const studentData = querySnapshot.docs[0].data() as Estudiante;
+  if (querySnapshot && !querySnapshot.empty) {
+    const studentData = querySnapshot.docs[0].data() as Estudiante;
+
+    // Verifica si la contraseña coincide
+    if (studentData.password === password) {
       this.currentUserEmail = studentData.email; // Establece el email del usuario
       return studentData; // Devuelve el objeto del estudiante
     } else {
-      return null; // No coincide ningún documento, usuario no encontrado
+      console.error('Contraseña incorrecta'); // Puedes manejar el error como desees
+      return null; // Contraseña incorrecta
     }
+  } else {
+    console.error('Usuario no encontrado'); // Maneja el caso cuando no se encuentra el usuario
+    return null; // No coincide ningún documento, usuario no encontrado
   }
+}
 
   // Obtener estudiante por email
   async getEstudianteByEmail(email: string): Promise<Estudiante | undefined> {

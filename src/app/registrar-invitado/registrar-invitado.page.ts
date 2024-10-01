@@ -33,7 +33,7 @@ export class RegistrarInvitadoPage implements OnInit {
           // Si no está registrado, proceder a registrarlo
           this.invitadoService.registrarInvitado(this.invitado).then(() => {
             console.log('Invitado registrado correctamente');
-            this.router.navigate(['/iniciar-sesion']);
+            this.router.navigate(['/folder/Inicio']);
           }).catch(error => {
             console.error('Error al registrar invitado:', error);
             this.errorMessage = 'Ocurrió un error al registrar el invitado.';

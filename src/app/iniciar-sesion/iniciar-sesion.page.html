@@ -11,16 +11,23 @@
 <ion-content [fullscreen]="true" class="ion-padding">
   <div class="form-container">
     <form #loginForm="ngForm" (ngSubmit)="iniciarSesion()" novalidate>
-      <div class="mb-3">
+      <div class="mb-3 position-relative">
         <label for="email" class="form-label">Correo Electrónico</label>
         <input type="email" [(ngModel)]="user.email" name="email" class="form-control" id="email" placeholder="nombre@ejemplo.com" required email>
+        <button type="button" *ngIf="user.email" class="btn btn-sm btn-secondary clear-button" (click)="clearField('email')">
+          ✕
+        </button>
         <div *ngIf="loginForm.controls['email']?.invalid && loginForm.controls['email']?.touched" class="text-danger">
           Ingresa un correo electrónico válido.
         </div>
       </div>
-      <div class="mb-3">
+
+      <div class="mb-3 position-relative">
         <label for="password" class="form-label">Contraseña</label>
         <input type="password" [(ngModel)]="user.password" name="password" class="form-control" id="password" required minlength="8" maxlength="20">
+        <button type="button" *ngIf="user.password" class="btn btn-sm btn-secondary clear-button" (click)="clearField('password')">
+          ✕
+        </button>
         <div *ngIf="loginForm.controls['password']?.invalid && loginForm.controls['password']?.touched" class="text-danger">
           La contraseña debe tener entre 8 y 20 caracteres.
         </div>
