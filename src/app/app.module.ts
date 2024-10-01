@@ -9,11 +9,13 @@ import { environment } from 'src/environments/environment.prod';
 import { AngularFireAuthModule } from '@angular/fire/compat/auth';
 import { FormsModule } from '@angular/forms';
 
+import { InvitadoService } from './services/invitado.service'; // Importa el nuevo servicio
+
 @NgModule({
   declarations: [AppComponent],
   imports: [AngularFireModule.initializeApp(environment.firebaseConfig),
     AngularFireAuthModule ,BrowserModule, IonicModule.forRoot(), AppRoutingModule,FormsModule],
-  providers: [{ provide: RouteReuseStrategy, useClass: IonicRouteStrategy }],
+  providers: [{ provide: RouteReuseStrategy, useClass: IonicRouteStrategy },InvitadoService],
   bootstrap: [AppComponent],
 })
 export class AppModule {}

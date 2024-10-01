@@ -25,6 +25,10 @@ const routes: Routes = [
   },  {
     path: 'registrar-invitado',
     loadChildren: () => import('./registrar-invitado/registrar-invitado.module').then( m => m.RegistrarInvitadoPageModule)
+  },
+  {
+    path: 'registrar-invitado',
+    loadChildren: () => import('./registrar-invitado/registrar-invitado.module').then( m => m.RegistrarInvitadoPageModule)
   }
 
 

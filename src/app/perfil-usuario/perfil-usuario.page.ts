@@ -1,6 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import { Estudiante } from '../interface/IEstudiante';
+import { Invitado } from '../interface/IInvitado'; 
 import { AuthService } from '../services/auth.service';
+import { InvitadoService } from '../services/invitado.service'; 
 import { Router } from '@angular/router';
 
 @Component({
@@ -10,15 +12,22 @@ import { Router } from '@angular/router';
 })
 export class PerfilUsuarioPage implements OnInit {
   estudiante: Estudiante | null = null;
+  invitado: Invitado | null = null;
   isEditing: boolean = false;
   userEmail!: string;
+  errorMessage: string | undefined;
 
-  constructor(private authService: AuthService, private router: Router) {}
+  constructor(
+    private authService: AuthService,
+    private invitadoService: InvitadoService, 
+    private router: Router
+  ) {}
 
   ngOnInit() {
-    this.userEmail = this.authService.currentUserEmail; // Obtén el email del estudiante que ha iniciado sesión
+    this.userEmail = this.authService.currentUserEmail; // Obtén el email del usuario
     if (!this.userEmail) {
-      console.error('Error: currentUserEmail no está definido. Asegúrate de que el usuario haya iniciado sesión correctamente.');
+      this.errorMessage = 'Error: currentUserEmail no está definido. Asegúrate de que el usuario haya iniciado sesión correctamente.'; // Mensaje de error
+      console.error(this.errorMessage);
       this.router.navigate(['/login']); // Redirigir si no hay usuario autenticado
     } else {
       this.loadUserData();
@@ -28,14 +37,21 @@ export class PerfilUsuarioPage implements OnInit {
 
   async loadUserData() {
     try {
-      if (this.userEmail) { // Verifica que userEmail esté definido
-        const result = await this.authService.getEstudianteByEmail(this.userEmail);
-        this.estudiante = result !== undefined ? result : null;
+      // Intentar obtener datos del estudiante primero
+      const estudianteResult = await this.authService.getEstudianteByEmail(this.userEmail);
+      if (estudianteResult) {
+        this.estudiante = estudianteResult;
       } else {
-        console.error('Error: userEmail no está definido.');
+        // Si no es estudiante, intentar obtener datos del invitado
+        this.invitado = await this.invitadoService.obtenerInvitadoPorEmail(this.userEmail);
+        if (!this.invitado) {
+          console.error('No se encontró ningún invitado con ese email.');
+          this.router.navigate(['/login']); // Redirigir si no hay invitado
+        }
       }
     } catch (error) {
-      console.error('Error al cargar los datos del estudiante:', error);
+      console.error('Error al cargar los datos del usuario:', error);
+      this.router.navigate(['/login']); // Redirigir en caso de error
     }
   }
 
@@ -58,7 +74,14 @@ export class PerfilUsuarioPage implements OnInit {
         await this.authService.updateEstudiante(this.estudiante);
         this.isEditing = false; // Dejar de editar después de guardar
       } catch (error) {
-        console.error('Error al actualizar el perfil:', error);
+        console.error('Error al actualizar el perfil del estudiante:', error);
+      }
+    } else if (this.invitado) {
+      try {
+        await this.invitadoService.updateInvitado(this.invitado); // Actualiza el perfil del invitado
+        this.isEditing = false; // Dejar de editar después de guardar
+      } catch (error) {
+        console.error('Error al actualizar el perfil del invitado:', error);
       }
     }
   }

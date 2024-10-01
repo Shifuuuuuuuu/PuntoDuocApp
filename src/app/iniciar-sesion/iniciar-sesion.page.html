@@ -38,7 +38,7 @@
       <div class="button-group">
         <ion-button expand="block" color="primary" [disabled]="loginForm.invalid" type="submit">Iniciar sesión</ion-button>
         <ion-button expand="block" color="secondary" [routerLink]="['/registrar-usuarios']">Registrar cuenta</ion-button>
-        <ion-button expand="block" color="secondary">Modo invitado</ion-button>
+        <ion-button expand="block" color="secondary" [routerLink]="['/registrar-invitado']">Modo invitado</ion-button>
       </div>
       <!-- Mensaje de error -->
       <div *ngIf="errorMessage" class="text-danger">
