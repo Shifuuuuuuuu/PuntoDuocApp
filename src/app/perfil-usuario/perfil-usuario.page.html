@@ -51,8 +51,68 @@
     <ion-item>
       <ion-label>
         <h2>Teléfono</h2>
+<<<<<<< Updated upstream
         <p>+56 9 8765 4321</p>
+=======
+        <p *ngIf="!isEditing">{{ estudiante.Telefono }}</p>
+        <ion-input *ngIf="isEditing" [(ngModel)]="estudiante.Telefono" placeholder="Teléfono"></ion-input>
       </ion-label>
+    </ion-item>
+
+    <!-- QR Code -->
+    <ion-item>
+      <ion-label>
+        <h2>QR Code</h2>
+      </ion-label>
+      <ion-img [src]="qrCodeURL" *ngIf="qrCodeURL"></ion-img>
+    </ion-item>
+  </ion-card>
+
+  <!-- Perfil del Usuario Invitado -->
+  <ion-card *ngIf="invitado">
+    <div class="profile-icon-container">
+      <ion-icon name="person-circle-outline" size="large"></ion-icon>
+    </div>
+
+    <ion-item>
+      <ion-label>
+        <h2>Nombre Completo</h2>
+        <p *ngIf="!isEditing">{{ invitado.Nombre_completo }}</p>
+        <ion-input *ngIf="isEditing" [(ngModel)]="invitado.Nombre_completo" placeholder="Nombre Completo"></ion-input>
+      </ion-label>
+    </ion-item>
+
+    <ion-item>
+      <ion-label>
+        <h2>Correo Electrónico</h2>
+        <p *ngIf="!isEditing">{{ invitado.email }}</p>
+        <ion-input *ngIf="isEditing" [(ngModel)]="invitado.email" placeholder="Correo Electrónico"></ion-input>
+      </ion-label>
+    </ion-item>
+
+    <ion-item>
+      <ion-label>
+        <h2>RUT</h2>
+        <p *ngIf="!isEditing">{{ invitado.Rut }}</p>
+        <ion-input *ngIf="isEditing" [(ngModel)]="invitado.Rut" placeholder="RUT"></ion-input>
+      </ion-label>
+    </ion-item>
+
+    <ion-item>
+      <ion-label>
+        <h2>Teléfono</h2>
+        <p *ngIf="!isEditing">{{ invitado.Telefono }}</p>
+        <ion-input *ngIf="isEditing" [(ngModel)]="invitado.Telefono" placeholder="Teléfono"></ion-input>
+>>>>>>> Stashed changes
+      </ion-label>
+    </ion-item>
+
+    <!-- QR Code -->
+    <ion-item>
+      <ion-label>
+        <h2>QR Code</h2>
+      </ion-label>
+      <ion-img [src]="qrCodeURL" *ngIf="qrCodeURL"></ion-img>
     </ion-item>
   </ion-card>
 
