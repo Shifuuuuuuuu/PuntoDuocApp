@@ -4,7 +4,7 @@
     <ion-buttons slot="start">
       <ion-back-button defaultHref="/iniciar-sesion"></ion-back-button>
     </ion-buttons>
-    <ion-title>Registrar usuario</ion-title>
+    <ion-title>Registro de Usuario</ion-title>
     <ion-buttons slot="end">
       <!-- Botón para abrir el menú -->
       <ion-menu-button></ion-menu-button>
@@ -39,6 +39,16 @@
         <div *ngIf="registroForm.controls['correo']?.invalid && registroForm.controls['correo']?.touched" class="text-danger">
           Introduce un correo electrónico válido.
         </div>
+      </div>
+      <div class="mb-3">
+        <label for="inputCarrera" class="form-label">Carrera</label>
+        <select [(ngModel)]="estudiante.carrera" name="carrera" class="form-select" id="inputCarrera" required>
+          <option value="" disabled selected>Selecciona una carrera</option>
+          <option value="Ingeniería Civil">Ingeniería Civil</option>
+          <option value="Diseño Gráfico">Diseño Gráfico</option>
+          <option value="Técnico en Programación">Técnico en Programación</option>
+          <!-- Agrega más opciones según tus necesidades -->
+        </select>
       </div>
       <div class="mb-3">
         <label for="inputPassword5" class="form-label">Contraseña</label>

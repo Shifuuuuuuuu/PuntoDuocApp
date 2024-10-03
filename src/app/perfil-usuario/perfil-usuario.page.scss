@@ -9,3 +9,49 @@
   justify-content: space-around;
   padding: 20px;
 }
+/* src/app/pages/perfil-usuario/perfil-usuario.page.scss */
+
+.error-card {
+  background-color: #f8d7da;
+  border-color: #f5c6cb;
+  color: #721c24;
+  margin-bottom: 16px;
+}
+
+.profile-card {
+  margin-bottom: 16px;
+}
+
+.action-buttons {
+  margin-top: 16px;
+}
+
+ion-button {
+  margin-top: 8px;
+}
+
+.qr-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center; /* Centra horizontalmente */
+  margin-top: 20px;
+}
+
+.qr-image {
+  max-width: 300px; /* Ajusta este tamaño según sea necesario */
+  height: auto;
+
+}
+
+
+
+img.enlarged {
+  position: fixed; /* Fija la imagen en la pantalla */
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  max-width: 90%; /* Ajusta el tamaño al 90% de la ventana */
+  height: auto;
+  z-index: 1000; /* Asegúrate de que esté por encima de otros elementos */
+  border: 2px solid #000; /* Bordes opcionales */
+}

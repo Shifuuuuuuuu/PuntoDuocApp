@@ -7,35 +7,47 @@ import { Estudiante } from '../interface/IEstudiante';
   providedIn: 'root'
 })
 export class AuthService {
+  public currentUserEmail!: string ; // Cambiar a null por defecto
 
-  public currentUserEmail!: string; // Agregamos esta variable para almacenar el email del usuario actual
   constructor(private firestore: AngularFirestore) {}
 
   // Método para iniciar sesión basado en Firestore
-async login(email: string, password: string): Promise<Estudiante | null> {
-  const querySnapshot = await this.firestore.collection<Estudiante>('estudiantes', ref =>
-    ref.where('email', '==', email)
-  ).get().toPromise();
+  async login(email: string, password: string): Promise<Estudiante | null> {
+    const querySnapshot = await this.firestore.collection<Estudiante>('estudiantes', ref =>
+      ref.where('email', '==', email)
+    ).get().toPromise();
 
-  if (querySnapshot && !querySnapshot.empty) {
-    const studentData = querySnapshot.docs[0].data() as Estudiante;
+    if (querySnapshot && !querySnapshot.empty) {
+      const studentData = querySnapshot.docs[0].data() as Estudiante;
 
-    // Verifica si la contraseña coincide
-    if (studentData.password === password) {
-      this.currentUserEmail = studentData.email; // Establece el email del usuario
-      return studentData; // Devuelve el objeto del estudiante
+      // Verifica si la contraseña coincide
+      if (studentData.password === password) {
+        this.currentUserEmail = studentData.email; // Establece el email del usuario
+        return studentData; // Devuelve el objeto del estudiante
+      } else {
+        console.error('Contraseña incorrecta');
+        return null; // Contraseña incorrecta
+      }
     } else {
-      console.error('Contraseña incorrecta'); // Puedes manejar el error como desees
-      return null; // Contraseña incorrecta
+      console.error('Usuario no encontrado');
+      return null; // No coincide ningún documento, usuario no encontrado
     }
-  } else {
-    console.error('Usuario no encontrado'); // Maneja el caso cuando no se encuentra el usuario
-    return null; // No coincide ningún documento, usuario no encontrado
   }
-}
+
+
+  // Método para obtener el email del usuario actual
+  getCurrentUserEmail(): string | null {
+    return this.currentUserEmail; // Retorna el email actual o null
+  }
 
   // Obtener estudiante por email
   async getEstudianteByEmail(email: string): Promise<Estudiante | undefined> {
+    // Verifica que el email no sea undefined
+    if (!email) {
+      console.error('El email no puede ser undefined');
+      return undefined;
+    }
+
     const snapshot = await this.firestore.collection<Estudiante>('estudiantes', ref => ref.where('email', '==', email)).get().toPromise();
 
     if (snapshot && !snapshot.empty) {
@@ -53,7 +65,6 @@ async login(email: string, password: string): Promise<Estudiante | null> {
 
   // Método para cerrar sesión
   async logout(): Promise<void> {
-    // Implementa la lógica de cierre de sesión
     this.currentUserEmail = ""; // Limpia el email del usuario actual
     return Promise.resolve(); // Ajusta esto según tu implementación
   }

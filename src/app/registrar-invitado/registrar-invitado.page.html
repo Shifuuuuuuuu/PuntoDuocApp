@@ -1,12 +1,12 @@
 <ion-header [translucent]="true">
   <ion-toolbar>
-    <ion-title>registrar-invitado</ion-title>
+    <ion-title>Registro de Invitado</ion-title>
   </ion-toolbar>
 </ion-header>
 
 <ion-content [fullscreen]="true" class="ion-padding">
   <div class="form-container">
-    <form #registroForm="ngForm" (ngSubmit)="registrarInvitado()" novalidate>
+    <form #registroForm="ngForm" (ngSubmit)="registrar()" novalidate>
       <div class="mb-3">
         <label for="exampleFormControlInput1" class="form-label">Nombre completo</label>
         <input type="text" [(ngModel)]="invitado.Nombre_completo" name="nombre" class="form-control" id="exampleFormControlInput1" placeholder="Juan Pérez" required>

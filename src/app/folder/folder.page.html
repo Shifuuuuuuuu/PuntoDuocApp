@@ -1,5 +1,5 @@
 <ion-header [translucent]="true">
-  <ion-toolbar color="primary">
+  <ion-toolbar >
     <ion-buttons slot="end">
       <ion-button size="large" [routerLink]="['/perfil-usuario']">
         <ion-icon name="person-circle-outline"></ion-icon>
@@ -10,13 +10,14 @@
   </ion-toolbar>
 </ion-header>
 
-<ion-content [fullscreen]="true">
+<ion-content [fullscreen]="true" class="content-center">
   <ion-header collapse="condense">
     <ion-toolbar>
       <ion-title size="large">{{ folder }}</ion-title>
     </ion-toolbar>
   </ion-header>
 
+  <!-- Barra de búsqueda y botón de filtros -->
   <div class="search-container">
     <ion-searchbar
       animated="true"
@@ -25,11 +26,12 @@
       (ionInput)="filterEvents()">
     </ion-searchbar>
 
-    <ion-button color="light" aria-label="Filter" class="heart-button" (click)="toggleFilters()">
+    <ion-button color="light" aria-label="Filter" class="filter-button" (click)="toggleFilters()">
       <ion-icon name="options-outline"></ion-icon>
     </ion-button>
   </div>
 
+  <!-- Contenedor de filtros (se muestra debajo de la barra de búsqueda) -->
   <div class="filter-container" [class.expanded]="showFilters">
     <ion-list>
       <ion-item>
@@ -48,22 +50,39 @@
     </ion-list>
   </div>
 
-  <!-- Contenedor con scroll para las tarjetas -->
-  <div class="card-container">
-    <div *ngFor="let event of filteredEvents" class="card" style="width: 18rem;">
-      <img [src]="event.imagen" class="card-img-top" alt="Imagen del evento"> <!-- Cambia la imagen según sea necesario -->
-      <div class="card-body">
-        <h6>{{ event.fecha | date: 'short' }}</h6>
-        <h5 class="card-title">{{ event.titulo }}</h5>
-        <ion-button (click)="event.show = !event.show">Ver evento</ion-button>
+  <!-- Listado de eventos -->
+  <ion-grid>
+    <ion-row justify-content-center align-items-center>
+      <ion-col size="12" size-md="8" size-lg="6">
+        <ion-list>
+          <ion-item *ngFor="let event of filteredEvents" lines="none" class="event-item">
+            <ion-card class="event-card">
+              <img alt="Imagen del evento" [src]="event.imagen" class="event-image"/>
+              <ion-card-header>
+                <ion-card-title (click)="toggleDescription(event)" class="centered-text">{{ event.titulo }}</ion-card-title>
+              </ion-card-header>
 
-        <div *ngIf="event.show">
-          <p class="card-text">{{ event.descripcion }}</p>
-          <ion-button (click)="presentAlert()">Inscribirse</ion-button>
-        </div>
-      </div>
-    </div>
-  </div>
+              <ion-card-content class="centered-content">
+                <p *ngIf="event.show">{{ event.descripcion }}</p>
+                <p>Cupos disponibles: {{ event.Cupos }}</p>
+
+                <!-- Mensaje que indica si el usuario ya está inscrito -->
+                <p *ngIf="event.estaInscrito" class="inscrito-text">¡Ya estás inscrito en este evento!</p>
+
+                <!-- Botón de inscripción o cancelación -->
+                <ion-button
+                  [color]="event.estaInscrito ? 'danger' : 'primary'"
+                  (click)="event.estaInscrito ? cancelarInscripcion(event.id_evento) : presentAlert(event)"
+                  expand="block">
+                  {{ event.estaInscrito ? 'Cancelar inscripción' : 'Inscribirse' }}
+                </ion-button>
+              </ion-card-content>
+            </ion-card>
+          </ion-item>
+        </ion-list>
+      </ion-col>
+    </ion-row>
+  </ion-grid>
 </ion-content>
 
 

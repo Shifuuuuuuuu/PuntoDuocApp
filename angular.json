@@ -18,7 +18,9 @@
             "main": "src/main.ts",
             "polyfills": "src/polyfills.ts",
             "tsConfig": "tsconfig.app.json",
-            "inlineStyleLanguage": "scss",
+            "inlineStyleLanguage": "scss","allowedCommonJsDependencies": [
+    "qrcode"
+],
             "assets": [
               {
                 "glob": "**/*",
