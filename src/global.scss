@@ -35,3 +35,19 @@
 /* @import "@ionic/angular/css/palettes/dark.always.css"; */
 /* @import "@ionic/angular/css/palettes/dark.class.css"; */
 @import "@ionic/angular/css/palettes/dark.system.css";
+// src/styles.scss
+
+// Definición de variables de color
+$color-dark: #1A1A1A;
+$color-gray: #666666;
+$color-yellow: #FFB800;
+
+// Ejemplo de uso de las variables
+body {
+  background-color: $color-dark;
+  color: $color-gray;
+}
+
+.highlight {
+  color: $color-yellow;
+}

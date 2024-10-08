@@ -1,9 +1,9 @@
 <ion-header [translucent]="true">
   <ion-toolbar>
-    <!-- Botón de retroceso y botón para abrir el menú -->
     <ion-title>Iniciar sesión</ion-title>
   </ion-toolbar>
 </ion-header>
+
 <ion-content [fullscreen]="true" class="ion-padding">
   <div class="form-container">
     <form #loginForm="ngForm" (ngSubmit)="iniciarSesion()" novalidate>
@@ -28,29 +28,25 @@
           La contraseña debe tener entre 8 y 20 caracteres.
         </div>
       </div>
-      <!-- Recordar contraseña automáticamente -->
+
       <div class="mb-3 remember-me">
         <ion-checkbox slot="start" [(ngModel)]="rememberMe" name="rememberMe"></ion-checkbox>
         <label for="rememberMe">Recordar contraseña automáticamente</label>
       </div>
-      <!-- Recordar contraseña olvidada -->
+
       <div class="forgot-password">
         <a [routerLink]="['/recuperar-contraseña']">¿Olvidaste tu contraseña?</a>
       </div>
-      <!-- Botones -->
+
       <div class="button-group">
-        <ion-button expand="block" color="primary" [disabled]="loginForm.invalid" type="submit">Iniciar sesión</ion-button>
-        <ion-button expand="block" color="secondary" [routerLink]="['/registrar-usuarios']">Registrar cuenta</ion-button>
-        <ion-button expand="block" color="secondary" [routerLink]="['/registrar-invitado']">Modo invitado</ion-button>
+        <ion-button class="yellow-button" expand="block" [disabled]="loginForm.invalid" type="submit">Iniciar sesión</ion-button>
+        <ion-button class="yellow-button" expand="block" [routerLink]="['/registrar-usuarios']">Registrar cuenta</ion-button>
+        <ion-button class="yellow-button" expand="block" [routerLink]="['/registrar-invitado']">Modo invitado</ion-button>
       </div>
-      <!-- Mensaje de error -->
+
       <div *ngIf="errorMessage" class="text-danger">
         {{ errorMessage }}
       </div>
     </form>
   </div>
 </ion-content>
-
-
-
-

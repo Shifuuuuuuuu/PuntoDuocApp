@@ -1,51 +1,105 @@
+// Define las variables de color
+$color-dark: #1A1A1A;
+$color-gray: #666666;
+$color-yellow: #FFB800;
+$color-white: #ffffff;
+
+// Estilo para el contenedor del formulario
 .form-container {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+ 
+  color: $color-yellow;
+}
+
+// Márgenes para los elementos del formulario
+.mb-3 {
+  width: 100%;
+  max-width: 300px;
+
+
+
+  .form-control {
+    background-color: $color-white;
+    color: $color-dark;
+    border: none;
+
+    &::placeholder {
+      color: $color-dark;
+    }
   }
 
-  .mb-3 {
-    width: 100%;
-    max-width: 300px;
-  }
-
-  .remember-me {
-    display: flex;
-    align-items: center;
-    width: 100%;
-    max-width: 300px;
-    margin-bottom: 10px;
-  }
-
-  .forgot-password {
-    width: 100%;
-    max-width: 300px;
-    text-align: right;
-    margin-bottom: 10px;
-  }
-
-  .button-group {
-    display: flex;
-    flex-direction: column;
-    width: 100%;
-    max-width: 300px;
-    gap: 10px;
-    margin-top: 20px;
-  }
-
-  .forgot-password a {
-    color: var(--ion-color-primary);
-    text-decoration: none;
-    font-size: 0.9em;
-  }
   .clear-button {
     position: absolute;
     right: 10px;
     top: 50%;
     transform: translateY(-50%);
-    background: black;
+    background: $color-dark;
     border: none;
     cursor: pointer;
+    color: $color-yellow;
   }
+
+  .text-danger {
+    color: $color-yellow;
+  }
+}
+
+// Estilo para la sección de "Recordar contraseña automáticamente"
+.remember-me {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  max-width: 300px;
+  margin-bottom: 10px;
+  color: $color-dark;
+
+  ion-checkbox {
+    --background: $color-gray;
+    --checkmark-color: $color-dark;
+  }
+
+  label {
+    margin-left: 8px;
+  }
+}
+
+// Estilo para la sección de "Olvidaste tu contraseña"
+.forgot-password {
+  width: 100%;
+  max-width: 300px;
+  text-align: right;
+  margin-bottom: 10px;
+
+  a {
+    color: $color-yellow;
+    text-decoration: none;
+    font-size: 0.9em;
+  }
+}
+
+// Estilo para el grupo de botones
+.button-group {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  max-width: 300px;
+  gap: 10px;
+  margin-top: 20px;
+
+  .yellow-button {
+    --background: $color-yellow !important;
+    --color: $color-dark !important;
+    --background-activated: darken($color-yellow, 10%) !important;
+    --background-focused: lighten($color-yellow, 10%) !important;
+    --background-hover: lighten($color-yellow, 20%) !important;
+  }
+}
+
+// Estilo para el mensaje de error
+.text-danger {
+  color: $color-yellow;
+}
