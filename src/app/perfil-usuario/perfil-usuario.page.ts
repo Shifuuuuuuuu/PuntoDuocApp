@@ -4,6 +4,8 @@ import { Invitado } from '../interface/IInvitado';
 import { AuthService } from '../services/auth.service';
 import { InvitadoService } from '../services/invitado.service';
 import { Router } from '@angular/router';
+import { QRCodeData } from '../interface/IQR';
+import { EstudianteService } from '../services/estudiante.service';
 
 @Component({
   selector: 'app-perfil-usuario',
@@ -16,17 +18,19 @@ export class PerfilUsuarioPage implements OnInit {
   isEditing: boolean = false;
   userEmail!: string | undefined;
   errorMessage: string | undefined;
-  isQrExpanded: boolean = false;
+  qrData: string = '';
+  isInvitado: boolean = false;
 
   constructor(
     private authService: AuthService,
     private invitadoService: InvitadoService,
+    private estudianteService: EstudianteService,
     private router: Router
   ) {}
 
   ngOnInit() {
     // Obtener el correo electrónico del usuario autenticado desde AuthService
-    this.userEmail = this.authService.currentUserEmail;
+    this.userEmail = this.authService.getCurrentUserEmail();
 
     if (!this.userEmail) {
       // Intentar obtener el correo del invitado desde InvitadoService
@@ -52,19 +56,25 @@ export class PerfilUsuarioPage implements OnInit {
       const estudianteResult = await this.authService.getEstudianteByEmail(this.userEmail);
       if (estudianteResult) {
         this.estudiante = estudianteResult;
+        this.isInvitado = false;
+        this.generateQrData();
       } else {
-        this.invitado = await this.invitadoService.obtenerInvitadoPorEmail(this.userEmail);
-
-        if (!this.invitado) {
+        const invitadoResult = await this.invitadoService.obtenerInvitadoPorEmail(this.userEmail);
+        if (invitadoResult) {
+          this.invitado = invitadoResult;
+          this.isInvitado = true;
+          this.generateQrData();
+        } else {
           console.error('No se encontró ningún invitado con ese email.');
           this.router.navigate(['/folder/Inicio']);
         }
       }
     } catch (error) {
       console.error('Error al cargar los datos del usuario:', error);
+      this.errorMessage = 'Error al cargar los datos del usuario.';
       this.router.navigate(['/folder/Inicio']);
     }
-}
+  }
 
   async logout() {
     try {
@@ -84,16 +94,37 @@ export class PerfilUsuarioPage implements OnInit {
       try {
         await this.authService.updateEstudiante(this.estudiante);
         this.isEditing = false;
+        this.generateQrData(); // Actualizar QR después de guardar cambios
       } catch (error) {
         console.error('Error al actualizar el perfil del estudiante:', error);
+        this.errorMessage = 'Error al actualizar el perfil del estudiante.';
       }
     } else if (this.invitado) {
       try {
         await this.invitadoService.updateInvitado(this.invitado);
         this.isEditing = false;
+        this.generateQrData(); // Actualizar QR después de guardar cambios
       } catch (error) {
         console.error('Error al actualizar el perfil del invitado:', error);
+        this.errorMessage = 'Error al actualizar el perfil del invitado.';
       }
     }
+  }
+
+  generateQrData() {
+    const eventosInscritos = this.isInvitado
+      ? this.invitado?.eventosInscritos || []
+      : this.estudiante?.eventosInscritos || [];
+
+    const qrDataObject: QRCodeData = {
+      qrData: JSON.stringify({
+        userId: this.isInvitado ? this.invitado?.id_Invitado : this.estudiante?.id_estudiante,
+        eventosInscritos: eventosInscritos
+      }),
+      userId: this.isInvitado ? (this.invitado?.id_Invitado || '') : (this.estudiante?.id_estudiante || ''),
+      eventosInscritos: eventosInscritos
+    };
+
+    this.qrData = qrDataObject.qrData;
   }
 }

@@ -6,4 +6,5 @@ export interface Invitado {
     Rut: string;
     Telefono: string;
     codigoQr?: string;
+    eventosInscritos?: string[];
   }

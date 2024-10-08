@@ -7,4 +7,5 @@ export interface Estudiante {
   Telefono: string;
   carrera: string; // Nuevo campo para la carrera
   codigoQr?: string;
+  eventosInscritos?: string[];
 }

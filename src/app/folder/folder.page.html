@@ -10,6 +10,7 @@
   </ion-toolbar>
 </ion-header>
 
+<!-- folder.page.html -->
 <ion-content [fullscreen]="true" class="content-center">
   <ion-header collapse="condense">
     <ion-toolbar>
@@ -69,12 +70,16 @@
                 <!-- Mensaje que indica si el usuario ya está inscrito -->
                 <p *ngIf="event.estaInscrito" class="inscrito-text">¡Ya estás inscrito en este evento!</p>
 
+                <!-- Mensaje que indica si el evento está lleno -->
+                <p *ngIf="event.Cupos === 0" class="lleno-text">Este evento está lleno. Puedes unirte a la lista de espera.</p>
+
                 <!-- Botón de inscripción o cancelación -->
                 <ion-button
-                  [color]="event.estaInscrito ? 'danger' : 'primary'"
-                  (click)="event.estaInscrito ? cancelarInscripcion(event.id_evento) : presentAlert(event)"
-                  expand="block">
-                  {{ event.estaInscrito ? 'Cancelar inscripción' : 'Inscribirse' }}
+                  [color]="event.estaInscrito ? 'danger' : (event.Cupos === 0 ? (event.enListaEspera ? 'warning' : 'primary') : 'primary')"
+                  (click)="event.estaInscrito ? cancelarInscripcion(event.id_evento) : (event.enListaEspera ? null : presentAlert(event))"
+                  expand="block"
+                  [disabled]="event.enListaEspera">
+                  {{ event.estaInscrito ? 'Cancelar inscripción' : (event.Cupos === 0 ? (event.enListaEspera ? 'Ya estás en la lista de espera' : 'Unirse a lista de espera') : 'Inscribirse') }}
                 </ion-button>
               </ion-card-content>
             </ion-card>

@@ -1,34 +1,35 @@
 import { Injectable } from '@angular/core';
 import { AngularFirestore } from '@angular/fire/compat/firestore';
 import { Evento } from '../interface/IEventos';
+import { doc, updateDoc, increment, serverTimestamp, deleteDoc, arrayUnion, arrayRemove } from 'firebase/firestore';
 @Injectable({
   providedIn: 'root'
 })
 export class EventosService {
-  constructor(private firestore: AngularFirestore) {}
+ constructor(private firestore: AngularFirestore) {}
 
   // Método para inscribir a un usuario a un evento
-  async inscribirUsuario(eventoId: string, userId: string) {
+  async inscribirUsuario(eventoId: string, userId: string): Promise<void> {
+    const eventoDocRef = doc(this.firestore.firestore, 'Eventos', eventoId);
     const eventoDoc = await this.firestore.collection('Eventos').doc(eventoId).ref.get();
 
     if (eventoDoc.exists) {
       const eventoData = eventoDoc.data() as Evento;
 
       // Verifica si hay cupos disponibles
-      if (eventoData.Cupos > eventoData.inscritos) {
-        const inscritosActualizados = eventoData.inscritos + 1;
-
-        // Actualiza los datos en Firestore
-        await this.firestore.collection('Eventos').doc(eventoId).update({
-          inscritos: inscritosActualizados,
-          Cupos: eventoData.Cupos - 1
+      if (eventoData.Cupos > 0) {
+        // Actualiza los cupos y el número de inscritos
+        await updateDoc(eventoDocRef, {
+          Cupos: increment(-1),
+          inscritos: increment(1)
         });
 
-        // Guarda la inscripción del usuario en una colección adicional
-        await this.firestore.collection('Inscripciones').add({
+        // Guarda la inscripción del usuario en la colección 'Inscripciones'
+        const inscripcionesRef = this.firestore.collection('Inscripciones');
+        await inscripcionesRef.add({
           eventoId: eventoId,
           userId: userId,
-          timestamp: new Date()
+          timestamp: serverTimestamp()
         });
       } else {
         throw new Error('No hay cupos disponibles para este evento.');
@@ -39,27 +40,29 @@ export class EventosService {
   }
 
   // Método para cancelar la inscripción de un usuario a un evento
-  async cancelarInscripcion(eventoId: string, userId: string) {
-    const inscripcionQuery = this.firestore.collection('Inscripciones', ref => ref.where('eventoId', '==', eventoId).where('userId', '==', userId));
-    const inscripciones = await inscripcionQuery.get().toPromise();
+  async cancelarInscripcion(eventoId: string, userId: string): Promise<void> {
+    const inscripcionesRef = this.firestore.collection('Inscripciones', ref =>
+      ref.where('eventoId', '==', eventoId).where('userId', '==', userId)
+    );
 
-    if (inscripciones && !inscripciones.empty) {
-      const inscripcionId = inscripciones.docs[0].id;
+    const inscripcionesSnapshot = await inscripcionesRef.get().toPromise();
+
+    if (inscripcionesSnapshot && !inscripcionesSnapshot.empty) {
+      const inscripcionId = inscripcionesSnapshot.docs[0].id;
 
       // Elimina la inscripción
-      await this.firestore.collection('Inscripciones').doc(inscripcionId).delete();
+      const inscripcionDocRef = doc(this.firestore.firestore, 'Inscripciones', inscripcionId);
+      await deleteDoc(inscripcionDocRef);
 
-      // Actualiza el evento
-      const eventoDoc = await this.firestore.collection('Eventos').doc(eventoId).ref.get();
-      if (eventoDoc.exists) {
-        const eventoData = eventoDoc.data() as Evento;
-        const inscritosActualizados = eventoData.inscritos - 1;
+      // Actualiza los cupos y el número de inscritos
+      const eventoDocRef = doc(this.firestore.firestore, 'Eventos', eventoId);
+      await updateDoc(eventoDocRef, {
+        Cupos: increment(1),
+        inscritos: increment(-1)
+      });
 
-        await this.firestore.collection('Eventos').doc(eventoId).update({
-          inscritos: inscritosActualizados,
-          Cupos: eventoData.Cupos + 1
-        });
-      }
+      // Gestiona la lista de espera
+      await this.verificarListaEspera(eventoId);
     } else {
       throw new Error('No se encontró la inscripción para cancelar.');
     }
@@ -67,12 +70,106 @@ export class EventosService {
 
   // Método para verificar si un usuario está inscrito en un evento
   async isUserRegistered(eventoId: string, userId: string): Promise<boolean> {
-    const inscripciones = await this.firestore.collection('Inscripciones', ref => ref
-      .where('eventoId', '==', eventoId)
-      .where('userId', '==', userId))
-      .get()
-      .toPromise();
+    const inscripcionesRef = this.firestore.collection('Inscripciones', ref =>
+      ref.where('eventoId', '==', eventoId).where('userId', '==', userId)
+    );
 
-      return inscripciones !== undefined && !inscripciones.empty;
+    const inscripcionesSnapshot = await inscripcionesRef.get().toPromise();
+
+    return inscripcionesSnapshot ? !inscripcionesSnapshot.empty : false;
+  }
+
+  // Método para agregar a la lista de espera usando userId
+  async agregarUsuarioAListaEspera(eventoId: string, userId: string): Promise<void> {
+    if (!eventoId || !userId) {
+      console.error('Error: Evento ID o User ID no pueden estar vacíos');
+      throw new Error('Evento ID o User ID no pueden estar vacíos');
+    }
+
+    try {
+      const eventoDocRef = doc(this.firestore.firestore, 'Eventos', eventoId);
+      await updateDoc(eventoDocRef, {
+        listaEspera: arrayUnion(userId)
+      });
+
+      console.log('Usuario agregado a la lista de espera con userId:', userId);
+    } catch (error) {
+      console.error('Error al agregar usuario a la lista de espera:', error);
+      throw error;
+    }
+  }
+
+  // Método para inscribir a un usuario desde la lista de espera
+  async inscribirDesdeListaEspera(eventoId: string, userId: string): Promise<void> {
+    try {
+      // Inscribe al usuario
+      await this.inscribirUsuario(eventoId, userId);
+
+      // Elimina al usuario de la lista de espera
+      const eventoDocRef = doc(this.firestore.firestore, 'Eventos', eventoId);
+      await updateDoc(eventoDocRef, {
+        listaEspera: arrayRemove(userId)
+      });
+    } catch (error) {
+      console.error('Error al inscribir desde la lista de espera:', error);
+      throw error;
+    }
+  }
+
+  // Método para obtener los cupos disponibles
+  async obtenerCuposDisponibles(eventoId: string): Promise<number> {
+    if (!eventoId) {
+      console.error('Error: Evento ID no puede estar vacío');
+      return 0;
+    }
+
+    try {
+      const eventoSnapshot = await this.firestore.collection('Eventos').doc(eventoId).ref.get();
+
+      if (eventoSnapshot && eventoSnapshot.exists) {
+        const eventoData = eventoSnapshot.data() as Evento;
+        return eventoData.Cupos || 0;
+      }
+
+      return 0;
+    } catch (error) {
+      console.error('Error al obtener los cupos disponibles:', error);
+      return 0;
+    }
+  }
+
+  // Método para obtener la lista de espera
+  async obtenerListaEspera(eventoId: string): Promise<string[]> {
+    if (!eventoId) {
+      console.error('Error: Evento ID no puede estar vacío');
+      return [];
+    }
+
+    try {
+      const eventoSnapshot = await this.firestore.collection('Eventos').doc(eventoId).ref.get();
+
+      if (eventoSnapshot && eventoSnapshot.exists) {
+        const eventoData = eventoSnapshot.data() as Evento;
+        return eventoData.listaEspera || [];
+      }
+
+      return [];
+    } catch (error) {
+      console.error('Error al obtener la lista de espera:', error);
+      return [];
+    }
+  }
+
+  // Método para verificar y gestionar la lista de espera cuando se libera un cupo
+  async verificarListaEspera(eventoId: string): Promise<void> {
+    const cuposDisponibles = await this.obtenerCuposDisponibles(eventoId);
+    if (cuposDisponibles > 0) {
+      const listaEspera = await this.obtenerListaEspera(eventoId);
+      if (listaEspera.length > 0) {
+        const primerUserId = listaEspera[0];
+        await this.inscribirDesdeListaEspera(eventoId, primerUserId);
+        // Aquí podrías notificar al usuario que ha sido inscrito automáticamente
+      }
+    }
   }
 }
