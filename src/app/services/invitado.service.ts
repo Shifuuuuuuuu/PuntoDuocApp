@@ -3,13 +3,17 @@ import { Injectable } from '@angular/core';
 import { AngularFirestore } from '@angular/fire/compat/firestore';
 import { Invitado } from '../interface/IInvitado';
 import { map, Observable } from 'rxjs';
+import * as firebase from 'firebase/compat';
+import 'firebase/compat/firestore';
+import { doc, updateDoc, arrayUnion, arrayRemove } from 'firebase/firestore';
+
 
 @Injectable({
   providedIn: 'root'
 })
 export class InvitadoService {
   private invitadosCollection = this.firestore.collection<Invitado>('Usuario_Invitado');
-  public currentUserEmail: string | undefined;// Almacenamiento privado para el correo del usuario actual
+  public currentUserEmail: string | undefined; // Almacenamiento para el correo del usuario actual
 
   constructor(private firestore: AngularFirestore) {}
 
@@ -34,36 +38,35 @@ export class InvitadoService {
   async obtenerInvitadoPorEmail(email: string): Promise<Invitado | null> {
     // Verifica que el email no sea undefined o vacío
     if (!email) {
-        console.error('El email no puede ser undefined o vacío');
-        return null; // Devuelve null si el email no es válido
+      console.error('El email no puede ser undefined o vacío');
+      return null; // Devuelve null si el email no es válido
     }
 
     try {
-        // Realiza la consulta en Firestore para buscar el invitado por email
-        const snapshot = await this.invitadosCollection.ref.where('email', '==', email).get();
+      // Realiza la consulta en Firestore para buscar el invitado por email
+      const snapshot = await this.invitadosCollection.ref.where('email', '==', email).get();
 
-        // Verifica si se encontraron documentos
-        if (!snapshot.empty) {
-            const doc = snapshot.docs[0]; // Obtiene el primer documento
-            const data = doc.data() as Omit<Invitado, 'id_Invitado'>; // Omitimos 'id_Invitado'
+      // Verifica si se encontraron documentos
+      if (!snapshot.empty) {
+        const doc = snapshot.docs[0]; // Obtiene el primer documento
+        const data = doc.data() as Omit<Invitado, 'id_Invitado'>; // Omitimos 'id_Invitado'
 
-            // Asigna el correo al currentUserEmail
-            this.currentUserEmail = email;
+        // Asigna el correo al currentUserEmail
+        this.currentUserEmail = email;
 
-            // Devuelve el invitado encontrado
-            return { id_Invitado: doc.id, ...data };
-        }
+        // Devuelve el invitado encontrado
+        return { id_Invitado: doc.id, ...data };
+      }
 
-        // Si no se encontró ningún invitado, muestra una advertencia y devuelve null
-        console.warn('No se encontró ningún invitado con ese email.');
-        return null; // Devuelve null si no se encontró el invitado
+      // Si no se encontró ningún invitado, muestra una advertencia y devuelve null
+      console.warn('No se encontró ningún invitado con ese email.');
+      return null; // Devuelve null si no se encontró el invitado
     } catch (error) {
-        // Muestra un error en la consola si ocurre un problema
-        console.error('Error al obtener invitado por email:', error);
-        return null; // Devuelve null en caso de error
+      // Muestra un error en la consola si ocurre un problema
+      console.error('Error al obtener invitado por email:', error);
+      return null; // Devuelve null en caso de error
     }
-}
-
+  }
 
   // Actualizar un invitado
   async updateInvitado(invitado: Invitado): Promise<void> {
@@ -75,10 +78,10 @@ export class InvitadoService {
 
   // Guardar el código QR generado en el invitado
   async guardarCodigoQr(invitado: Invitado): Promise<void> {
-    if(!invitado.id_Invitado){
+    if (!invitado.id_Invitado) {
       throw new Error('El invitado no tiene un ID asignado');
     }
-    await this.firestore.collection('Usuario_Invitado').doc(invitado.id_Invitado).update(invitado)
+    await this.firestore.collection('Usuario_Invitado').doc(invitado.id_Invitado).update(invitado);
   }
 
   // Método para establecer el correo electrónico actual del usuario invitado
@@ -86,7 +89,20 @@ export class InvitadoService {
     this.currentUserEmail = email;
   }
 
-  // Método para obtener el correo electrónico actual del usuario invitado
+  // Método para agregar un evento al invitado
+  async agregarEventoAInvitado(invitadoId: string, eventoId: string): Promise<void> {
+    const invitadoDocRef = doc(this.firestore.firestore, 'Usuario_Invitado', invitadoId);
+    await updateDoc(invitadoDocRef, {
+      eventosInscritos: arrayUnion(eventoId)
+    });
+  }
 
+  // Método para eliminar un evento del invitado
+  async eliminarEventoDeInvitado(invitadoId: string, eventoId: string): Promise<void> {
+    const invitadoDocRef = doc(this.firestore.firestore, 'Usuario_Invitado', invitadoId);
+    await updateDoc(invitadoDocRef, {
+      eventosInscritos: arrayRemove(eventoId)
+    });
+  }
 }
 

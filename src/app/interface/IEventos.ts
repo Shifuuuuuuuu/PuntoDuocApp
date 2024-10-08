@@ -13,4 +13,6 @@ export interface Evento {
   titulo: string;
   show?: boolean;
   estaInscrito?: boolean;
+  listaEspera?: string[];
+  enListaEspera?: boolean;
 }

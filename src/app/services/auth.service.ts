@@ -7,7 +7,7 @@ import { Estudiante } from '../interface/IEstudiante';
   providedIn: 'root'
 })
 export class AuthService {
-  public currentUserEmail!: string ; // Cambiar a null por defecto
+  public currentUserEmail: string = ""; // Cambiar a "" por defecto
 
   constructor(private firestore: AngularFirestore) {}
 
@@ -34,10 +34,9 @@ export class AuthService {
     }
   }
 
-
   // Método para obtener el email del usuario actual
-  getCurrentUserEmail(): string | null {
-    return this.currentUserEmail; // Retorna el email actual o null
+  getCurrentUserEmail(): string | undefined {
+    return this.currentUserEmail || undefined; // Retorna el email actual o null
   }
 
   // Obtener estudiante por email
