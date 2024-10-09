@@ -11,6 +11,7 @@ import * as QRCode from 'qrcode';
 })
 export class RegistrarUsuariosPage implements OnInit {
 
+
   estudiante: Estudiante = {
     id_estudiante: '',
     password: '',
@@ -20,7 +21,7 @@ export class RegistrarUsuariosPage implements OnInit {
     Telefono: '',
     carrera: '',
     codigoQr: '',
-    puntaje: '',
+    puntaje: 0, // Inicializa el puntaje en 0
   };
 
   errorMessage: string = '';
@@ -53,7 +54,7 @@ export class RegistrarUsuariosPage implements OnInit {
             // Asegúrate de usar "codigoQr" con "Qr" en minúscula
             this.estudiante.codigoQr = await QRCode.toDataURL(qrData);
 
-            // Actualiza el estudiante con el código QR en Firestore
+            // Actualiza el estudiante con el código QR y el puntaje en Firestore
             await this.estudianteService.updateEstudiante({
               ...this.estudiante,
               id_estudiante: idEstudiante, // Asegúrate de incluir el ID
