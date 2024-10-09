@@ -19,7 +19,8 @@ export class RegistrarUsuariosPage implements OnInit {
     Rut: '',
     Telefono: '',
     carrera: '',
-    codigoQr: ''
+    codigoQr: '',
+    puntaje: '',
   };
 
   errorMessage: string = '';

@@ -8,4 +8,5 @@ export interface Estudiante {
   carrera: string; // Nuevo campo para la carrera
   codigoQr?: string;
   eventosInscritos?: string[];
+  puntaje: string;
 }
