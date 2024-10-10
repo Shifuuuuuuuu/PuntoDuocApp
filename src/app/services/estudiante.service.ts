@@ -51,4 +51,20 @@ export class EstudianteService {
       eventosInscritos: firebase.firestore.FieldValue.arrayRemove(eventoId)
     });
   }
+  async obtenerEstudiantePorId(id: string): Promise<Estudiante | null> {
+    try {
+      const estudianteDoc = await this.firestore.collection('Estudiantes').doc(id).get().toPromise();
+
+      if (estudianteDoc && estudianteDoc.exists) { // Verifica que estudianteDoc no sea undefined y que exista
+        const estudianteData = estudianteDoc.data() as Estudiante;
+        estudianteData.id_estudiante = estudianteDoc.id; // Asigna el ID al objeto
+        return estudianteData;
+      }
+
+      return null; // Si no existe el documento, devuelve null
+    } catch (error) {
+      console.error('Error al obtener el estudiante por ID:', error);
+      throw error; // Propaga el error hacia el llamador
+    }
+  }
 }

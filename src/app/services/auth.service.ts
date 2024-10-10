@@ -100,6 +100,7 @@ export class AuthService {
     }
   }
 
+
   // Método para actualizar un estudiante
   async updateEstudiante(estudiante: Estudiante): Promise<void> {
     if (!estudiante.id_estudiante) {
@@ -112,5 +113,6 @@ export class AuthService {
       throw error;
     }
   }
+
 
 }

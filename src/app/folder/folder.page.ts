@@ -8,6 +8,8 @@ import { EventosService } from '../services/eventos.service';
 import { AuthService } from '../services/auth.service';
 import { InvitadoService } from '../services/invitado.service';
 import { EstudianteService } from '../services/estudiante.service';
+import { Estudiante } from '../interface/IEstudiante';
+import { Invitado } from '../interface/IInvitado';
 @Component({
   selector: 'app-folder',
   templateUrl: './folder.page.html',
@@ -172,8 +174,30 @@ export class FolderPage implements OnInit {
           text: 'Sí',
           handler: async () => {
             try {
-              // Añadir al usuario a la lista de espera usando el ID
-              await this.eventosService.agregarUsuarioAListaEspera(event.id_evento, this.userId);
+              // Obtener el nombre del usuario dependiendo de si es Invitado o Estudiante
+              let userName = '';
+              let user: Estudiante | Invitado | null = null;
+
+              if (this.isInvitado) {
+                user = await this.invitadoService.obtenerInvitadoPorId(this.userId);
+                if (user) {
+                  userName = user.Nombre_completo || 'Invitado';
+                }
+              } else {
+                user = await this.estudianteService.obtenerEstudiantePorId(this.userId);
+                if (user) {
+                  userName = user.Nombre_completo || 'Estudiante';
+                }
+              }
+
+              // Verificar si se encontró al usuario
+              if (!user) {
+                throw new Error('No se pudo encontrar el usuario. Asegúrate de que estás registrado.');
+              }
+
+              // Añadir al usuario a la lista de espera usando el ID y nombre
+              await this.eventosService.agregarUsuarioAListaEspera(event.id_evento, this.userId, userName);
+
               // Mostrar un toast de confirmación
               const toast = await this.toastController.create({
                 message: 'Te has unido a la lista de espera.',
@@ -184,9 +208,10 @@ export class FolderPage implements OnInit {
               await toast.present();
             } catch (error) {
               console.error('Error al agregar a la lista de espera:', error);
+              const errorMessage = (error as Error).message || 'No se pudo agregar a la lista de espera. Inténtalo más tarde.';
               const errorAlert = await this.alertController.create({
                 header: 'Error',
-                message: 'No se pudo agregar a la lista de espera. Inténtalo más tarde.',
+                message: errorMessage,
                 buttons: ['OK']
               });
               await errorAlert.present();
@@ -197,7 +222,6 @@ export class FolderPage implements OnInit {
     });
     await alert.present();
   }
-
   // Método para manejar la inscripción desde la lista de espera
   async inscribirDesdeListaEspera(eventoId: string, userId: string) {
     try {

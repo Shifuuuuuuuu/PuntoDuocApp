@@ -1,7 +1,9 @@
 import { Injectable } from '@angular/core';
 import { AngularFirestore } from '@angular/fire/compat/firestore';
 import { Evento } from '../interface/IEventos';
-import { doc, updateDoc, increment, serverTimestamp, deleteDoc, arrayUnion, arrayRemove } from 'firebase/firestore';
+
+import 'firebase/firestore'; // Importar Firestore
+import { doc, updateDoc, increment, serverTimestamp, deleteDoc, arrayRemove, getFirestore, arrayUnion } from 'firebase/firestore';
 @Injectable({
   providedIn: 'root'
 })
@@ -79,24 +81,11 @@ export class EventosService {
     return inscripcionesSnapshot ? !inscripcionesSnapshot.empty : false;
   }
 
-  // Método para agregar a la lista de espera usando userId
-  async agregarUsuarioAListaEspera(eventoId: string, userId: string): Promise<void> {
-    if (!eventoId || !userId) {
-      console.error('Error: Evento ID o User ID no pueden estar vacíos');
-      throw new Error('Evento ID o User ID no pueden estar vacíos');
-    }
-
-    try {
-      const eventoDocRef = doc(this.firestore.firestore, 'Eventos', eventoId);
-      await updateDoc(eventoDocRef, {
-        listaEspera: arrayUnion(userId)
-      });
-
-      console.log('Usuario agregado a la lista de espera con userId:', userId);
-    } catch (error) {
-      console.error('Error al agregar usuario a la lista de espera:', error);
-      throw error;
-    }
+  async agregarUsuarioAListaEspera(eventoId: string, userId: string, userName: string): Promise<void> {
+    const eventoDocRef = doc(this.firestore.firestore, 'Eventos', eventoId);
+    await updateDoc(eventoDocRef, {
+      listaEspera: arrayUnion({ userId, userName })
+    });
   }
 
   // Método para inscribir a un usuario desde la lista de espera
@@ -172,4 +161,5 @@ export class EventosService {
       }
     }
   }
+
 }

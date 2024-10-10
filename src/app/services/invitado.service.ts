@@ -108,5 +108,21 @@ export class InvitadoService {
   private getStoredUserEmail(): string | undefined {
     return localStorage.getItem('currentUserEmail') || undefined;
   }
+  async obtenerInvitadoPorId(id: string): Promise<Invitado | null> {
+    try {
+      const invitadoDoc = await this.firestore.collection('Invitados').doc(id).get().toPromise();
+
+      if (invitadoDoc && invitadoDoc.exists) { // Verifica que invitadoDoc no sea undefined y que exista
+        const invitadoData = invitadoDoc.data() as Invitado;
+        invitadoData.id_Invitado = invitadoDoc.id; // Asigna el ID al objeto
+        return invitadoData;
+      }
+
+      return null; // Si no existe el documento, devuelve null
+    } catch (error) {
+      console.error('Error al obtener el invitado por ID:', error);
+      throw error; // Propaga el error hacia el llamador
+    }
+  }
 }
 
