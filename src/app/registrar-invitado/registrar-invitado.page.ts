@@ -53,7 +53,8 @@ export class RegistrarInvitadoPage implements OnInit {
             await this.invitadoService.guardarCodigoQr({
               ...this.invitado,
               id_Invitado: idInvitado, // Asegúrate de incluir el ID
-              codigoQr: this.invitado.codigoQr}); // Guarda el QR en Firestore
+              codigoQr: this.invitado.codigoQr // Guarda el QR en Firestore
+            });
 
             console.log('Invitado registrado correctamente');
             this.router.navigate(['/folder/Inicio']);
@@ -67,4 +68,5 @@ export class RegistrarInvitadoPage implements OnInit {
 
   ngOnInit() {}
 }
+
 

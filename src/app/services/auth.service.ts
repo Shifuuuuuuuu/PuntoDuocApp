@@ -1,70 +1,116 @@
 import { Injectable } from '@angular/core';
 import { AngularFirestore } from '@angular/fire/compat/firestore';
 import { Estudiante } from '../interface/IEstudiante';
+import { BehaviorSubject, Observable } from 'rxjs';
+import { AngularFireAuth } from '@angular/fire/compat/auth';
 
 
 @Injectable({
   providedIn: 'root'
 })
 export class AuthService {
-  public currentUserEmail: string = ""; // Cambiar a "" por defecto
+  // BehaviorSubject para manejar el estado del correo electrónico actual
+  private currentUserEmailSubject: BehaviorSubject<string | undefined> = new BehaviorSubject<string | undefined>(this.getStoredUserEmail());
+  public currentUserEmail$: Observable<string | undefined> = this.currentUserEmailSubject.asObservable();
 
   constructor(private firestore: AngularFirestore) {}
 
-  // Método para iniciar sesión basado en Firestore
+  // Método privado para obtener el correo electrónico almacenado en localStorage
+  private getStoredUserEmail(): string | undefined {
+    return localStorage.getItem('currentUserEmail') || undefined;
+  }
+
+  // Método para establecer el correo electrónico actual del usuario estudiante
+  setCurrentUserEmail(email: string): void {
+    console.log('AuthService: Estableciendo currentUserEmail a', email);
+    this.currentUserEmailSubject.next(email);
+    localStorage.setItem('currentUserEmail', email);
+  }
+
+  // Método para obtener el correo electrónico actual como observable
+  getCurrentUserEmail(): Observable<string | undefined> {
+    return this.currentUserEmail$;
+  }
+
+  // Método para obtener el correo electrónico actual de forma síncrona (si está disponible)
+  getCurrentUserEmailSync(): string | undefined {
+    return this.currentUserEmailSubject.getValue() || localStorage.getItem('currentUserEmail') || undefined;
+  }
+
+  // Método de inicio de sesión para estudiantes
   async login(email: string, password: string): Promise<Estudiante | null> {
-    const querySnapshot = await this.firestore.collection<Estudiante>('estudiantes', ref =>
-      ref.where('email', '==', email)
-    ).get().toPromise();
+    try {
+      // Buscar al estudiante en la colección 'Estudiantes' con el email proporcionado
+      const estudianteSnapshot = await this.firestore.collection<Estudiante>('Estudiantes', ref => ref.where('email', '==', email)).get().toPromise();
 
-    if (querySnapshot && !querySnapshot.empty) {
-      const studentData = querySnapshot.docs[0].data() as Estudiante;
+      if (estudianteSnapshot && !estudianteSnapshot.empty) {
+        const estudianteDoc = estudianteSnapshot.docs[0];
+        const estudianteData = estudianteDoc.data() as Estudiante;
 
-      // Verifica si la contraseña coincide
-      if (studentData.password === password) {
-        this.currentUserEmail = studentData.email; // Establece el email del usuario
-        return studentData; // Devuelve el objeto del estudiante
+        // Verificar la contraseña (asegúrate de que las contraseñas estén almacenadas de forma segura, preferiblemente hasheadas)
+        if (estudianteData.password === password) {
+          estudianteData.id_estudiante = estudianteDoc.id;
+
+          // Establecer el correo electrónico en el BehaviorSubject y localStorage
+          this.setCurrentUserEmail(email);
+
+          return estudianteData;
+        } else {
+          // Contraseña incorrecta
+          return null;
+        }
       } else {
-        console.error('Contraseña incorrecta');
-        return null; // Contraseña incorrecta
+        // No se encontró al estudiante
+        return null;
       }
-    } else {
-      console.error('Usuario no encontrado');
-      return null; // No coincide ningún documento, usuario no encontrado
+    } catch (error) {
+      console.error('Error en AuthService.login:', error);
+      throw error;
     }
-  }
-
-  // Método para obtener el email del usuario actual
-  getCurrentUserEmail(): string | undefined {
-    return this.currentUserEmail || undefined; // Retorna el email actual o null
-  }
-
-  // Obtener estudiante por email
-  async getEstudianteByEmail(email: string): Promise<Estudiante | undefined> {
-    // Verifica que el email no sea undefined
-    if (!email) {
-      console.error('El email no puede ser undefined');
-      return undefined;
-    }
-
-    const snapshot = await this.firestore.collection<Estudiante>('estudiantes', ref => ref.where('email', '==', email)).get().toPromise();
-
-    if (snapshot && !snapshot.empty) {
-      const estudianteData = snapshot.docs[0].data() as Estudiante;
-      estudianteData.id_estudiante = snapshot.docs[0].id; // Guarda el ID para las actualizaciones
-      return estudianteData;
-    }
-    return undefined;
-  }
-
-  // Actualizar estudiante
-  async updateEstudiante(estudiante: Estudiante): Promise<void> {
-    await this.firestore.collection('estudiantes').doc(estudiante.id_estudiante).update(estudiante);
   }
 
   // Método para cerrar sesión
   async logout(): Promise<void> {
-    this.currentUserEmail = ""; // Limpia el email del usuario actual
-    return Promise.resolve(); // Ajusta esto según tu implementación
+    try {
+      // Limpiar el correo electrónico
+      this.currentUserEmailSubject.next(undefined);
+      localStorage.removeItem('currentUserEmail');
+    } catch (error) {
+      console.error('Error en AuthService.logout:', error);
+      throw error;
+    }
   }
+
+  // Método para obtener un estudiante por correo electrónico
+  async getEstudianteByEmail(email: string): Promise<Estudiante | null> {
+    try {
+      const estudianteSnapshot = await this.firestore.collection<Estudiante>('Estudiantes', ref => ref.where('email', '==', email)).get().toPromise();
+
+      if (estudianteSnapshot && !estudianteSnapshot.empty) {
+        const estudianteDoc = estudianteSnapshot.docs[0];
+        const estudianteData = estudianteDoc.data() as Estudiante;
+        estudianteData.id_estudiante = estudianteDoc.id;
+        return estudianteData;
+      }
+
+      return null;
+    } catch (error) {
+      console.error('Error en AuthService.getEstudianteByEmail:', error);
+      throw error;
+    }
+  }
+
+  // Método para actualizar un estudiante
+  async updateEstudiante(estudiante: Estudiante): Promise<void> {
+    if (!estudiante.id_estudiante) {
+      throw new Error('El estudiante no tiene un ID asignado');
+    }
+    try {
+      await this.firestore.collection('Estudiantes').doc(estudiante.id_estudiante).update(estudiante);
+    } catch (error) {
+      console.error('Error en AuthService.updateEstudiante:', error);
+      throw error;
+    }
+  }
+
 }

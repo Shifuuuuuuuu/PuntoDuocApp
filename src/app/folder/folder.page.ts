@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { AngularFirestore } from '@angular/fire/compat/firestore';
 import { ActivatedRoute, Router } from '@angular/router';
 import { AlertController, ToastController } from '@ionic/angular';
-import { Observable } from 'rxjs';
+import { Observable, Subscription } from 'rxjs';
 import { Evento } from '../interface/IEventos';
 import { EventosService } from '../services/eventos.service';
 import { AuthService } from '../services/auth.service';
@@ -22,51 +22,67 @@ export class FolderPage implements OnInit {
   userId: string = ''; // ID del usuario autenticado
   isInvitado: boolean = false; // Indicador para saber si el usuario es un invitado
 
+  private authSubscription!: Subscription;
+  private invitadoSubscription!: Subscription;
+
   constructor(
     private firestore: AngularFirestore,
     private alertController: AlertController,
-    private toastController: ToastController, // Añadido para los toasts
+    private toastController: ToastController,
     private router: Router,
     private activatedRoute: ActivatedRoute,
     private eventosService: EventosService,
     private authService: AuthService,
     private invitadoService: InvitadoService,
-    private estudianteService: EstudianteService // Añadido
-  ) {
-    // this.loadEvents(); // Eliminar esta línea
-  }
+    private estudianteService: EstudianteService
+  ) {}
 
   ngOnInit() {
     this.folder = this.activatedRoute.snapshot.paramMap.get('id') as string;
-    const email = this.authService.getCurrentUserEmail();
-    console.log('Llamando a loadEvents con userId:', this.userId);
-    this.loadEvents();
 
-    if (email) {
-      // Verificar si el usuario es estudiante o invitado
-      Promise.all([
-        this.authService.getEstudianteByEmail(email),
-        this.invitadoService.obtenerInvitadoPorEmail(email),
-      ])
-        .then(([estudiante, invitado]) => {
-          if (estudiante) {
-            this.userId = estudiante.id_estudiante!;
-            this.isInvitado = false;
-          } else if (invitado) {
+    // Suscribirse al observable de AuthService para Estudiantes
+    this.authSubscription = this.authService.getCurrentUserEmail().subscribe(async emailEstudiante => {
+      if (emailEstudiante) {
+        console.log('Usuario Estudiante autenticado con email:', emailEstudiante);
+        const estudiante = await this.authService.getEstudianteByEmail(emailEstudiante);
+        if (estudiante) {
+          this.userId = estudiante.id_estudiante!;
+          this.isInvitado = false;
+          this.loadEvents();
+          return;
+        }
+      }
+
+      // Si no es Estudiante, suscribirse a InvitadoService para Invitados
+      this.invitadoSubscription = this.invitadoService.getCurrentUserEmail().subscribe(async emailInvitado => {
+        if (emailInvitado) {
+          console.log('Usuario Invitado autenticado con email:', emailInvitado);
+          const invitado = await this.invitadoService.obtenerInvitadoPorEmail(emailInvitado);
+          if (invitado) {
             this.userId = invitado.id_Invitado!;
             this.isInvitado = true;
+            this.loadEvents();
+            return;
           }
-          this.loadEvents(); // Llamar a loadEvents una vez que se haya determinado el userId
-        })
-        .catch((error) => {
-          console.error('Error al obtener usuario:', error);
-        });
-    } else {
-      console.error('No hay un usuario autenticado');
+        }
+
+        // Si no se encuentra ningún usuario autenticado
+        console.error('No hay un usuario autenticado');
+        this.router.navigate(['/iniciar-sesion']);
+      });
+    });
+  }
+
+  ngOnDestroy() {
+    if (this.authSubscription) {
+      this.authSubscription.unsubscribe();
+    }
+    if (this.invitadoSubscription) {
+      this.invitadoSubscription.unsubscribe();
     }
   }
 
-  loadEvents() {
+  async loadEvents() {
     this.Eventos = this.firestore.collection<Evento>('Eventos').valueChanges();
     this.Eventos.subscribe((data) => {
       console.log('Eventos obtenidos:', data); // Log para depuración

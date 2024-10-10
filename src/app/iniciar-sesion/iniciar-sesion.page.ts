@@ -33,7 +33,7 @@ export class IniciarSesionPage implements OnInit {
 
     // Verifica si el usuario es un invitado por su correo utilizando `subscribe`
     this.invitadoService.verificarInvitadoPorCorreo(this.user.email)
-      .subscribe((esInvitado: boolean) => { // Asegúrate de que `esInvitado` sea de tipo `boolean`
+      .subscribe((esInvitado: boolean) => {
         if (esInvitado) {
           // Si es un invitado, obtener su información y redirigir
           this.invitadoService.obtenerInvitadoPorEmail(this.user.email)
@@ -41,9 +41,14 @@ export class IniciarSesionPage implements OnInit {
               if (invitado && invitado.password === this.user.password) {
                 // Inicio de sesión exitoso para el invitado
                 console.log('Inicio de sesión como invitado exitoso:', invitado);
+
+                // Establecer el correo electrónico en InvitadoService
+                this.invitadoService.setCurrentUserEmail(this.user.email);
+
+                // Navegar a la página de inicio
                 this.router.navigate(['/folder/Inicio']);
               } else {
-                this.errorMessage = 'Correo o contraseña incorrectos.';
+                this.errorMessage = 'Correo o contraseña incorrectos para el invitado.';
               }
             })
             .catch((error: any) => { // Especifica el tipo `error`
@@ -55,9 +60,13 @@ export class IniciarSesionPage implements OnInit {
           this.authService.login(this.user.email, this.user.password)
             .then((studentData) => {
               if (studentData) {
+                // Establecer el correo electrónico en AuthService
+                this.authService.setCurrentUserEmail(this.user.email);
+
+                // Navegar a la página de inicio
                 this.router.navigate(['/folder/Inicio']);
               } else {
-                this.errorMessage = 'Correo o contraseña incorrectos.';
+                this.errorMessage = 'Correo o contraseña incorrectos para el estudiante.';
               }
             })
             .catch((error: any) => { // Especifica el tipo `error`

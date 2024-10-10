@@ -6,7 +6,7 @@ import { InvitadoService } from '../services/invitado.service';
 import { Router } from '@angular/router';
 import { QRCodeData } from '../interface/IQR';
 import { EstudianteService } from '../services/estudiante.service';
-
+import { Subscription } from 'rxjs';
 @Component({
   selector: 'app-perfil-usuario',
   templateUrl: './perfil-usuario.page.html',
@@ -21,28 +21,44 @@ export class PerfilUsuarioPage implements OnInit {
   qrData: string = '';
   isInvitado: boolean = false;
 
+  private authSubscription!: Subscription;
+  private invitadoSubscription!: Subscription;
+
   constructor(
     private authService: AuthService,
     private invitadoService: InvitadoService,
-    private estudianteService: EstudianteService,
     private router: Router
   ) {}
 
   ngOnInit() {
-    // Obtener el correo electrónico del usuario autenticado desde AuthService
-    this.userEmail = this.authService.getCurrentUserEmail();
+    // Suscribirse al observable de AuthService para Estudiantes
+    this.authSubscription = this.authService.getCurrentUserEmail().subscribe(email => {
+      if (email) {
+        this.userEmail = email;
+        this.loadUserData();
+      } else {
+        // Si no hay email en AuthService, suscribirse a InvitadoService
+        this.invitadoSubscription = this.invitadoService.getCurrentUserEmail().subscribe(invEmail => {
+          if (invEmail) {
+            this.userEmail = invEmail;
+            this.loadUserData();
+          } else {
+            this.errorMessage = 'Error: currentUserEmail no está definido. Asegúrate de que el usuario haya iniciado sesión correctamente.';
+            console.error(this.errorMessage);
+            this.router.navigate(['/iniciar-sesion']);
+          }
+        });
+      }
+    });
+  }
 
-    if (!this.userEmail) {
-      // Intentar obtener el correo del invitado desde InvitadoService
-      this.userEmail = this.invitadoService.currentUserEmail;
+  ngOnDestroy() {
+    // Desuscribirse para evitar fugas de memoria
+    if (this.authSubscription) {
+      this.authSubscription.unsubscribe();
     }
-
-    if (!this.userEmail) {
-      this.errorMessage = 'Error: currentUserEmail no está definido. Asegúrate de que el usuario haya iniciado sesión correctamente.';
-      console.error(this.errorMessage);
-      this.router.navigate(['/iniciar-sesion']);
-    } else {
-      this.loadUserData();
+    if (this.invitadoSubscription) {
+      this.invitadoSubscription.unsubscribe();
     }
   }
 
@@ -66,13 +82,13 @@ export class PerfilUsuarioPage implements OnInit {
           this.generateQrData();
         } else {
           console.error('No se encontró ningún invitado con ese email.');
-          this.router.navigate(['/folder/Inicio']);
+          this.router.navigate(['/iniciar-sesion']);
         }
       }
     } catch (error) {
       console.error('Error al cargar los datos del usuario:', error);
       this.errorMessage = 'Error al cargar los datos del usuario.';
-      this.router.navigate(['/folder/Inicio']);
+      this.router.navigate(['/iniciar-sesion']);
     }
   }
 
