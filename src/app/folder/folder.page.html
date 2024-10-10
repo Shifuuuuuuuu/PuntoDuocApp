@@ -70,6 +70,9 @@
                 <!-- Mensaje que indica si el usuario ya está inscrito -->
                 <p *ngIf="event.estaInscrito" class="inscrito-text">¡Ya estás inscrito en este evento!</p>
 
+                <!-- Mensaje que indica si el usuario está en la lista de espera -->
+                <p *ngIf="event.enListaEspera" class="en-lista-espera-text">¡Ya estás en la lista de espera!</p>
+
                 <!-- Mensaje que indica si el evento está lleno -->
                 <p *ngIf="event.Cupos === 0" class="lleno-text">Este evento está lleno. Puedes unirte a la lista de espera.</p>
 

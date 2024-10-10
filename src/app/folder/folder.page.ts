@@ -110,6 +110,21 @@ export class FolderPage implements OnInit {
                   console.error('Error al verificar inscripción:', error);
                   event.estaInscrito = false;
                 });
+
+              // Verificar si el usuario está en la lista de espera
+              this.eventosService
+                .isUserInWaitList(event.id_evento, this.userId)
+                .then((inWaitList) => {
+                  event.enListaEspera = inWaitList;
+                  console.log(
+                    `Usuario ${this.userId} está en la lista de espera para el evento ${event.id_evento}:`,
+                    inWaitList
+                  );
+                })
+                .catch((error) => {
+                  console.error('Error al verificar lista de espera:', error);
+                  event.enListaEspera = false;
+                });
             } else {
               console.warn(
                 `No se pudo verificar inscripción para el evento ${event.id_evento}. userId o id_evento no definidos.`
@@ -197,6 +212,9 @@ export class FolderPage implements OnInit {
 
               // Añadir al usuario a la lista de espera usando el ID y nombre
               await this.eventosService.agregarUsuarioAListaEspera(event.id_evento, this.userId, userName);
+
+              // Actualiza la propiedad del evento
+              event.enListaEspera = true;
 
               // Mostrar un toast de confirmación
               const toast = await this.toastController.create({

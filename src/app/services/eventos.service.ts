@@ -3,7 +3,7 @@ import { AngularFirestore } from '@angular/fire/compat/firestore';
 import { Evento } from '../interface/IEventos';
 
 import 'firebase/firestore'; // Importar Firestore
-import { doc, updateDoc, increment, serverTimestamp, deleteDoc, arrayRemove, getFirestore, arrayUnion } from 'firebase/firestore';
+import { doc, updateDoc, increment, serverTimestamp, deleteDoc, arrayRemove, getDoc, arrayUnion } from 'firebase/firestore';
 @Injectable({
   providedIn: 'root'
 })
@@ -161,5 +161,19 @@ export class EventosService {
       }
     }
   }
+  async isUserInWaitList(eventoId: string, userId: string): Promise<boolean> {
+    const eventoDocRef = doc(this.firestore.firestore, 'Eventos', eventoId);
+    const eventoDoc = await getDoc(eventoDocRef);
 
+    if (eventoDoc.exists()) {
+      const eventoData = eventoDoc.data() as Evento;
+
+      // Verificamos si listaEspera existe y es un array
+      if (eventoData.listaEspera && Array.isArray(eventoData.listaEspera)) {
+        return eventoData.listaEspera.some((user: any) => user.userId === userId);
+      }
+    }
+
+    return false;
+  }
 }
