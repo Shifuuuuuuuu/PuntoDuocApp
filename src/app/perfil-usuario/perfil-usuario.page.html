@@ -65,6 +65,13 @@
       </ion-label>
     </ion-item>
 
+    <ion-item>
+      <ion-label>
+        <h2>Puntaje</h2>
+        <ion-input [(ngModel)]="estudiante.puntaje" placeholder="Puntaje"></ion-input>
+      </ion-label>
+    </ion-item>
+
     <ion-item *ngIf="estudiante.codigoQr">
       <ion-label>
         <h2>Código QR</h2>
