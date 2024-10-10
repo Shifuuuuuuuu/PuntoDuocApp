@@ -84,37 +84,44 @@ export class FolderPage implements OnInit {
 
   async loadEvents() {
     this.Eventos = this.firestore.collection<Evento>('Eventos').valueChanges();
-    this.Eventos.subscribe((data) => {
-      console.log('Eventos obtenidos:', data); // Log para depuración
+    this.Eventos.subscribe(
+      (data) => {
+        console.log('Eventos obtenidos:', data); // Log para depuración
 
-      if (data && data.length > 0) {
-        this.filteredEvents = data;
-        this.filteredEvents.forEach((event) => {
-          event.show = false;
+        if (data && data.length > 0) {
+          this.filteredEvents = data;
+          this.filteredEvents.forEach((event) => {
+            event.show = false;
 
-          // Verificar si el usuario está inscrito en el evento
-          if (this.userId) {
-            this.eventosService
-              .isUserRegistered(event.id_evento, this.userId)
-              .then((isRegistered) => {
-                event.estaInscrito = isRegistered;
-                console.log(
-                  `Usuario ${this.userId} está inscrito en el evento ${event.id_evento}:`,
-                  isRegistered
-                );
-              })
-              .catch((error) => {
-                console.error('Error al verificar inscripción:', error);
-                event.estaInscrito = false;
-              });
-          }
-        });
-      } else {
-        console.log('No se encontraron eventos en la colección.');
+            // Verificar si el usuario y el evento tienen IDs válidos
+            if (this.userId && event.id_evento) {
+              this.eventosService
+                .isUserRegistered(event.id_evento, this.userId)
+                .then((isRegistered) => {
+                  event.estaInscrito = isRegistered;
+                  console.log(
+                    `Usuario ${this.userId} está inscrito en el evento ${event.id_evento}:`,
+                    isRegistered
+                  );
+                })
+                .catch((error) => {
+                  console.error('Error al verificar inscripción:', error);
+                  event.estaInscrito = false;
+                });
+            } else {
+              console.warn(
+                `No se pudo verificar inscripción para el evento ${event.id_evento}. userId o id_evento no definidos.`
+              );
+            }
+          });
+        } else {
+          console.log('No se encontraron eventos en la colección.');
+        }
+      },
+      (error) => {
+        console.error('Error al obtener eventos de Firestore:', error);
       }
-    }, (error) => {
-      console.error('Error al obtener eventos de Firestore:', error);
-    });
+    );
   }
 
   toggleFilters() {
