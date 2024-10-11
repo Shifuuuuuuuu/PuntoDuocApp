@@ -20,7 +20,9 @@ export class EstudianteService {
     };
     return estudianteRegistrado;
   }
-
+  getUserById(userId: string): Observable<any> {
+    return this.firestore.collection('Estudiantes').doc(userId).valueChanges();
+  }
   verificarEstudiantePorCorreo(correo: string): Observable<boolean> {
     return this.firestore.collection('Estudiantes', ref => ref.where('email', '==', correo))
       .snapshotChanges()

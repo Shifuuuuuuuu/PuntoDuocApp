@@ -58,9 +58,11 @@
         <ion-list>
           <ion-item *ngFor="let event of filteredEvents" lines="none" class="event-item">
             <ion-card class="event-card">
-              <img alt="Imagen del evento" [src]="event.imagen" class="event-image"/>
+              <img alt="Imagen del evento" [src]="event.imagen" class="event-image" />
               <ion-card-header>
-                <ion-card-title (click)="toggleDescription(event)" class="centered-text">{{ event.titulo }}</ion-card-title>
+                <ion-card-title (click)="toggleDescription(event)" class="centered-text">
+                  {{ event.titulo }}
+                </ion-card-title>
               </ion-card-header>
 
               <ion-card-content class="centered-content">
@@ -74,15 +76,39 @@
                 <p *ngIf="event.enListaEspera" class="en-lista-espera-text">¡Ya estás en la lista de espera!</p>
 
                 <!-- Mensaje que indica si el evento está lleno -->
-                <p *ngIf="event.Cupos === 0" class="lleno-text">Este evento está lleno. Puedes unirte a la lista de espera.</p>
+                <p *ngIf="event.Cupos === 0 && !event.enListaEspera" class="lleno-text">
+                  Este evento está lleno. Puedes unirte a la lista de espera.
+                </p>
 
                 <!-- Botón de inscripción o cancelación -->
                 <ion-button
-                  [color]="event.estaInscrito ? 'danger' : (event.Cupos === 0 ? (event.enListaEspera ? 'warning' : 'primary') : 'primary')"
-                  (click)="event.estaInscrito ? cancelarInscripcion(event.id_evento) : (event.enListaEspera ? null : presentAlert(event))"
+                  [color]="
+                    event.estaInscrito
+                      ? 'danger'
+                      : event.Cupos === 0
+                      ? event.enListaEspera
+                        ? 'warning'
+                        : 'primary'
+                      : 'primary'
+                  "
+                  (click)="
+                    event.estaInscrito
+                      ? cancelarInscripcion(event.id_evento)
+                      : event.enListaEspera
+                      ? salirDeListaEspera(event.id_evento)
+                      : presentAlert(event)
+                  "
                   expand="block"
-                  [disabled]="event.enListaEspera">
-                  {{ event.estaInscrito ? 'Cancelar inscripción' : (event.Cupos === 0 ? (event.enListaEspera ? 'Ya estás en la lista de espera' : 'Unirse a lista de espera') : 'Inscribirse') }}
+                >
+                  {{
+                    event.estaInscrito
+                      ? 'Cancelar inscripción'
+                      : event.Cupos === 0
+                      ? event.enListaEspera
+                        ? 'Salir de lista de espera'
+                        : 'Unirse a lista de espera'
+                      : 'Inscribirse'
+                  }}
                 </ion-button>
               </ion-card-content>
             </ion-card>

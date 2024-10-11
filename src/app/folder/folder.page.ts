@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { AngularFirestore } from '@angular/fire/compat/firestore';
 import { ActivatedRoute, Router } from '@angular/router';
 import { AlertController, ToastController } from '@ionic/angular';
-import { Observable, Subscription } from 'rxjs';
+import { Observable, Subscription, lastValueFrom } from 'rxjs';
 import { Evento } from '../interface/IEventos';
 import { EventosService } from '../services/eventos.service';
 import { AuthService } from '../services/auth.service';
@@ -43,7 +43,7 @@ export class FolderPage implements OnInit {
     this.folder = this.activatedRoute.snapshot.paramMap.get('id') as string;
 
     // Suscribirse al observable de AuthService para Estudiantes
-    this.authSubscription = this.authService.getCurrentUserEmail().subscribe(async emailEstudiante => {
+    this.authSubscription = this.authService.getCurrentUserEmail().subscribe(async (emailEstudiante) => {
       if (emailEstudiante) {
         console.log('Usuario Estudiante autenticado con email:', emailEstudiante);
         const estudiante = await this.authService.getEstudianteByEmail(emailEstudiante);
@@ -56,7 +56,7 @@ export class FolderPage implements OnInit {
       }
 
       // Si no es Estudiante, suscribirse a InvitadoService para Invitados
-      this.invitadoSubscription = this.invitadoService.getCurrentUserEmail().subscribe(async emailInvitado => {
+      this.invitadoSubscription = this.invitadoService.getCurrentUserEmail().subscribe(async (emailInvitado) => {
         if (emailInvitado) {
           console.log('Usuario Invitado autenticado con email:', emailInvitado);
           const invitado = await this.invitadoService.obtenerInvitadoPorEmail(emailInvitado);
@@ -87,50 +87,35 @@ export class FolderPage implements OnInit {
   async loadEvents() {
     this.Eventos = this.firestore.collection<Evento>('Eventos').valueChanges();
     this.Eventos.subscribe(
-      (data) => {
+      async (data) => {
         console.log('Eventos obtenidos:', data); // Log para depuración
 
         if (data && data.length > 0) {
           this.filteredEvents = data;
-          this.filteredEvents.forEach((event) => {
+          for (let event of this.filteredEvents) {
             event.show = false;
 
             // Verificar si el usuario y el evento tienen IDs válidos
             if (this.userId && event.id_evento) {
-              this.eventosService
-                .isUserRegistered(event.id_evento, this.userId)
-                .then((isRegistered) => {
-                  event.estaInscrito = isRegistered;
-                  console.log(
-                    `Usuario ${this.userId} está inscrito en el evento ${event.id_evento}:`,
-                    isRegistered
-                  );
-                })
-                .catch((error) => {
-                  console.error('Error al verificar inscripción:', error);
-                  event.estaInscrito = false;
-                });
+              try {
+                event.estaInscrito = await this.eventosService.isUserRegistered(event.id_evento, this.userId);
+                console.log(`Usuario ${this.userId} está inscrito en el evento ${event.id_evento}:`, event.estaInscrito);
+              } catch (error) {
+                console.error('Error al verificar inscripción:', error);
+                event.estaInscrito = false;
+              }
 
-              // Verificar si el usuario está en la lista de espera
-              this.eventosService
-                .isUserInWaitList(event.id_evento, this.userId)
-                .then((inWaitList) => {
-                  event.enListaEspera = inWaitList;
-                  console.log(
-                    `Usuario ${this.userId} está en la lista de espera para el evento ${event.id_evento}:`,
-                    inWaitList
-                  );
-                })
-                .catch((error) => {
-                  console.error('Error al verificar lista de espera:', error);
-                  event.enListaEspera = false;
-                });
+              try {
+                event.enListaEspera = await this.eventosService.isUserInWaitList(event.id_evento, this.userId);
+                console.log(`Usuario ${this.userId} está en la lista de espera para el evento ${event.id_evento}:`, event.enListaEspera);
+              } catch (error) {
+                console.error('Error al verificar lista de espera:', error);
+                event.enListaEspera = false;
+              }
             } else {
-              console.warn(
-                `No se pudo verificar inscripción para el evento ${event.id_evento}. userId o id_evento no definidos.`
-              );
+              console.warn(`No se pudo verificar inscripción para el evento ${event.id_evento}. userId o id_evento no definidos.`);
             }
-          });
+          }
         } else {
           console.log('No se encontraron eventos en la colección.');
         }
@@ -146,9 +131,9 @@ export class FolderPage implements OnInit {
   }
 
   filterEvents() {
-    this.filteredEvents = this.Eventos ? this.filteredEvents.filter(evento =>
-      evento.titulo.toLowerCase().includes(this.searchText.toLowerCase())
-    ) : [];
+    this.filteredEvents = this.Eventos
+      ? this.filteredEvents.filter((evento) => evento.titulo.toLowerCase().includes(this.searchText.toLowerCase()))
+      : [];
   }
 
   async presentAlert(event: Evento) {
@@ -169,9 +154,9 @@ export class FolderPage implements OnInit {
               // Si no hay cupos, preguntar si quiere estar en lista de espera
               this.presentWaitListAlert(event);
             }
-          }
-        }
-      ]
+          },
+        },
+      ],
     });
     await alert.present();
   }
@@ -191,23 +176,16 @@ export class FolderPage implements OnInit {
             try {
               // Obtener el nombre del usuario dependiendo de si es Invitado o Estudiante
               let userName = '';
-              let user: Estudiante | Invitado | null = null;
-
               if (this.isInvitado) {
-                user = await this.invitadoService.obtenerInvitadoPorId(this.userId);
-                if (user) {
-                  userName = user.Nombre_completo || 'Invitado';
+                const invitado = await this.invitadoService.obtenerInvitadoPorId(this.userId);
+                if (invitado) {
+                  userName = invitado.Nombre_completo || 'Invitado';
                 }
               } else {
-                user = await this.estudianteService.obtenerEstudiantePorId(this.userId);
-                if (user) {
-                  userName = user.Nombre_completo || 'Estudiante';
+                const estudiante = await this.estudianteService.obtenerEstudiantePorId(this.userId);
+                if (estudiante) {
+                  userName = estudiante.Nombre_completo || 'Estudiante';
                 }
-              }
-
-              // Verificar si se encontró al usuario
-              if (!user) {
-                throw new Error('No se pudo encontrar el usuario. Asegúrate de que estás registrado.');
               }
 
               // Añadir al usuario a la lista de espera usando el ID y nombre
@@ -221,7 +199,7 @@ export class FolderPage implements OnInit {
                 message: 'Te has unido a la lista de espera.',
                 duration: 2000,
                 position: 'top',
-                color: 'warning'
+                color: 'warning',
               });
               await toast.present();
             } catch (error) {
@@ -230,27 +208,34 @@ export class FolderPage implements OnInit {
               const errorAlert = await this.alertController.create({
                 header: 'Error',
                 message: errorMessage,
-                buttons: ['OK']
+                buttons: ['OK'],
               });
               await errorAlert.present();
             }
-          }
-        }
-      ]
+          },
+        },
+      ],
     });
     await alert.present();
   }
+
   // Método para manejar la inscripción desde la lista de espera
   async inscribirDesdeListaEspera(eventoId: string, userId: string) {
     try {
-      // Realiza la inscripción directa y elimina al usuario de la lista de espera
-      await this.eventosService.inscribirDesdeListaEspera(eventoId, userId);
+      // Aquí obtienes el nombre del usuario.
+      let userName = await this.obtenerNombreUsuario(userId);
+
+      if (!userName) {
+        userName = 'Invitado'; // Valor predeterminado
+      }
+
+      await this.eventosService.inscribirDesdeListaEspera(eventoId, { userId, userName });
       await this.actualizarPerfilUsuario(eventoId, 'agregar');
 
       const alert = await this.alertController.create({
         header: 'Inscripción exitosa',
         message: 'Has sido inscrito al evento desde la lista de espera.',
-        buttons: ['OK']
+        buttons: ['OK'],
       });
       await alert.present();
       this.router.navigate(['/perfil-usuario']);
@@ -259,16 +244,31 @@ export class FolderPage implements OnInit {
       const alert = await this.alertController.create({
         header: 'Error',
         message: 'No se pudo inscribir al evento. Inténtalo más tarde.',
-        buttons: ['OK']
+        buttons: ['OK'],
       });
       await alert.present();
     }
   }
 
+  // Este método obtiene el nombre del usuario
+  async obtenerNombreUsuario(userId: string): Promise<string> {
+    try {
+      // Usa lastValueFrom para convertir el Observable a una Promesa y obtener el valor
+      const usuario: any = await lastValueFrom(this.estudianteService.getUserById(userId));
+      return usuario ? usuario.nombre : null; // Devuelve el nombre si existe
+    } catch (error) {
+      console.error('Error al obtener el nombre del usuario:', error);
+      return ''; // En caso de error, devuelve null
+    }
+  }
+
+
   // Método para verificar cupos y gestionar la lista de espera
   async verificarListaEspera(eventoId: string) {
     try {
       await this.eventosService.verificarListaEspera(eventoId);
+      // Recarga los eventos para reflejar los cambios
+      this.loadEvents();
     } catch (error) {
       console.error('Error al verificar la lista de espera:', error);
     }
@@ -281,13 +281,27 @@ export class FolderPage implements OnInit {
       const alert = await this.alertController.create({
         header: 'Error',
         message: 'No se pudo encontrar el usuario autenticado.',
-        buttons: ['OK']
+        buttons: ['OK'],
       });
       await alert.present();
       return;
     }
 
     try {
+      // Verificar si el usuario ya está inscrito en el evento
+      const estaInscrito = await this.eventosService.isUserRegistered(eventoId, this.userId);
+      if (estaInscrito) {
+        const toast = await this.toastController.create({
+          message: 'Ya estás inscrito en este evento.',
+          duration: 2000,
+          position: 'top',
+          color: 'warning',
+        });
+        await toast.present();
+        return; // Salir si ya está inscrito
+      }
+
+      // Si no está inscrito, inscribir al usuario
       await this.eventosService.inscribirUsuario(eventoId, this.userId);
       await this.actualizarPerfilUsuario(eventoId, 'agregar');
 
@@ -295,7 +309,7 @@ export class FolderPage implements OnInit {
         message: 'Te has inscrito al evento correctamente.',
         duration: 2000,
         position: 'top',
-        color: 'success'
+        color: 'success',
       });
       await toast.present();
 
@@ -305,7 +319,7 @@ export class FolderPage implements OnInit {
       const alert = await this.alertController.create({
         header: 'Error',
         message: (error as Error).message,
-        buttons: ['OK']
+        buttons: ['OK'],
       });
       await alert.present();
     }
@@ -318,13 +332,27 @@ export class FolderPage implements OnInit {
       const alert = await this.alertController.create({
         header: 'Error',
         message: 'No se pudo encontrar el usuario autenticado.',
-        buttons: ['OK']
+        buttons: ['OK'],
       });
       await alert.present();
       return;
     }
 
     try {
+      // Verificar si el usuario está inscrito
+      const estaInscrito = await this.eventosService.isUserRegistered(eventoId, this.userId);
+      if (!estaInscrito) {
+        const toast = await this.toastController.create({
+          message: 'No estás inscrito en este evento.',
+          duration: 2000,
+          position: 'top',
+          color: 'warning',
+        });
+        await toast.present();
+        return; // Salir si no está inscrito
+      }
+
+      // Si está inscrito, cancelar la inscripción
       await this.eventosService.cancelarInscripcion(eventoId, this.userId);
       await this.actualizarPerfilUsuario(eventoId, 'eliminar');
 
@@ -332,7 +360,7 @@ export class FolderPage implements OnInit {
         message: 'Has cancelado tu inscripción correctamente.',
         duration: 2000,
         position: 'top',
-        color: 'warning'
+        color: 'warning',
       });
       await toast.present();
 
@@ -342,15 +370,70 @@ export class FolderPage implements OnInit {
       const alert = await this.alertController.create({
         header: 'Error',
         message: (error as Error).message,
-        buttons: ['OK']
+        buttons: ['OK'],
       });
       await alert.present();
     }
   }
 
-  toggleDescription(event: Evento) {
-    event.show = !event.show;
+  // Método para salirse de la lista de espera
+  async salirDeListaEspera(eventoId: string) {
+    if (!this.userId) {
+      console.error('El ID del usuario no está disponible.');
+      const alert = await this.alertController.create({
+        header: 'Error',
+        message: 'No se pudo encontrar el usuario autenticado.',
+        buttons: ['OK'],
+      });
+      await alert.present();
+      return;
+    }
+
+    try {
+      // Obtener el nombre del usuario dependiendo de si es Invitado o Estudiante
+      let userName = '';
+      if (this.isInvitado) {
+        const invitado = await this.invitadoService.obtenerInvitadoPorId(this.userId);
+        if (invitado) {
+          userName = invitado.Nombre_completo || 'Invitado';
+        }
+      } else {
+        const estudiante = await this.estudianteService.obtenerEstudiantePorId(this.userId);
+        if (estudiante) {
+          userName = estudiante.Nombre_completo || 'Estudiante';
+        }
+      }
+
+      // Eliminar al usuario de la lista de espera usando el ID y nombre
+      await this.eventosService.eliminarUsuarioDeListaEspera(eventoId, this.userId, userName);
+
+      // Actualiza la propiedad del evento
+      const evento = this.filteredEvents.find((event) => event.id_evento === eventoId);
+      if (evento) {
+        evento.enListaEspera = false;
+      }
+
+      const toast = await this.toastController.create({
+        message: 'Has salido de la lista de espera.',
+        duration: 2000,
+        position: 'top',
+        color: 'warning',
+      });
+      await toast.present();
+
+      // Recarga los eventos para reflejar el cambio
+      this.loadEvents();
+    } catch (error) {
+      console.error('Error al salir de la lista de espera:', error);
+      const alert = await this.alertController.create({
+        header: 'Error',
+        message: 'No se pudo salir de la lista de espera. Inténtalo más tarde.',
+        buttons: ['OK'],
+      });
+      await alert.present();
+    }
   }
+
 
   // Método para actualizar el perfil del usuario
   async actualizarPerfilUsuario(eventoId: string, accion: 'agregar' | 'eliminar') {
@@ -376,12 +459,17 @@ export class FolderPage implements OnInit {
         message: 'No se pudo actualizar tu perfil. Inténtalo más tarde.',
         duration: 2000,
         position: 'top',
-        color: 'danger'
+        color: 'danger',
       });
       await toast.present();
     }
   }
+
+  toggleDescription(event: Evento) {
+    event.show = !event.show;
+  }
 }
+
 
 
 

@@ -13,6 +13,6 @@ export interface Evento {
   titulo: string;
   show?: boolean;
   estaInscrito?: boolean;
-  listaEspera?: string[];
+  listaEspera?: { userId: string; userName: string }[];
   enListaEspera?: boolean;
 }
