@@ -24,7 +24,13 @@
     </ion-refresher-content>
   </ion-refresher>
 
-  <ion-list *ngIf="eventosInscritos && eventosInscritos.length > 0; else noEventos">
+  <!-- Cargando -->
+  <div *ngIf="isLoading" class="ion-padding" style="text-align: center;">
+    <ion-spinner name="crescent"></ion-spinner>
+    <p>Buscando eventos inscritos...</p>
+  </div>
+
+  <ion-list *ngIf="!isLoading && eventosInscritos && eventosInscritos.length > 0;">
     <ion-item *ngFor="let evento of eventosInscritos">
       <ion-thumbnail slot="start">
         <img [src]="evento.imagen" alt="{{ evento.titulo }}">
@@ -34,25 +40,11 @@
         <p><strong>Fecha:</strong> {{ evento.fecha | date:'medium' }}</p>
         <p><strong>Lugar:</strong> {{ evento.lugar }}</p>
         <p><strong>Tipo:</strong> {{ evento.tipo }}</p>
-        <p><strong>Status:</strong> Estás inscrito a este evento.</p> <!-- Mensaje de inscripción -->
+        <p><strong>Status:</strong> Estás inscrito a este evento.</p>
       </ion-label>
     </ion-item>
   </ion-list>
 
-  <!-- Mensaje cuando no hay eventos inscritos -->
-  <ng-template #noEventos>
-    <ion-item>
-      <ion-label>
-        No tienes eventos inscritos.
-      </ion-label>
-    </ion-item>
-  </ng-template>
 
-  <!-- Spinner de Carga -->
-  <ng-template #cargando>
-    <div class="ion-padding" style="text-align: center;">
-      <ion-spinner name="crescent"></ion-spinner>
-      <p>Cargando historial de eventos...</p>
-    </div>
-  </ng-template>
+
 </ion-content>

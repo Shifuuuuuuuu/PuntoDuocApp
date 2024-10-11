@@ -21,7 +21,7 @@ export class FolderPage implements OnInit {
   folder: string = '';
   userId: string = ''; // ID del usuario autenticado
   isInvitado: boolean = false; // Indicador para saber si el usuario es un invitado
-
+  loading: boolean = false;
   private authSubscription!: Subscription;
   private invitadoSubscription!: Subscription;
 
@@ -82,22 +82,23 @@ export class FolderPage implements OnInit {
     }
   }
 
+
   async loadEvents() {
+    this.loading = true; // Mostrar pantalla de carga
     this.Eventos = this.firestore.collection<Evento>('Eventos').valueChanges();
     this.Eventos.subscribe(
       async (data) => {
-        console.log('Eventos obtenidos:', data); // Log para depuración
+        this.loading = false; // Ocultar pantalla de carga
+        console.log('Eventos obtenidos:', data);
 
         if (data && data.length > 0) {
           this.filteredEvents = data;
           for (let event of this.filteredEvents) {
             event.show = false;
 
-            // Verificar si el usuario y el evento tienen IDs válidos
             if (this.userId && event.id_evento) {
               try {
                 event.estaInscrito = await this.eventosService.isUserRegistered(event.id_evento, this.userId);
-                console.log(`Usuario ${this.userId} está inscrito en el evento ${event.id_evento}:`, event.estaInscrito);
               } catch (error) {
                 console.error('Error al verificar inscripción:', error);
                 event.estaInscrito = false;
@@ -105,7 +106,6 @@ export class FolderPage implements OnInit {
 
               try {
                 event.enListaEspera = await this.eventosService.isUserInWaitList(event.id_evento, this.userId);
-                console.log(`Usuario ${this.userId} está en la lista de espera para el evento ${event.id_evento}:`, event.enListaEspera);
               } catch (error) {
                 console.error('Error al verificar lista de espera:', error);
                 event.enListaEspera = false;
@@ -119,6 +119,7 @@ export class FolderPage implements OnInit {
         }
       },
       (error) => {
+        this.loading = false; // Ocultar pantalla de carga
         console.error('Error al obtener eventos de Firestore:', error);
       }
     );
@@ -133,6 +134,7 @@ export class FolderPage implements OnInit {
       ? this.filteredEvents.filter((evento) => evento.titulo.toLowerCase().includes(this.searchText.toLowerCase()))
       : [];
   }
+
 
   async presentAlert(event: Evento) {
     const alert = await this.alertController.create({
@@ -273,7 +275,6 @@ export class FolderPage implements OnInit {
   }
 
   async inscribirUsuario(eventoId: string) {
-    // Verifica que userId se haya asignado
     if (!this.userId) {
       console.error('El ID del usuario no está disponible.');
       const alert = await this.alertController.create({
@@ -285,8 +286,8 @@ export class FolderPage implements OnInit {
       return;
     }
 
+    this.loading = true; // Mostrar pantalla de carga
     try {
-      // Verificar si el usuario ya está inscrito en el evento
       const estaInscrito = await this.eventosService.isUserRegistered(eventoId, this.userId);
       if (estaInscrito) {
         const toast = await this.toastController.create({
@@ -296,10 +297,9 @@ export class FolderPage implements OnInit {
           color: 'warning',
         });
         await toast.present();
-        return; // Salir si ya está inscrito
+        return;
       }
 
-      // Si no está inscrito, inscribir al usuario
       await this.eventosService.inscribirUsuario(eventoId, this.userId);
       await this.actualizarPerfilUsuario(eventoId, 'agregar');
 
@@ -320,6 +320,8 @@ export class FolderPage implements OnInit {
         buttons: ['OK'],
       });
       await alert.present();
+    } finally {
+      this.loading = false; // Ocultar pantalla de carga
     }
   }
 
@@ -336,8 +338,8 @@ export class FolderPage implements OnInit {
       return;
     }
 
+    this.loading = true; // Mostrar pantalla de carga
     try {
-      // Verificar si el usuario está inscrito
       const estaInscrito = await this.eventosService.isUserRegistered(eventoId, this.userId);
       if (!estaInscrito) {
         const toast = await this.toastController.create({
@@ -347,10 +349,9 @@ export class FolderPage implements OnInit {
           color: 'warning',
         });
         await toast.present();
-        return; // Salir si no está inscrito
+        return;
       }
 
-      // Si está inscrito, cancelar la inscripción
       await this.eventosService.cancelarInscripcion(eventoId, this.userId);
       await this.actualizarPerfilUsuario(eventoId, 'eliminar');
 
@@ -362,7 +363,7 @@ export class FolderPage implements OnInit {
       });
       await toast.present();
 
-      this.loadEvents(); // Recarga los eventos después de cancelar
+      this.loadEvents();
     } catch (error) {
       console.error((error as Error).message);
       const alert = await this.alertController.create({
@@ -371,6 +372,8 @@ export class FolderPage implements OnInit {
         buttons: ['OK'],
       });
       await alert.present();
+    } finally {
+      this.loading = false; // Ocultar pantalla de carga
     }
   }
 

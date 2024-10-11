@@ -20,6 +20,7 @@ export class HistorialEventosPage implements OnInit {
   eventosInscritos: Evento[] = [];
   userId: string = '';
   isInvitado: boolean = false;
+  isLoading: boolean = false; // Variable para el estado de carga
 
   private authSubscription!: Subscription;
   private invitadoSubscription!: Subscription;
@@ -34,7 +35,6 @@ export class HistorialEventosPage implements OnInit {
   ) {}
 
   ngOnInit() {
-    // Verificar si el usuario es estudiante o invitado
     this.authSubscription = this.authService.getCurrentUserEmail().subscribe(async (emailEstudiante) => {
       if (emailEstudiante) {
         const estudiante = await this.authService.getEstudianteByEmail(emailEstudiante);
@@ -78,18 +78,17 @@ export class HistorialEventosPage implements OnInit {
       return;
     }
 
+    this.isLoading = true; // Inicia la carga
+
     try {
-      // Obtener todos los eventos de la colección 'Eventos'
       const eventosSnapshot = await this.firestore.collection<Evento>('Eventos').get().toPromise();
 
-      // Asegurarse de que eventosSnapshot no es undefined
       if (!eventosSnapshot) {
         console.log('No se encontraron eventos.');
         return;
       }
 
-      // Filtrar los eventos a los que el usuario está inscrito
-      const eventosIdsInscritos: string[] = []; // Especificar que es un array de strings
+      const eventosIdsInscritos: string[] = [];
 
       for (const eventoDoc of eventosSnapshot.docs) {
         const eventoId = eventoDoc.id;
@@ -113,11 +112,14 @@ export class HistorialEventosPage implements OnInit {
       }
     } catch (error) {
       console.error('Error al cargar eventos inscritos:', error);
+    } finally {
+      this.isLoading = false; // Finaliza la carga
     }
   }
+
   async doRefresh(event: any) {
     try {
-      await this.loadInscritos(); // Recargar eventos inscritos
+      await this.loadInscritos();
       const toast = await this.toastController.create({
         message: 'Historial actualizado.',
         duration: 2000,
@@ -126,8 +128,7 @@ export class HistorialEventosPage implements OnInit {
     } catch (error) {
       console.error('Error al refrescar:', error);
     } finally {
-      event.target.complete(); // Finaliza el refresco
+      event.target.complete();
     }
   }
-
 }

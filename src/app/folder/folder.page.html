@@ -10,7 +10,6 @@
   </ion-toolbar>
 </ion-header>
 
-<!-- folder.page.html -->
 <ion-content [fullscreen]="true" class="content-center">
   <ion-header collapse="condense">
     <ion-toolbar>
@@ -32,7 +31,7 @@
     </ion-button>
   </div>
 
-  <!-- Contenedor de filtros (se muestra debajo de la barra de búsqueda) -->
+  <!-- Contenedor de filtros -->
   <div class="filter-container" [class.expanded]="showFilters">
     <ion-list>
       <ion-item>
@@ -51,8 +50,14 @@
     </ion-list>
   </div>
 
-  <!-- Listado de eventos -->
-  <ion-grid>
+  <!-- Cargando -->
+  <div *ngIf="loading" class="ion-padding" style="text-align: center;">
+    <ion-spinner name="crescent"></ion-spinner>
+    <p>Cargando...</p>
+  </div>
+
+  <!-- Listado de eventos (ocultarlo si loading es verdadero) -->
+  <ion-grid *ngIf="!loading">
     <ion-row justify-content-center align-items-center>
       <ion-col size="12" size-md="8" size-lg="6">
         <ion-list>
@@ -69,18 +74,12 @@
                 <p *ngIf="event.show">{{ event.descripcion }}</p>
                 <p>Cupos disponibles: {{ event.Cupos }}</p>
 
-                <!-- Mensaje que indica si el usuario ya está inscrito -->
                 <p *ngIf="event.estaInscrito" class="inscrito-text">¡Ya estás inscrito en este evento!</p>
-
-                <!-- Mensaje que indica si el usuario está en la lista de espera -->
                 <p *ngIf="event.enListaEspera" class="en-lista-espera-text">¡Ya estás en la lista de espera!</p>
-
-                <!-- Mensaje que indica si el evento está lleno -->
                 <p *ngIf="event.Cupos === 0 && !event.enListaEspera" class="lleno-text">
                   Este evento está lleno. Puedes unirte a la lista de espera.
                 </p>
 
-                <!-- Botón de inscripción o cancelación -->
                 <ion-button
                   [color]="
                     event.estaInscrito
