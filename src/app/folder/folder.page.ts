@@ -8,8 +8,6 @@ import { EventosService } from '../services/eventos.service';
 import { AuthService } from '../services/auth.service';
 import { InvitadoService } from '../services/invitado.service';
 import { EstudianteService } from '../services/estudiante.service';
-import { Estudiante } from '../interface/IEstudiante';
-import { Invitado } from '../interface/IInvitado';
 @Component({
   selector: 'app-folder',
   templateUrl: './folder.page.html',

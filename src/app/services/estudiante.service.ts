@@ -24,8 +24,9 @@ export class EstudianteService {
     return this.firestore.collection('Estudiantes').doc(userId).valueChanges();
   }
   verificarEstudiantePorCorreo(correo: string): Observable<boolean> {
-    return this.firestore.collection('Estudiantes', ref => ref.where('email', '==', correo))
-      .snapshotChanges()
+    return this.firestore
+      .collection<Estudiante>('Estudiantes', ref => ref.where('email', '==', correo))
+      .valueChanges()
       .pipe(
         map(estudiantes => estudiantes.length > 0)
       );

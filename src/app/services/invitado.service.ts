@@ -3,7 +3,6 @@ import { Injectable } from '@angular/core';
 import { AngularFirestore } from '@angular/fire/compat/firestore';
 import { Invitado } from '../interface/IInvitado';
 import { BehaviorSubject, map, Observable } from 'rxjs';
-import * as firebase from 'firebase/compat';
 import 'firebase/compat/firestore';
 import { doc, updateDoc, arrayUnion, arrayRemove } from 'firebase/firestore';
 
@@ -32,8 +31,9 @@ export class InvitadoService {
 
   // Método para verificar si un invitado existe por correo electrónico
   verificarInvitadoPorCorreo(correo: string): Observable<boolean> {
-    return this.firestore.collection('Invitados', ref => ref.where('email', '==', correo))
-      .snapshotChanges()
+    return this.firestore
+      .collection<Invitado>('Invitados', ref => ref.where('email', '==', correo))
+      .valueChanges()
       .pipe(
         map(invitados => invitados.length > 0)
       );
@@ -123,6 +123,14 @@ export class InvitadoService {
       console.error('Error al obtener el invitado por ID:', error);
       throw error; // Propaga el error hacia el llamador
     }
+  }
+  obtenerInvitadoPorEmails(correo: string): Observable<Invitado | null> {
+    return this.firestore
+      .collection<Invitado>('Invitados', ref => ref.where('email', '==', correo))
+      .valueChanges({ idField: 'id_Invitado' })
+      .pipe(
+        map(invitados => (invitados.length > 0 ? invitados[0] : null))
+      );
   }
 }
 

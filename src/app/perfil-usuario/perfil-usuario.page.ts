@@ -5,7 +5,6 @@ import { AuthService } from '../services/auth.service';
 import { InvitadoService } from '../services/invitado.service';
 import { Router } from '@angular/router';
 import { QRCodeData } from '../interface/IQR';
-import { EstudianteService } from '../services/estudiante.service';
 import { Subscription } from 'rxjs';
 @Component({
   selector: 'app-perfil-usuario',

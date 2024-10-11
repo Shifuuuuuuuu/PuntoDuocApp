@@ -15,4 +15,5 @@ export interface Evento {
   estaInscrito?: boolean;
   listaEspera?: { userId: string; userName: string }[];
   enListaEspera?: boolean;
+  timestamp: any;
 }

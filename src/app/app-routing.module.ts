@@ -29,6 +29,10 @@ const routes: Routes = [
   {
     path: 'registrar-invitado',
     loadChildren: () => import('./registrar-invitado/registrar-invitado.module').then( m => m.RegistrarInvitadoPageModule)
+  },
+  {
+    path: 'historial-eventos',
+    loadChildren: () => import('./historial-eventos/historial-eventos.module').then( m => m.HistorialEventosPageModule)
   }
 
 

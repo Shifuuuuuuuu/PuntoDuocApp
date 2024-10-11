@@ -1,8 +1,8 @@
 import { Injectable } from '@angular/core';
 import { AngularFirestore } from '@angular/fire/compat/firestore';
 import { Estudiante } from '../interface/IEstudiante';
-import { BehaviorSubject, Observable } from 'rxjs';
-import { AngularFireAuth } from '@angular/fire/compat/auth';
+import { BehaviorSubject, map, Observable } from 'rxjs';
+
 
 
 @Injectable({
@@ -98,6 +98,14 @@ export class AuthService {
       console.error('Error en AuthService.getEstudianteByEmail:', error);
       throw error;
     }
+  }
+  getEstudianteByEmails(email: string): Observable<Estudiante | null> {
+    return this.firestore
+      .collection<Estudiante>('Estudiantes', ref => ref.where('email', '==', email))
+      .valueChanges({ idField: 'id_estudiante' })
+      .pipe(
+        map(estudiantes => (estudiantes.length > 0 ? estudiantes[0] : null))
+      );
   }
 
 
