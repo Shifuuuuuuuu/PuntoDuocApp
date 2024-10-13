@@ -33,6 +33,22 @@ const routes: Routes = [
   {
     path: 'historial-eventos',
     loadChildren: () => import('./historial-eventos/historial-eventos.module').then( m => m.HistorialEventosPageModule)
+  },
+  {
+    path: 'estadistica-usuario',
+    loadChildren: () => import('./estadistica-usuario/estadistica-usuario.module').then( m => m.EstadisticaUsuarioPageModule)
+  },
+  {
+    path: 'centro-ayuda',
+    loadChildren: () => import('./centro-ayuda/centro-ayuda.module').then( m => m.CentroAyudaPageModule)
+  },
+  {
+    path: 'accesibilidad',
+    loadChildren: () => import('./accesibilidad/accesibilidad.module').then( m => m.AccesibilidadPageModule)
+  },
+  {
+    path: 'permisos-dispositivo',
+    loadChildren: () => import('./permisos-dispositivo/permisos-dispositivo.module').then( m => m.PermisosDispositivoPageModule)
   }
 
 

@@ -238,7 +238,7 @@ export class FolderPage implements OnInit {
         buttons: ['OK'],
       });
       await alert.present();
-      this.router.navigate(['/perfil-usuario']);
+
     } catch (error) {
       console.error('Error al inscribir desde la lista de espera:', error);
       const alert = await this.alertController.create({
@@ -311,7 +311,7 @@ export class FolderPage implements OnInit {
       });
       await toast.present();
 
-      this.router.navigate(['/perfil-usuario']);
+
     } catch (error) {
       console.error((error as Error).message);
       const alert = await this.alertController.create({
