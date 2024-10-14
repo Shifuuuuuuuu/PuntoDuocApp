@@ -1,22 +1,16 @@
 <ion-header [translucent]="true">
-  <ion-toolbar >
+  <ion-toolbar>
     <ion-buttons slot="end">
       <ion-button size="large" [routerLink]="['/perfil-usuario']">
-        <ion-icon name="person-circle-outline"></ion-icon>
+        <ion-icon style="color:  white" name="person-circle-outline"></ion-icon>
       </ion-button>
-      <ion-menu-button ></ion-menu-button>
+      <ion-menu-button size="medium" ></ion-menu-button>
     </ion-buttons>
-    <ion-title>PuntoDuoc</ion-title>
+    <ion-title style="color:  white">PuntoDuoc</ion-title>
   </ion-toolbar>
 </ion-header>
 
 <ion-content [fullscreen]="true" class="content-center">
-  <ion-header collapse="condense">
-    <ion-toolbar>
-      <ion-title size="large">{{ folder }}</ion-title>
-    </ion-toolbar>
-  </ion-header>
-
   <!-- Barra de búsqueda y botón de filtros -->
   <div class="search-container">
     <ion-searchbar
@@ -26,96 +20,93 @@
       (ionInput)="filterEvents()">
     </ion-searchbar>
 
-    <ion-button color="light" aria-label="Filter" class="filter-button" (click)="toggleFilters()">
+    <ion-button
+      aria-label="Filter"
+      class="filter-button"
+      style="--background: #0A49A7; --color: white;"
+      (click)="toggleFilters()">
       <ion-icon name="options-outline"></ion-icon>
     </ion-button>
   </div>
 
-  <!-- Contenedor de filtros -->
-  <div class="filter-container" [class.expanded]="showFilters">
-    <ion-list>
-      <ion-item>
-        <ion-label>Región</ion-label>
-        <ion-select placeholder="Seleccionar">
-          <ion-select-option>Región Metropolitana</ion-select-option>
-          <ion-select-option>Región de la Araucanía: Villarrica</ion-select-option>
-          <ion-select-option>Región de Los Lagos: Puerto Montt</ion-select-option>
-          <ion-select-option>Región de Valparaíso: Valparaíso y Viña del Mar</ion-select-option>
-          <ion-select-option>Región del Biobío: Concepción, Arauco y Nacimiento</ion-select-option>
-        </ion-select>
-      </ion-item>
-      <ion-item>
-        <ion-input placeholder="Lugar"></ion-input>
-      </ion-item>
-    </ion-list>
+  <div class="filters-container" [ngClass]="{ 'visible': showFilters }">
+    <!-- Aquí agregas las opciones de filtro -->
+    <ion-item>
+      <ion-label>Sede</ion-label>
+      <ion-select [(ngModel)]="selectedCategory" (ionChange)="filterEvents()">
+        <ion-select-option value="conciertos">Duoc Valparaiso</ion-select-option>
+        <ion-select-option value="deportes">Duoc Puente alto</ion-select-option>
+        <ion-select-option value="educacion">Duoc San bernardo</ion-select-option>
+      </ion-select>
+    </ion-item>
+
+    <!-- Agrega más filtros según sea necesario -->
   </div>
 
   <!-- Cargando -->
   <div *ngIf="loading" class="ion-padding" style="text-align: center;">
-    <ion-spinner name="crescent"></ion-spinner>
-    <p>Cargando...</p>
+    <ion-spinner name="crescent" style="color: #0A49A7;"></ion-spinner>
+    <p style="color: #0A49A7;">Cargando...</p>
   </div>
 
   <!-- Listado de eventos (ocultarlo si loading es verdadero) -->
   <ion-grid *ngIf="!loading">
-    <ion-row justify-content-center align-items-center>
-      <ion-col size="12" size-md="8" size-lg="6">
-        <ion-list>
-          <ion-item *ngFor="let event of filteredEvents" lines="none" class="event-item">
-            <ion-card class="event-card">
-              <img alt="Imagen del evento" [src]="event.imagen" class="event-image" />
-              <ion-card-header>
-                <ion-card-title (click)="toggleDescription(event)" class="centered-text">
-                  {{ event.titulo }}
-                </ion-card-title>
-              </ion-card-header>
+    <ion-row>
+      <ion-col size="12" size-md="6" size-lg="4" *ngFor="let event of filteredEvents">
+        <ion-card class="event-card">
+          <img alt="Imagen del evento" [src]="event.imagen" class="event-image" />
+          <ion-card-header>
+            <ion-card-title (click)="toggleDescription(event)" class="centered-text" style="color: #0A49A7;">
+              {{ event.titulo }}
+            </ion-card-title>
+          </ion-card-header>
 
-              <ion-card-content class="centered-content">
-                <p *ngIf="event.show">{{ event.descripcion }}</p>
-                <p>Cupos disponibles: {{ event.Cupos }}</p>
+          <ion-card-content class="centered-content">
+            <p *ngIf="event.show" style="color: #0A49A7;">{{ event.descripcion }}</p>
+            <p style="color: #0A49A7;">Cupos disponibles: {{ event.Cupos }}</p>
 
-                <p *ngIf="event.estaInscrito" class="inscrito-text">¡Ya estás inscrito en este evento!</p>
-                <p *ngIf="event.enListaEspera" class="en-lista-espera-text">¡Ya estás en la lista de espera!</p>
-                <p *ngIf="event.Cupos === 0 && !event.enListaEspera" class="lleno-text">
-                  Este evento está lleno. Puedes unirte a la lista de espera.
-                </p>
+            <p *ngIf="event.estaInscrito" class="inscrito-text" style="color: #0A49A7;">
+              ¡Ya estás inscrito en este evento!
+            </p>
+            <p *ngIf="event.enListaEspera" class="en-lista-espera-text" style="color: #0A49A7;">
+              ¡Ya estás en la lista de espera!
+            </p>
+            <p *ngIf="event.Cupos === 0 && !event.enListaEspera" class="lleno-text" style="color: #0A49A7;">
+              Este evento está lleno. Puedes unirte a la lista de espera.
+            </p>
 
-                <ion-button
-                  [color]="
-                    event.estaInscrito
-                      ? 'danger'
-                      : event.Cupos === 0
-                      ? event.enListaEspera
-                        ? 'warning'
-                        : 'primary'
-                      : 'primary'
-                  "
-                  (click)="
-                    event.estaInscrito
-                      ? cancelarInscripcion(event.id_evento)
-                      : event.enListaEspera
-                      ? salirDeListaEspera(event.id_evento)
-                      : presentAlert(event)
-                  "
-                  expand="block"
-                >
-                  {{
-                    event.estaInscrito
-                      ? 'Cancelar inscripción'
-                      : event.Cupos === 0
-                      ? event.enListaEspera
-                        ? 'Salir de lista de espera'
-                        : 'Unirse a lista de espera'
-                      : 'Inscribirse'
-                  }}
-                </ion-button>
-              </ion-card-content>
-            </ion-card>
-          </ion-item>
-        </ion-list>
+            <ion-button
+              [color]="
+                event.estaInscrito
+                  ? 'danger'
+                  : event.Cupos === 0
+                  ? event.enListaEspera
+                    ? 'primary'
+                    : 'primary'
+                  : 'primary'
+              "
+              (click)="
+                event.estaInscrito
+                  ? cancelarInscripcion(event.id_evento)
+                  : event.enListaEspera
+                  ? salirDeListaEspera(event.id_evento)
+                  : presentAlert(event)
+              "
+              expand="block"
+              style="--background: #0A49A7; --color: white;">
+              {{
+                event.estaInscrito
+                  ? 'Cancelar inscripción'
+                  : event.Cupos === 0
+                  ? event.enListaEspera
+                    ? 'Salir de lista de espera'
+                    : 'Unirse a lista de espera'
+                  : 'Inscribirse'
+              }}
+            </ion-button>
+          </ion-card-content>
+        </ion-card>
       </ion-col>
     </ion-row>
   </ion-grid>
 </ion-content>
-
-

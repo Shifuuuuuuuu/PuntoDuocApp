@@ -1,103 +1,133 @@
-/* Contenedor de búsqueda */
-.search-container {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 10px 16px;
-  width: 100%;
+/* Estilo general del contenido */
+ion-content {
+  --background: linear-gradient(to bottom, #0A49A7, #6698FF); /* Degradado azul */ /* Degradado entre azul y negro */
+  color: white; /* Texto blanco para mayor contraste */
 }
 
-/* Barra de búsqueda */
+/* Estilo del encabezado */
+ion-toolbar {
+  background-color: #0A49A7; /* Fondo negro para la barra de herramientas */
+}
+
+/* Estilo del título y botones del encabezado */
+ion-title, ion-back-button, ion-menu-button {
+  color:  white; /* Texto azul para el título */
+}
+
+/* Estilo de la barra de búsqueda */
+.search-container {
+  display: flex; /* Uso de flexbox para alinear elementos */
+  align-items: center; /* Centra verticalmente */
+  margin: 20px; /* Margen alrededor */
+}
+
+/* Estilo de la barra de búsqueda */
 ion-searchbar {
-  flex-grow: 1;
-  margin-right: 10px; /* Margen a la derecha para separar del botón de filtro */
+  flex: 1; /* Permite que la barra de búsqueda ocupe el espacio restante */
+  --background: rgba(255, 255, 255, 0.9); /* Fondo blanco semitransparente */
+   /* Color del texto en la barra de búsqueda */
+  border-radius: 12px; /* Bordes redondeados */
+  margin-right: 10px; /* Espaciado entre la barra de búsqueda y el botón de filtro */
 }
 
 /* Estilo del botón de filtro */
 .filter-button {
-  margin-left: 10px;
+  --background: #0A49A7; /* Fondo azul */
+  --color: white; /* Color del texto en blanco */
+  border-radius: 12px; /* Bordes redondeados */
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
-/* Contenedor de filtros (se expande debajo de la barra de búsqueda) */
-.filter-container {
-  width: 100%; /* Ancho completo */
-  transition: max-height 0.3s ease-in-out;
+/* Estado expandido para la barra de filtros */
+.filters-container {
+  max-height: 0;
   overflow: hidden;
-  max-height: 0; /* Oculto inicialmente */
-  margin-top: 10px; /* Separación superior con la barra de búsqueda */
+  transition: max-height 0.3s ease-in-out;
 }
 
-.filter-container.expanded {
-  max-height: 400px; /* Ajusta la altura para mostrar los filtros */
-  margin-bottom: 20px; /* Margen inferior para espacio */
+.filters-container.visible {
+  max-height: 500px; /* Ajusta este valor según el contenido */
+}
+/* Estilo de los ítems de la lista de eventos */
+.event-item {
+  margin-bottom: 15px; /* Espaciado inferior */
 }
 
-/* Ajuste de centrado para el contenido */
-ion-grid, ion-row {
-  justify-content: center;
-}
-
-ion-col {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-
+/* Estilo de la tarjeta de evento */
 .event-card {
-  width: 100%;
-  margin: 0 auto;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1); /* Sombra para resaltar las cards */
+  background-color: rgb(219, 221, 245); /* Fondo semitransparente para la tarjeta */
+  border-radius: 12px; /* Bordes redondeados */
+  transition: transform 0.2s; /* Transición para efecto hover */
 }
 
-/* Ajuste de las imágenes dentro de las cards */
+/* Efecto hover para la tarjeta de evento */
+.event-card:hover {
+  transform: scale(1.02); /* Aumenta el tamaño ligeramente */
+}
+
+/* Estilo de la imagen del evento */
 .event-image {
-  width: 100%;
-  height: 200px;
-  object-fit: cover; /* Se ajusta para que la imagen no sobresalga */
-  border-top-left-radius: 8px;
-  border-top-right-radius: 8px;
+  width: 100%; /* Imagen ocupa todo el ancho de la tarjeta */
+  border-top-left-radius: 12px; /* Bordes redondeados en la parte superior */
+  border-top-right-radius: 12px; /* Bordes redondeados en la parte superior */
 }
 
-/* Textos y contenidos centrados */
-.centered-text,
+/* Estilo del texto centrado */
+.centered-text {
+  text-align: center; /* Centrar texto */
+}
+
+/* Estilo del contenido centrado de la tarjeta */
 .centered-content {
-  text-align: center;
+  text-align: center; /* Centrar contenido */
+  color: #0A49A7;
 }
 
-/* Estilo para texto de inscripción */
-.inscrito-text {
-  color: #10dc60;
-  font-weight: bold;
-  text-align: center;
-  margin-top: 8px;
+/* Estilo de mensajes de inscripción */
+.inscrito-text,
+.en-lista-espera-text,
+.lleno-text {
+  color: #0A49A7; /* Color azul para mensajes destacados */
 }
 
-/* Media Queries para mejorar la responsividad */
-@media (max-width: 768px) {
-  .event-card {
-    width: 90%; /* Ajuste de tamaño en pantallas pequeñas */
-  }
-
-  .filter-container.expanded {
-    max-height: 500px; /* Mayor altura en pantallas pequeñas */
-  }
+/* Estilo de botones en la tarjeta */
+ion-button {
+  margin-top: 10px; /* Espaciado superior */
+  border-radius: 12px; /* Bordes redondeados */
+  --background: #0A49A7; /* Fondo azul */
+  --color: white; /* Color del texto en blanco */
 }
 
-@media (min-width: 769px) and (max-width: 1200px) {
-  .event-card {
-    width: 80%; /* Ajuste para pantallas medianas */
-  }
+/* Estilo de spinner de carga */
+ion-spinner {
+  color: #0A49A7; /* Color azul para el spinner */
 }
-.loading-screen {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(255, 255, 255, 0.8);
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  z-index: 1000; // Asegura que la pantalla de carga esté encima de otros elementos
+
+/* Estilo para la barra de herramientas */
+ion-toolbar {
+  --background: transparent; /* Fondo transparente */
 }
+
+/* Estilo de los encabezados */
+ion-header {
+   /* Fondo oscuro para encabezados */
+  color: #0A49A7; /* Color azul para el texto de encabezado */
+}
+
+/* Estilo del título */
+ion-title {
+  font-size: 1.5em; /* Tamaño del título más grande */
+  color: #0A49A7; /* Asegura que el título sea azul */
+}
+
+/* Color de texto general */
+p {
+  color: white; /* Texto blanco para los párrafos */
+}
+
+.inscrito-text,
+.en-lista-espera-text,
+.lleno-text {
+  color: #0A49A7; /* Mensajes de estado de inscripción en azul */
+}
+

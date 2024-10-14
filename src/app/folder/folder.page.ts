@@ -22,6 +22,7 @@ export class FolderPage implements OnInit {
   userId: string = ''; // ID del usuario autenticado
   isInvitado: boolean = false; // Indicador para saber si el usuario es un invitado
   loading: boolean = false;
+  selectedCategory: string = 'all';
   private authSubscription!: Subscription;
   private invitadoSubscription!: Subscription;
 
@@ -85,14 +86,32 @@ export class FolderPage implements OnInit {
 
   async loadEvents() {
     this.loading = true; // Mostrar pantalla de carga
+
+    // Obtener eventos desde Firestore como Observable
     this.Eventos = this.firestore.collection<Evento>('Eventos').valueChanges();
+
+    // Suscribirse a los eventos
     this.Eventos.subscribe(
-      async (data) => {
+      async (data: Evento[]) => {
         this.loading = false; // Ocultar pantalla de carga
         console.log('Eventos obtenidos:', data);
 
         if (data && data.length > 0) {
-          this.filteredEvents = data;
+          // Aplicar los filtros directamente a los eventos obtenidos
+          this.filteredEvents = data.filter((evento: Evento) => {
+            // Aplicar filtro de búsqueda por título
+            const matchesSearchText = this.searchText
+              ? evento.titulo.toLowerCase().includes(this.searchText.toLowerCase())
+              : true;
+
+            // Aplicar filtro por categoría
+            const matchesCategory = this.selectedCategory === 'all'
+              || evento.categoria === this.selectedCategory;
+
+            return matchesSearchText && matchesCategory;
+          });
+
+          // Procesar cada evento filtrado
           for (let event of this.filteredEvents) {
             event.show = false;
 
@@ -125,15 +144,29 @@ export class FolderPage implements OnInit {
     );
   }
 
-  toggleFilters() {
-    this.showFilters = !this.showFilters;
-  }
+
 
   filterEvents() {
     this.filteredEvents = this.Eventos
       ? this.filteredEvents.filter((evento) => evento.titulo.toLowerCase().includes(this.searchText.toLowerCase()))
       : [];
   }
+  toggleFilters() {
+    this.showFilters = !this.showFilters;
+  }
+
+  // Filtrar eventos por texto de búsqueda y categoría
+  applyFilters() {
+    // Asegúrate de que `this.filteredEvents` ya tenga los eventos cargados
+    if (this.filteredEvents && this.filteredEvents.length > 0) {
+      this.filteredEvents = this.filteredEvents.filter((evento: Evento) => {
+        const matchesSearchText = evento.titulo.toLowerCase().includes(this.searchText.toLowerCase());
+        const matchesCategory = this.selectedCategory === 'all' || evento.categoria === this.selectedCategory;
+        return matchesSearchText && matchesCategory;
+      });
+    }
+  }
+
 
 
   async presentAlert(event: Evento) {
@@ -468,6 +501,15 @@ export class FolderPage implements OnInit {
 
   toggleDescription(event: Evento) {
     event.show = !event.show;
+  }
+  private async showToast(message: string, color: string) {
+    const toast = await this.toastController.create({
+      message,
+      duration: 2000,
+      position: 'top',
+      color,
+    });
+    await toast.present();
   }
 }
 

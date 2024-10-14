@@ -1,0 +1,86 @@
+/* Fondo con degradado */
+ion-content {
+  --background: linear-gradient(to bottom, #0A49A7, #6698FF); /* Degradado azul */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh; /* Ajusta para ocupar toda la pantalla */
+}
+
+/* Estilo del contenedor del formulario */
+.form-container {
+  max-width: 400px;
+  width: 100%;
+  padding: 25px;
+  background-color: #ffffff; /* Color de fondo blanco */
+  border-radius: 20px; /* Bordes redondeados */
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2); /* Sombra alrededor del contenedor */
+}
+
+/* Estilo de los items */
+.custom-item {
+  --background: #E9F1FC; /* Color de fondo claro para los inputs */
+  --border-radius: 10px;
+  margin-bottom: 15px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1); /* Sombra ligera en los campos */
+}
+
+/* Estilo del input de correo y contraseña */
+ion-input {
+  padding: 10px;
+  font-size: 16px;
+  color: #333;
+}
+
+/* Estilo del botón de login */
+.custom-button {
+  --border-radius: 8px;
+  --background: #0A49A7; /* Color azul para el botón */
+  color: white; /* Color del texto en el botón */
+  font-weight: bold;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Sombra en el botón */
+}
+
+.custom-button:hover {
+  --background: #084a9a; /* Color más oscuro en hover */
+}
+
+/* Estilo de 'Forgot Password' */
+.forgot-password-link {
+  color: #0A49A7; /* Color azul para el enlace */
+  text-decoration: none;
+  font-size: 14px;
+}
+
+.forgot-password-link:hover {
+  text-decoration: underline; /* Subrayado en hover */
+}
+
+/* Estilo del mensaje de error */
+.text-danger {
+  color: #d9534f; /* Color rojo para los mensajes de error */
+  font-weight: bold;
+  margin-top: 5px;
+  text-align: left; /* Alinear a la izquierda */
+}
+.custom-button {
+  --border-radius: 8px;
+  --background: #0a49a7;
+  color: white;
+  font-weight: bold;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Sombra en el botón */
+}
+/* Estilo de los encabezados */
+ion-header {
+  background-color: #0A49A7; /* Fondo oscuro para encabezados */
+  color: black /* Color amarillo para el texto de encabezado */
+}
+
+/* Estilo del título */
+ion-title {
+  font-size: 1.5em; /* Tamaño del título más grande */
+}
+/* Estilo para la barra de herramientas */
+ion-toolbar {
+  --background: transparent; /* Fondo transparente */
+}

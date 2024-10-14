@@ -1,121 +1,49 @@
-
-
+/* Cambiar el color de fondo del menú */
 ion-menu ion-content {
-  --background: var(--ion-item-background, var(--ion-background-color, #fff));
+  --background: #0A49A7; /* Color azul para el fondo del menú */
 }
 
-ion-menu.md ion-content {
-  --padding-start: 8px;
-  --padding-end: 8px;
-  --padding-top: 20px;
-  --padding-bottom: 20px;
+/* Ajustar el color de los íconos cuando un elemento está seleccionado */
+ion-menu.md ion-item.selected ion-icon {
+  color: white; /* Cambia el color a blanco cuando el elemento está seleccionado */
 }
 
-ion-menu.md ion-list {
-  padding: 20px 0;
+/* Cambiar el color de los íconos para todos los elementos */
+ion-menu.md ion-item ion-icon {
+  color: white; /* Íconos blancos */
 }
 
-ion-menu.md ion-note {
-  margin-bottom: 30px;
+/* Cambiar el color de las etiquetas de los ítems */
+ion-menu.md ion-item ion-label {
+  font-weight: 500;
+  color: white; /* Cambia el color del texto a blanco */
 }
 
-ion-menu.md ion-list-header,
-ion-menu.md ion-note {
-  padding-left: 10px;
+/* Cambiar el fondo de los elementos seleccionados */
+ion-menu.md ion-item.selected {
+  --background: #6698FF; /* Fondo azul claro cuando el elemento está seleccionado */
 }
 
+/* Cambiar el color del borde de la lista de elementos del menú */
 ion-menu.md ion-list#inbox-list {
-  border-bottom: 1px solid var(--ion-background-color-step-150, #d7d8da);
+  border-bottom: 1px solid #0A49A7; /* Cambia el borde inferior a azul */
 }
 
+/* Cambiar el color del encabezado de la lista */
 ion-menu.md ion-list#inbox-list ion-list-header {
   font-size: 22px;
   font-weight: 600;
-
   min-height: 20px;
+  color: white; /* Cambia el color del encabezado a blanco */
 }
 
-ion-menu.md ion-list#labels-list ion-list-header {
-  font-size: 16px;
-
-  margin-bottom: 18px;
-
-  color: #757575;
-
-  min-height: 26px;
-}
-
-ion-menu.md ion-item {
-  --padding-start: 10px;
-  --padding-end: 10px;
-  border-radius: 4px;
-}
-
-ion-menu.md ion-item.selected {
-  --background: rgba(var(--ion-color-primary-rgb), 0.14);
-}
-
-ion-menu.md ion-item.selected ion-icon {
-  color: var(--ion-color-primary);
-}
-
-ion-menu.md ion-item ion-icon {
-  color: #616e7e;
-}
-
-ion-menu.md ion-item ion-label {
-  font-weight: 500;
-}
-
-ion-menu.ios ion-content {
-  --padding-bottom: 20px;
-}
-
-ion-menu.ios ion-list {
-  padding: 20px 0 0 0;
-}
-
-ion-menu.ios ion-note {
-  line-height: 24px;
-  margin-bottom: 20px;
-}
-
-ion-menu.ios ion-item {
-  --padding-start: 16px;
-  --padding-end: 16px;
-  --min-height: 50px;
-}
-
-ion-menu.ios ion-item.selected ion-icon {
-  color: var(--ion-color-primary);
-}
-
+/* Cambiar los íconos en modo iOS */
 ion-menu.ios ion-item ion-icon {
   font-size: 24px;
-  color: #73849a;
+  color: #FF9800; /* Cambia los íconos a un naranja vibrante en iOS */
 }
 
-ion-menu.ios ion-list#labels-list ion-list-header {
-  margin-bottom: 8px;
-}
-
-ion-menu.ios ion-list-header,
-ion-menu.ios ion-note {
-  padding-left: 16px;
-  padding-right: 16px;
-}
-
-ion-menu.ios ion-note {
-  margin-bottom: 8px;
-}
-
+/* Cambiar el color de las notas (ion-note) */
 ion-note {
-  display: inline-block;
-  font-size: 16px;
-
-  color: var(--ion-color-medium-shade);
-}
-
-ion-item.selected {
-  --color: var(--ion-color-primary);
+  color: #9E9E9E; /* Cambia el color del texto de las notas a gris medio */
 }

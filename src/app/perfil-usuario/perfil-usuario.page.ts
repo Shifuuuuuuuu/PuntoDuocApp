@@ -51,6 +51,7 @@ export class PerfilUsuarioPage implements OnInit {
     });
   }
 
+
   ngOnDestroy() {
     // Desuscribirse para evitar fugas de memoria
     if (this.authSubscription) {

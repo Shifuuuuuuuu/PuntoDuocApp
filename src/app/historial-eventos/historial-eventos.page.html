@@ -1,19 +1,19 @@
-<ion-header [translucent]="true">
-  <ion-toolbar >
-    <ion-buttons slot="start">
+<ion-header [translucent]="true"style="background-color: #0A49A7">
+  <ion-toolbar style="background-color: #0A49A7" >
+    <ion-buttons slot="start" style="background-color: #0A49A7">
       <ion-back-button defaultHref="/folder/Inicio"></ion-back-button>
     </ion-buttons>
     <ion-buttons slot="end">
       <ion-button size="large" [routerLink]="['/perfil-usuario']">
         <ion-icon name="person-circle-outline"></ion-icon>
       </ion-button>
-      <ion-menu-button ></ion-menu-button>
+      <ion-menu-button style="background-color: #0A49A7" ></ion-menu-button>
     </ion-buttons>
     <ion-title>Historial de eventos</ion-title>
   </ion-toolbar>
 </ion-header>
 
-<ion-content>
+<ion-content >
   <!-- Pull to Refresh -->
   <ion-refresher slot="fixed" (ionRefresh)="doRefresh($event)">
     <ion-refresher-content
@@ -30,8 +30,8 @@
     <p>Buscando eventos inscritos...</p>
   </div>
 
-  <ion-list *ngIf="!isLoading && eventosInscritos && eventosInscritos.length > 0;">
-    <ion-item *ngFor="let evento of eventosInscritos">
+  <ion-list *ngIf="!isLoading && eventosInscritos && eventosInscritos.length > 0;" style="--background: transparent; " >
+    <ion-item *ngFor="let evento of eventosInscritos" style="--background: transparent; ">
       <ion-thumbnail slot="start">
         <img [src]="evento.imagen" alt="{{ evento.titulo }}">
       </ion-thumbnail>

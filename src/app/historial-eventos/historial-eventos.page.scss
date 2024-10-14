@@ -1,0 +1,42 @@
+/* Estilo general del contenido */
+ion-content {
+  --background: linear-gradient(to bottom, #0A49A7, #6698FF); /* Degradado azul */ /* Degradado entre azul y negro */
+  color: white; /* Texto blanco para mayor contraste */
+}
+
+/* Estilo del encabezado */
+ion-toolbar {
+  background-color: #0A49A7;
+  --background: transparent; /* Fondo negro para la barra de herramientas */
+}
+
+/* Estilo del título y botones del encabezado */
+ion-title, ion-back-button, ion-menu-button {
+  color:  white; /* Texto azul para el título */
+}
+/* Estilo del texto centrado */
+.centered-text {
+  text-align: center; /* Centrar texto */
+}
+
+/* Estilo del contenido centrado de la tarjeta */
+.centered-content {
+  text-align: center; /* Centrar contenido */
+  color: #0A49A7;
+}
+ion-item, ion-list{
+  --background: transparent; /* Asegura que el fondo de la lista sea transparente */
+  background-color: transparent; /* Establece el fondo de la lista a transparente */
+  box-shadow: none;
+  color: white;
+}
+p{
+  color: white;
+}
+
+
+
+
+
+
+

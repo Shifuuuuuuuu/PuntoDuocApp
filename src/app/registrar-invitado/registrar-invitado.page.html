@@ -1,60 +1,61 @@
-<ion-header [translucent]="true">
-  <ion-toolbar>
+<ion-header [translucent]="true" style="background-color: #0A49A7;">
+  <ion-toolbar style="background-color: #0A49A7;">
+    <!-- Botón de retroceso -->
     <ion-buttons slot="start">
-      <ion-back-button defaultHref="/iniciar-sesion"></ion-back-button>
+      <ion-back-button defaultHref="/iniciar-sesion" style="color: white;"></ion-back-button>
     </ion-buttons>
-    <ion-title>Registro de Invitado</ion-title>
-    <ion-buttons slot="end">
-      <ion-menu-button></ion-menu-button>
-    </ion-buttons>
+    <ion-title style="color: white; font-weight: bold; font-family: 'Arial', sans-serif;">
+      Registro de Invitado
+    </ion-title>
   </ion-toolbar>
 </ion-header>
 
-<ion-content [fullscreen]="true" class="ion-padding">
-  <div class="form-container">
+<ion-content [fullscreen]="true" class="ion-padding" style="background: linear-gradient(135deg, #0A49A7, white);">
+  <div class="form-container" style="max-width: 380px; margin: auto; padding: 25px; background-color: white; border-radius: 20px; box-shadow: 0px 8px 20px;">
+    <h2 style="text-align: center; color: #0A49A7; font-family: 'Arial', sans-serif; font-weight: 600; font-size: 24px;">Registro de Invitado</h2>
+
     <form #registroForm="ngForm" (ngSubmit)="registrar()" novalidate>
       <div class="mb-3">
-        <label for="exampleFormControlInput1" class="form-label">Nombre completo</label>
-        <input type="text" [(ngModel)]="invitado.Nombre_completo" name="nombre" class="form-control" id="exampleFormControlInput1" placeholder="Juan Pérez" required>
+        <label for="exampleFormControlInput1" class="form-label" style="color: #0A49A7;">Nombre completo</label>
+        <input type="text" [(ngModel)]="invitado.Nombre_completo" name="nombre" class="form-control" id="exampleFormControlInput1" placeholder="Juan Pérez" required style="background: transparent; color: black; border: 1px solid #0A49A7;">
       </div>
       <div class="mb-3">
-        <label for="exampleFormControlInput2" class="form-label">RUT</label>
-        <input type="text" [(ngModel)]="invitado.Rut" name="rut" class="form-control" id="exampleFormControlInput2" placeholder="12345678-9" required pattern="^[0-9]+-[0-9kK]{1}$">
+        <label for="exampleFormControlInput2" class="form-label" style="color: #0A49A7;">RUT</label>
+        <input type="text" [(ngModel)]="invitado.Rut" name="rut" class="form-control" id="exampleFormControlInput2" placeholder="12345678-9" required pattern="^[0-9]+-[0-9kK]{1}$" style="background: transparent; color: black; border: 1px solid #0A49A7;">
         <div *ngIf="registroForm.controls['rut']?.invalid && registroForm.controls['rut']?.touched" class="text-danger">
           El RUT debe tener el formato correcto (ej: 12345678-9).
         </div>
       </div>
       <div class="mb-3">
-        <label for="exampleFormControlInput3" class="form-label">Teléfono</label>
-        <input type="tel" [(ngModel)]="invitado.Telefono" name="telefono" class="form-control" id="exampleFormControlInput3" placeholder="+56 9 1234 5678" required pattern="^[0-9]{11}$">
+        <label for="exampleFormControlInput3" class="form-label" style="color: #0A49A7;">Teléfono</label>
+        <input type="tel" [(ngModel)]="invitado.Telefono" name="telefono" class="form-control" id="exampleFormControlInput3" placeholder="+56 9 1234 5678" required pattern="^[0-9]{11}$" style="background: transparent; color: black; border: 1px solid #0A49A7;">
         <div *ngIf="registroForm.controls['telefono']?.invalid && registroForm.controls['telefono']?.touched" class="text-danger">
           El teléfono debe contener exactamente 11 dígitos.
         </div>
       </div>
       <div class="mb-3">
-        <label for="exampleFormControlInput4" class="form-label">Correo electrónico</label>
-        <input type="email" [(ngModel)]="invitado.email" name="correo" class="form-control" id="exampleFormControlInput4" placeholder="nombre@ejemplo.com" required email>
+        <label for="exampleFormControlInput4" class="form-label" style="color: #0A49A7;">Correo electrónico</label>
+        <input type="email" [(ngModel)]="invitado.email" name="correo" class="form-control" id="exampleFormControlInput4" placeholder="nombre@ejemplo.com" required email style="background: transparent; color: black; border: 1px solid #0A49A7;">
         <div *ngIf="registroForm.controls['correo']?.invalid && registroForm.controls['correo']?.touched" class="text-danger">
           Introduce un correo electrónico válido.
         </div>
       </div>
       <div class="mb-3">
-        <label for="inputPassword5" class="form-label">Contraseña</label>
-        <input type="password" [(ngModel)]="invitado.password" name="password" id="inputPassword5" class="form-control" aria-describedby="passwordHelpBlock" required minlength="8" maxlength="20">
+        <label for="inputPassword5" class="form-label" style="color: #0A49A7;">Contraseña</label>
+        <input type="password" [(ngModel)]="invitado.password" name="password" id="inputPassword5" class="form-control" aria-describedby="passwordHelpBlock" required minlength="8" maxlength="20" style="background: transparent; color: black; border: 1px solid #0A49A7;">
         <div *ngIf="registroForm.controls['contrasena']?.invalid && registroForm.controls['contrasena']?.touched" class="text-danger">
           La contraseña debe tener entre 8 y 20 caracteres.
         </div>
       </div>
       <!-- Botones -->
       <div class="button-group">
-        <ion-button expand="block" color="primary" [disabled]="registroForm.invalid" type="submit">Registrar</ion-button>
-        <ion-button expand="block" color="light" [routerLink]="['/iniciar-sesion']">Volver al inicio</ion-button>
-      </div>
-      <!-- Mensaje de error -->
-      <div *ngIf="errorMessage" class="text-danger">
-        {{ errorMessage }}
+        <ion-button expand="block" color="primary" [disabled]="registroForm.invalid" type="submit" style="--background: #0A49A7; --color: white; font-weight: bold; border-radius: 12px;">
+          Registrar
+        </ion-button>
+        <ion-button expand="block" [routerLink]="['/iniciar-sesion']" class="custom-button">
+          Volver al inicio
+        </ion-button>
       </div>
     </form>
   </div>
 </ion-content>
-

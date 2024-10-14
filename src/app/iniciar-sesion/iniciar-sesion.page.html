@@ -1,32 +1,22 @@
-<ion-header >
-  <ion-toolbar class="titleuno">
-  <div>
-    <ion-title>Iniciar sesión</ion-title>
-  </div>
-    
-  </ion-toolbar>
-</ion-header>
-
-<ion-content [fullscreen]="true" class="ion-padding">
+<ion-content [fullscreen]="true" class="ion-padding" style="background: linear-gradient(135deg, #333333, black);">
   <div class="form-container">
+    <h1 class="center" style="color: #0A49A7; text-align: center;">PuntoDuoc</h1>
     <form #loginForm="ngForm" (ngSubmit)="iniciarSesion()" novalidate>
+      <!-- Correo Electrónico -->
       <div class="mb-3 position-relative">
-        <label for="email" class="form-label">Correo Electrónico</label>
-        <input type="email" [(ngModel)]="user.email" name="email" class="form-control" id="email" placeholder="nombre@ejemplo.com" required email>
-        <button type="button" *ngIf="user.email" class="btn btn-sm btn-secondary clear-button" (click)="clearField('email')">
-          ✕
-        </button>
+        <ion-item class="custom-item">
+          <ion-input type="text" [(ngModel)]="user.email" name="email" placeholder="Correo Electrónico" required></ion-input>
+        </ion-item>
         <div *ngIf="loginForm.controls['email']?.invalid && loginForm.controls['email']?.touched" class="text-danger">
           Ingresa un correo electrónico válido.
         </div>
       </div>
 
+      <!-- Contraseña -->
       <div class="mb-3 position-relative">
-        <label for="password" class="form-label">Contraseña</label>
-        <input type="password" [(ngModel)]="user.password" name="password" class="form-control" id="password" required minlength="8" maxlength="20">
-        <button type="button" *ngIf="user.password" class="btn btn-sm btn-secondary clear-button" (click)="clearField('password')">
-          ✕
-        </button>
+        <ion-item class="custom-item">
+          <ion-input type="password" [(ngModel)]="user.password" name="password" placeholder="Contraseña" required minlength="8" maxlength="20"></ion-input>
+        </ion-item>
         <div *ngIf="loginForm.controls['password']?.invalid && loginForm.controls['password']?.touched" class="text-danger">
           La contraseña debe tener entre 8 y 20 caracteres.
         </div>
@@ -34,21 +24,29 @@
 
       <div class="mb-3 remember-me">
         <ion-checkbox slot="start" [(ngModel)]="rememberMe" name="rememberMe"></ion-checkbox>
-        <label for="rememberMe">Recordar contraseña automáticamente</label>
+        <label style="color: #0A49A7;" for="rememberMe">Recordar contraseña automáticamente</label>
       </div>
 
-      <div class="forgot-password">
-        <a [routerLink]="['/recuperar-contraseña']">¿Olvidaste tu contraseña?</a>
+      <!-- ¿Olvidaste tu contraseña? -->
+      <div class="forgot-password" style="text-align: right;">
+        <a [routerLink]="['/recuperar-contraseña']" class="forgot-password-link">Recuperar contraseña</a>
       </div>
 
+      <!-- Botón de iniciar sesión -->
       <div class="button-group">
-        <ion-button class="yellow-button" expand="block" [disabled]="loginForm.invalid" type="submit">Iniciar sesión</ion-button>
-        <ion-button class="yellow-button" expand="block" [routerLink]="['/registrar-usuarios']">Registrar cuenta</ion-button>
-        <ion-button class="yellow-button" expand="block" [routerLink]="['/registrar-invitado']">Modo invitado</ion-button>
+        <ion-button expand="block" [disabled]="loginForm.invalid" type="submit" class="custom-button">
+          Iniciar sesión
+        </ion-button>
       </div>
-
-      <div *ngIf="errorMessage" class="text-danger">
-        {{ errorMessage }}
+      <div class="button-group">
+        <ion-button expand="block" [routerLink]="['/registrar-usuarios']" type="submit" class="custom-button">
+          Registrar Estudiante
+        </ion-button>
+      </div>
+      <div class="button-group">
+        <ion-button expand="block" [routerLink]="['/registrar-invitado']" type="submit" class="custom-button">
+          Registrar Invitado
+        </ion-button>
       </div>
     </form>
   </div>

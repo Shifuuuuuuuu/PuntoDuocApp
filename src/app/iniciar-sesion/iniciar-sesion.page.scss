@@ -1,117 +1,65 @@
-// Define las variables de color
-$color-dark: #1A1A1A;
-$color-gray: #666666;
-$color-yellow: #FFB800;
-$color-white: #ffffff;
-
-
-  .form-container {
-  background-color: rgba(211, 185, 185, 0.8); // Fondo blanco con opacidad
-  border-radius: 10px; // Bordes redondeados
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1); // Sombra suave
-  background: linear-gradient(to right,rgb(44, 62, 80), rgb(18, 15, 19));
-}
-
-// Estilo para el contenedor del formulario
-.form-container {
+/* Fondo con degradado */
+ion-content {
+  --background: linear-gradient(to bottom, #0A49A7, #6698FF); /* Degradado azul */
   display: flex;
-  flex-direction: column;
   justify-content: center;
   align-items: center;
-  height: 100vh;
- 
-  color: $color-yellow;
+  height: 100vh; /* Ajusta para ocupar toda la pantalla */
 }
 
-// Márgenes para los elementos del formulario
-.mb-3 {
+/* Estilo del contenedor del formulario */
+.form-container {
+  max-width: 400px;
   width: 100%;
-  max-width: 300px;
-
-
-
-  .form-control {
-    background-color: $color-white;
-    color: $color-dark;
-    border: none;
-
-    &::placeholder {
-      color: $color-dark;
-    }
-  }
-
-  .clear-button {
-    position: absolute;
-    right: 10px;
-    top: 50%;
-    transform: translateY(-50%);
-    background: $color-dark;
-    border: none;
-    cursor: pointer;
-    color: $color-yellow;
-  }
-
-  .text-danger {
-    color: $color-yellow;
-  }
+  padding: 20px;
+  background-color: #fff;
+  border-radius: 15px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
 }
 
-// Estilo para la sección de "Recordar contraseña automáticamente"
-.remember-me {
-  display: flex;
-  align-items: center;
-  width: 100%;
-  max-width: 300px;
-  margin-bottom: 10px;
-  color: $color-dark;
-
-  ion-checkbox {
-    --background: $color-gray;
-    --checkmark-color: $color-dark;
-  }
-
-  label {
-    margin-left: 8px;
-  }
+/* Estilo de los items */
+.custom-item {
+  --background: #E9F1FC;
+  --border-radius: 10px;
+  margin-bottom: 15px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
-// Estilo para la sección de "Olvidaste tu contraseña"
-.forgot-password {
-  width: 100%;
-  max-width: 300px;
-  text-align: right;
-  margin-bottom: 10px;
-
-  a {
-    color: $color-yellow;
-    text-decoration: none;
-    font-size: 0.9em;
-  }
+/* Estilo del input de correo y contraseña */
+ion-input {
+  padding: 10px;
+  font-size: 16px;
+  color: #333;
 }
 
-// Estilo para el grupo de botones
-.button-group {
-  display: flex;
-  flex-direction: column;
-  width: 100%;
-  max-width: 300px;
-  gap: 10px;
-  margin-top: 20px;
-
-  .yellow-button {
-    --background: $color-yellow !important;
-    --color: $color-dark !important;
-    --background-activated: darken($color-yellow, 10%) !important;
-    --background-focused: lighten($color-yellow, 10%) !important;
-    --background-hover: lighten($color-yellow, 20%) !important;
-  }
+/* Estilo del botón de login */
+.custom-button {
+  --border-radius: 8px;
+  --background: #0a49a7;
+  color: white;
+  font-weight: bold;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Sombra en el botón */
 }
 
-// Estilo para el mensaje de error
+.custom-button:hover {
+  background-color: #084a9a;
+}
+
+/* Estilo de 'Forgot Password' */
+.forgot-password-link {
+  color: #0a49a7;
+  text-decoration: none;
+  font-size: 14px;
+}
+
+.forgot-password-link:hover {
+  text-decoration: underline;
+}
+
+/* Estilo del mensaje de error */
 .text-danger {
-  color: $color-yellow;
-}
-
-.remember-me{
-  color:$color-yellow;
+  color: #d9534f;
+  font-weight: bold;
+  margin-top: 5px;
+  text-align: left;
 }

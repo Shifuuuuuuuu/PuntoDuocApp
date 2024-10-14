@@ -1,72 +1,69 @@
-<ion-header [translucent]="true">
-  <ion-toolbar>
-    <!-- Botón de retroceso y botón para abrir el menú -->
+<ion-header [translucent]="true" style="background-color: #0A49A7">
+  <ion-toolbar style="background-color: #0A49A7">
+    <!-- Botón de retroceso -->
     <ion-buttons slot="start">
-      <ion-back-button defaultHref="/iniciar-sesion"></ion-back-button>
+      <ion-back-button defaultHref="/iniciar-sesion" style="color:  white"></ion-back-button>
     </ion-buttons>
-    <ion-title>Registro de Usuario</ion-title>
-    <ion-buttons slot="end">
-      <!-- Botón para abrir el menú -->
-      <ion-menu-button></ion-menu-button>
-    </ion-buttons>
+    <ion-title style="font-weight: bold; font-family: 'Arial', sans-serif;color:  white">
+      Registro de Usuario
+    </ion-title>
   </ion-toolbar>
 </ion-header>
 
-<ion-content [fullscreen]="true" class="ion-padding">
-  <div class="form-container">
+<ion-content [fullscreen]="true" class="ion-padding" style="background: linear-gradient(135deg, #333333, black);">
+  <div class="form-container" style="max-width: 380px; margin: auto; padding: 25px; background-color: white; border-radius: 20px; ">
+    <h2 style="text-align: center; color: #333; font-family: 'Arial', sans-serif; font-weight: 600; font-size: 24px;">Crea tu cuenta</h2>
+
     <form #registroForm="ngForm" (ngSubmit)="registrar()" novalidate>
-      <div class="mb-3">
-        <label for="exampleFormControlInput1" class="form-label">Nombre completo</label>
-        <input type="text" [(ngModel)]="estudiante.Nombre_completo" name="nombre" class="form-control" id="exampleFormControlInput1" placeholder="Juan Pérez" required>
-      </div>
-      <div class="mb-3">
-        <label for="exampleFormControlInput2" class="form-label">RUT</label>
-        <input type="text" [(ngModel)]="estudiante.Rut" name="rut" class="form-control" id="exampleFormControlInput2" placeholder="12345678-9" required pattern="^[0-9]+-[0-9kK]{1}$">
-        <div *ngIf="registroForm.controls['rut']?.invalid && registroForm.controls['rut']?.touched" class="text-danger">
-          El RUT debe tener el formato correcto (ej: 12345678-9).
-        </div>
-      </div>
-      <div class="mb-3">
-        <label for="exampleFormControlInput3" class="form-label">Teléfono</label>
-        <input type="tel" [(ngModel)]="estudiante.Telefono" name="telefono" class="form-control" id="exampleFormControlInput3" placeholder="+56 9 1234 5678" required pattern="^[0-9]{11}$">
-        <div *ngIf="registroForm.controls['telefono']?.invalid && registroForm.controls['telefono']?.touched" class="text-danger">
-          El teléfono debe contener exactamente 11 dígitos.
-        </div>
-      </div>
-      <div class="mb-3">
-        <label for="exampleFormControlInput4" class="form-label">Correo electrónico</label>
-        <input type="email" [(ngModel)]="estudiante.email" name="correo" class="form-control" id="exampleFormControlInput4" placeholder="nombre@ejemplo.com" required email>
-        <div *ngIf="registroForm.controls['correo']?.invalid && registroForm.controls['correo']?.touched" class="text-danger">
-          Introduce un correo electrónico válido.
-        </div>
-      </div>
-      <div class="mb-3">
-        <label for="inputCarrera" class="form-label">Carrera</label>
-        <select [(ngModel)]="estudiante.carrera" name="carrera" class="form-select" id="inputCarrera" required>
-          <option value="" disabled selected>Selecciona una carrera</option>
-          <option value="Ingeniería Civil">Ingeniería Civil</option>
-          <option value="Diseño Gráfico">Diseño Gráfico</option>
-          <option value="Técnico en Programación">Técnico en Programación</option>
-          <!-- Agrega más opciones según tus necesidades -->
-        </select>
-      </div>
-      <div class="mb-3">
-        <label for="inputPassword5" class="form-label">Contraseña</label>
-        <input type="password" [(ngModel)]="estudiante.password" name="password" id="inputPassword5" class="form-control" aria-describedby="passwordHelpBlock" required minlength="8" maxlength="20">
-        <div *ngIf="registroForm.controls['contrasena']?.invalid && registroForm.controls['contrasena']?.touched" class="text-danger">
-          La contraseña debe tener entre 8 y 20 caracteres.
-        </div>
-      </div>
-      <!-- Botones -->
-      <div class="button-group">
-        <ion-button expand="block" color="primary" [disabled]="registroForm.invalid" type="submit">Registrar</ion-button>
-        <ion-button expand="block" color="light" [routerLink]="['/iniciar-sesion']">Volver al inicio</ion-button>
-      </div>
-      <!-- Mensaje de error -->
-      <div *ngIf="errorMessage" class="text-danger">
-        {{ errorMessage }}
-      </div>
+      <!-- Nombre completo -->
+      <ion-item class="custom-item">
+        <ion-label position="floating" style="color: #333;">Nombre completo</ion-label>
+        <ion-input type="text" [(ngModel)]="estudiante.Nombre_completo" name="nombre" required></ion-input>
+      </ion-item>
+
+      <!-- RUT -->
+      <ion-item class="custom-item">
+        <ion-label position="floating" style="color: #333;">RUT</ion-label>
+        <ion-input type="text" [(ngModel)]="estudiante.Rut" name="rut" required pattern="^[0-9]+-[0-9kK]{1}$"></ion-input>
+      </ion-item>
+
+      <!-- Teléfono -->
+      <ion-item class="custom-item">
+        <ion-label position="floating" style="color: #333;">Teléfono</ion-label>
+        <ion-input type="tel" [(ngModel)]="estudiante.Telefono" name="telefono" required pattern="^[0-9]{11}$"></ion-input>
+      </ion-item>
+
+      <!-- Correo electrónico -->
+      <ion-item class="custom-item">
+        <ion-label position="floating" style="color: #333;">Correo electrónico</ion-label>
+        <ion-input type="email" [(ngModel)]="estudiante.email" name="correo" required></ion-input>
+      </ion-item>
+
+      <!-- Carrera -->
+      <ion-item class="custom-item" >
+        <ion-label position="floating" style="color: #333;">Carrera</ion-label>
+        <ion-select [(ngModel)]="estudiante.carrera" name="carrera" style="color: #333;" required>
+          <ion-select-option  value="Ingeniería Civil">Ingeniería Civil</ion-select-option>
+          <ion-select-option value="Diseño Gráfico">Diseño Gráfico</ion-select-option>
+          <ion-select-option value="Técnico en Programación">Técnico en Programación</ion-select-option>
+        </ion-select>
+      </ion-item>
+
+      <!-- Contraseña -->
+      <ion-item class="custom-item">
+        <ion-label position="floating" style="color: #333;">Contraseña</ion-label>
+        <ion-input type="password" [(ngModel)]="estudiante.password" name="password" required minlength="8"></ion-input>
+      </ion-item>
+
+      <!-- Botón de registro -->
+      <ion-button expand="block" type="submit" [disabled]="registroForm.invalid" class="custom-button">
+        Registrar
+      </ion-button>
+
+      <!-- Botón de volver -->
+      <ion-button expand="block" [routerLink]="['/iniciar-sesion']" class="custom-button">
+        Volver al inicio
+      </ion-button>
     </form>
   </div>
 </ion-content>
-

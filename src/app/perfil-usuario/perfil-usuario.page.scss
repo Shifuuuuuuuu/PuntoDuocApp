@@ -1,57 +1,75 @@
-.profile-icon-container {
+/* Fondo con degradado */
+ion-content {
+  --background: linear-gradient(to bottom, #0A49A7, #6698FF); /* Degradado azul */
   display: flex;
   justify-content: center;
-  margin-top: 20px;
+  align-items: center;
+  padding: 20px; /* Espacio interno para que no esté pegado a los bordes */
 }
 
-.button-container {
-  display: flex;
-  justify-content: space-around;
-  padding: 20px;
-}
-/* src/app/pages/perfil-usuario/perfil-usuario.page.scss */
-
-.error-card {
-  background-color: #f8d7da;
-  border-color: #f5c6cb;
-  color: #721c24;
-  margin-bottom: 16px;
-}
-
+/* Estilo del contenedor del perfil */
 .profile-card {
-  margin-bottom: 16px;
+  background-color: rgba(255, 255, 255, 0.95); /* Color de fondo blanco con opacidad */
+  border-radius: 16px; /* Bordes ligeramente redondeados */
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15); /* Sombra más suave alrededor del contenedor */
+  margin: 20px; /* Espacio alrededor del card */
+  padding: 20px; /* Espacio interno del card */
+  max-width: 400px; /* Limitar el ancho para un diseño más controlado */
+  width: 100%; /* Para que ocupe el ancho del contenedor padre */
+  text-align: center; /* Centrar el contenido dentro del card */
 }
 
-.action-buttons {
-  margin-top: 16px;
+/* Estilo de los items */
+.custom-item {
+  --background: #E9F1FC; /* Color de fondo claro para los inputs */
+  --border-radius: 8px; /* Redondear los bordes */
+  margin-bottom: 20px; /* Más espacio entre los items */
+  padding: 10px; /* Espacio interno */
+  box-shadow: 0 1px 6px rgba(0, 0, 0, 0.1); /* Sombra suave en los campos */
 }
 
-ion-button {
-  margin-top: 8px;
+/* Asegurar que el texto de los párrafos sea negro */
+.custom-item p {
+  color: black; /* Color negro para el texto de los campos no editables */
+  opacity: 0.7; /* Hacer que el texto no editable sea un poco más claro */
 }
 
-.qr-container {
-  display: flex;
-  flex-direction: column;
-  align-items: center; /* Centra horizontalmente */
-  margin-top: 20px;
+/* Estilo de los encabezados */
+ion-header {
+  --background: transparent; /* Asegura que el fondo de la lista sea transparente */
+  background-color: #0a49a7; /* Establece el fondo de la lista a transparente */
+  box-shadow: none;
+  color: white;/* Color blanco para el texto de encabezado */
 }
 
-.qr-image {
-  max-width: 300px; /* Ajusta este tamaño según sea necesario */
-  height: auto;
-
+/* Estilo del título */
+ion-title {
+  font-size: 1.75em; /* Tamaño del título más grande */
+  font-weight: bold; /* Negrita para el título */
+  color: white; /* Color blanco para el título */
+  text-align: center; /* Centrar el título */
 }
 
+/* Estilo para los botones */
+.button-container {
+  display: flex; /* Hacer que los botones se alineen en una fila */
+  justify-content: space-around; /* Espaciado uniforme entre los botones */
+  align-items: center; /* Centrar los botones verticalmente */
+  margin: 20px 0; /* Espaciado vertical alrededor del contenedor de botones */
+}
+.button-container ion-button {
+  flex: 1; /* Hacer que cada botón ocupe el mismo espacio */
+  margin: 0 10px; /* Espacio entre botones */
+}
 
-
-img.enlarged {
-  position: fixed; /* Fija la imagen en la pantalla */
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  max-width: 90%; /* Ajusta el tamaño al 90% de la ventana */
-  height: auto;
-  z-index: 1000; /* Asegúrate de que esté por encima de otros elementos */
-  border: 2px solid #000; /* Bordes opcionales */
+/* Estilo del mensaje de error */
+.error-card {
+  background-color: #f8d7da; /* Fondo claro para el mensaje de error */
+  border-color: #f5c6cb; /* Color del borde */
+  padding: 15px; /* Espacio interno */
+  margin: 20px; /* Espacio alrededor del card de error */
+  border-radius: 8px; /* Bordes redondeados para el card de error */
+}
+ion-toolbar {
+  --background: transparent; /* Fondo transparente */
 }

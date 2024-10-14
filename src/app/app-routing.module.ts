@@ -49,6 +49,14 @@ const routes: Routes = [
   {
     path: 'permisos-dispositivo',
     loadChildren: () => import('./permisos-dispositivo/permisos-dispositivo.module').then( m => m.PermisosDispositivoPageModule)
+  },
+  {
+    path: 'folder-ventas',
+    loadChildren: () => import('./folder-ventas/folder-ventas.module').then( m => m.FolderVentasPageModule)
+  },
+  {
+    path: 'folder-gestor-eventos',
+    loadChildren: () => import('./folder-gestor-eventos/folder-gestor-eventos.module').then( m => m.FolderGestorEventosPageModule)
   }
 
 
