@@ -19,6 +19,7 @@ ion-title, ion-back-button, ion-menu-button {
   display: flex; /* Uso de flexbox para alinear elementos */
   align-items: center; /* Centra verticalmente */
   margin: 20px; /* Margen alrededor */
+  color: black;
 }
 
 /* Estilo de la barra de búsqueda */
@@ -27,6 +28,7 @@ ion-searchbar {
   --background: rgba(255, 255, 255, 0.9); /* Fondo blanco semitransparente */
    /* Color del texto en la barra de búsqueda */
   border-radius: 12px; /* Bordes redondeados */
+  color: black;
   margin-right: 10px; /* Espaciado entre la barra de búsqueda y el botón de filtro */
 }
 
@@ -35,7 +37,7 @@ ion-searchbar {
   --background: #0A49A7; /* Fondo azul */
   --color: white; /* Color del texto en blanco */
   border-radius: 12px; /* Bordes redondeados */
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 8px #0A49A7;
 }
 
 /* Estado expandido para la barra de filtros */

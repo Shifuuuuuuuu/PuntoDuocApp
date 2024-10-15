@@ -29,28 +29,26 @@
     </ion-button>
   </div>
 
-  <div class="filters-container" [ngClass]="{ 'visible': showFilters }">
+  <div class="filters-container" [ngClass]="{ 'visible': showFilters }" style="--background: #0A49A7">
     <!-- Aquí agregas las opciones de filtro -->
-    <ion-item>
+    <ion-item  style="--background: #0A49A7">
       <ion-label>Sede</ion-label>
-      <ion-select [(ngModel)]="selectedCategory" (ionChange)="filterEvents()">
+      <ion-select  [(ngModel)]="selectedCategory" (ionChange)="filterEvents()">
         <ion-select-option value="conciertos">Duoc Valparaiso</ion-select-option>
         <ion-select-option value="deportes">Duoc Puente alto</ion-select-option>
         <ion-select-option value="educacion">Duoc San bernardo</ion-select-option>
       </ion-select>
     </ion-item>
-
-    <!-- Agrega más filtros según sea necesario -->
   </div>
 
   <!-- Cargando -->
   <div *ngIf="loading" class="ion-padding" style="text-align: center;">
-    <ion-spinner name="crescent" style="color: #0A49A7;"></ion-spinner>
-    <p style="color: #0A49A7;">Cargando...</p>
+    <ion-spinner name="crescent" style="color: white"></ion-spinner>
+    <p style="color: white">Cargando...</p>
   </div>
 
   <!-- Listado de eventos (ocultarlo si loading es verdadero) -->
-  <ion-grid *ngIf="!loading">
+  <ion-grid *ngIf="!loading" >
     <ion-row>
       <ion-col size="12" size-md="6" size-lg="4" *ngFor="let event of filteredEvents">
         <ion-card class="event-card">
