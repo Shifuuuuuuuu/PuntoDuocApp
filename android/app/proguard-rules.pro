@@ -19,3 +19,21 @@
 # If you keep the line number information, uncomment this to
 # hide the original source file name.
 #-renamesourcefileattribute SourceFile
+# Mantener MainActivity
+-keep class com.PuntoDuocApp.app.MainActivity { *; }
+
+# Mantener todas las actividades
+-keep class * extends android.app.Activity
+-keep class * extends androidx.appcompat.app.AppCompatActivity
+
+# Mantener las clases de Gson
+-keep class com.google.gson.** { *; }
+
+# Mantener las clases de Retrofit
+-keep class retrofit2.** { *; }
+
+# Mantener las clases de Room
+-keep class androidx.room.** { *; }
+
+# Preserve line number information for debugging stack traces.
+-keepattributes SourceFile,LineNumberTable

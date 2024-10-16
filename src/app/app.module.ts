@@ -10,14 +10,16 @@ import { AngularFireAuthModule } from '@angular/fire/compat/auth';
 import { FormsModule } from '@angular/forms';
 
 import { InvitadoService } from './services/invitado.service'; // Importa el nuevo servicio
-import { QRCodeModule } from 'angularx-qrcode';
+import { QRScanner } from '@ionic-native/qr-scanner/ngx';
+
 import { PerfilUsuarioPage } from './perfil-usuario/perfil-usuario.page';
+import { AngularFirestoreModule } from '@angular/fire/compat/firestore';
 
 @NgModule({
   declarations: [AppComponent, ],
   imports: [AngularFireModule.initializeApp(environment.firebaseConfig),
-    AngularFireAuthModule ,BrowserModule, IonicModule.forRoot(), AppRoutingModule,FormsModule],
-  providers: [{ provide: RouteReuseStrategy, useClass: IonicRouteStrategy },InvitadoService],
+    AngularFireAuthModule ,BrowserModule, IonicModule.forRoot(), AppRoutingModule,FormsModule,AngularFirestoreModule],
+  providers: [{ provide: RouteReuseStrategy, useClass: IonicRouteStrategy },InvitadoService, QRScanner],
   bootstrap: [AppComponent],
 })
 export class AppModule {}

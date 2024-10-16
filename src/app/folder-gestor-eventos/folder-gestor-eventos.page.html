@@ -1,13 +1,20 @@
-<ion-header [translucent]="true">
+<ion-header>
   <ion-toolbar>
-    <ion-title>folder_Gestor_eventos</ion-title>
+    <ion-title>Gestión de Eventos</ion-title>
   </ion-toolbar>
 </ion-header>
 
-<ion-content [fullscreen]="true">
-  <ion-header collapse="condense">
-    <ion-toolbar>
-      <ion-title size="large">folder_Gestor_eventos</ion-title>
-    </ion-toolbar>
-  </ion-header>
+<ion-content>
+  <ion-list>
+    <ion-item *ngFor="let evento of eventos$ | async">
+      <ion-label>
+        <h2>{{ evento.titulo }}</h2>
+        <p>{{ evento.fecha }} - {{ evento.lugar }}</p>
+      </ion-label>
+      <ion-button (click)="verDetalles(evento.id)">Ver detalles</ion-button>
+      <ion-button color="danger" (click)="cancelarEvento(evento.id)" *ngIf="evento.estado !== 'cancelado'">
+        Cancelar
+      </ion-button>
+    </ion-item>
+  </ion-list>
 </ion-content>

@@ -22,7 +22,8 @@ const routes: Routes = [
   {
     path: 'registrar-usuarios',
     loadChildren: () => import('./registrar-usuarios/registrar-usuarios.module').then( m => m.RegistrarUsuariosPageModule)
-  },  {
+  },
+  {
     path: 'registrar-invitado',
     loadChildren: () => import('./registrar-invitado/registrar-invitado.module').then( m => m.RegistrarInvitadoPageModule)
   },
@@ -57,6 +58,10 @@ const routes: Routes = [
   {
     path: 'folder-gestor-eventos',
     loadChildren: () => import('./folder-gestor-eventos/folder-gestor-eventos.module').then( m => m.FolderGestorEventosPageModule)
+  },
+  {
+    path: 'detalles-evento/:id',
+    loadChildren: () => import('./detalles-evento/detalles-evento.module').then( m => m.DetallesEventoPageModule)
   }
 
 

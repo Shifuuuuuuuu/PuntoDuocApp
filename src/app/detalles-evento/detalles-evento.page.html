@@ -1,0 +1,19 @@
+<ion-header>
+  <ion-buttons slot="start">
+    <ion-back-button defaultHref="/folder-gestor-eventos" style="color:  white"></ion-back-button>
+  </ion-buttons>
+  <ion-toolbar>
+    <ion-title>{{ evento?.titulo }}</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content *ngIf="evento">
+  <h2>{{ evento.titulo }}</h2>
+  <p>{{ evento.descripcion }}</p>
+  <p><strong>Fecha:</strong> {{ evento.fecha | date:'fullDate' }}</p>
+  <p><strong>Lugar:</strong> {{ evento.lugar }}</p>
+
+  <ion-button expand="block" (click)="verificarAsistencia()">Verificar Asistencia</ion-button>
+</ion-content>
+
+
