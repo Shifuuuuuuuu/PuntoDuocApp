@@ -2,7 +2,8 @@
 import { Injectable } from '@angular/core';
 import { AngularFirestore } from '@angular/fire/compat/firestore';
 import { Invitado } from '../interface/IInvitado';
-import { BehaviorSubject, map, Observable } from 'rxjs';
+import { BehaviorSubject,  Observable } from 'rxjs';
+import {  map } from 'rxjs/operators';
 import 'firebase/compat/firestore';
 import { doc, updateDoc, arrayUnion, arrayRemove } from 'firebase/firestore';
 

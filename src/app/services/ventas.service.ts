@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { AngularFirestore } from '@angular/fire/compat/firestore';
 import { BehaviorSubject, Observable } from 'rxjs';
 import { UsuarioVentas } from '../interface/IUVentas'; // Asegúrate de colocar la interfaz en la carpeta correcta
-import { map } from 'rxjs/operators';
+
 
 @Injectable({
   providedIn: 'root'

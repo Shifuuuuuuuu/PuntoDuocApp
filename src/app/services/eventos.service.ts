@@ -3,9 +3,7 @@ import { AngularFirestore } from '@angular/fire/compat/firestore';
 import { Evento } from '../interface/IEventos';
 import 'firebase/firestore'; // Importar Firestore
 import {doc,updateDoc,arrayUnion,arrayRemove,increment,serverTimestamp,deleteDoc,getDoc,} from 'firebase/firestore';
-import { catchError, forkJoin, map, Observable, of, switchMap } from 'rxjs';
-import { Inscripcion } from '../interface/IInscripcion';
-import { Usuario } from '../interface/IUsuario';
+
 @Injectable({
   providedIn: 'root'
 })

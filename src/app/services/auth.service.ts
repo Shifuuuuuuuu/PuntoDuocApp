@@ -1,8 +1,8 @@
 import { Injectable } from '@angular/core';
 import { AngularFirestore } from '@angular/fire/compat/firestore';
 import { Estudiante } from '../interface/IEstudiante';
-import { BehaviorSubject, map, Observable } from 'rxjs';
-
+import { BehaviorSubject, Observable } from 'rxjs';
+import { map} from 'rxjs/operators';
 
 
 @Injectable({

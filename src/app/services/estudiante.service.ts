@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { AngularFirestore } from '@angular/fire/compat/firestore';
 import { Estudiante } from '../interface/IEstudiante'; // Asegúrate de tener la interfaz creada
-import { map } from 'rxjs';
+import { map } from 'rxjs/operators';
 import firebase from 'firebase/compat/app';
 import { Observable } from 'rxjs';
 @Injectable({

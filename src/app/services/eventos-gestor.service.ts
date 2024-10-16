@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { AngularFirestore } from '@angular/fire/compat/firestore';
-import { filter, Observable } from 'rxjs';
+import {  Observable } from 'rxjs';
+import {  filter} from 'rxjs/operators';
 import { Evento } from '../interface/IEventos';
 import { Inscripcion } from '../interface/IInscripcion';
 import {  getDoc } from '@angular/fire/firestore';
