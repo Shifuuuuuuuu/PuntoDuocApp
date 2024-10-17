@@ -5,6 +5,7 @@ import { InvitadoService } from '../services/invitado.service';
 import { VentasAuthService } from '../services/ventas.service';
 import { GestorEventosService } from '../services/gestoreventos.service';
 import { AngularFireAuth } from '@angular/fire/compat/auth';
+import { firstValueFrom } from 'rxjs';
 
 
 
@@ -36,52 +37,62 @@ export class IniciarSesionPage implements OnInit {
     console.log('Correo:', this.user.email);
     console.log('Contraseña:', this.user.password);
 
-    // Verificar primero las credenciales con Firebase Authentication para estudiantes
+    // Intentar iniciar sesión como estudiante
     this.authService.login(this.user.email, this.user.password)
-      .then((studentData) => {
+      .then(async (studentData) => {
         // Si se autentica como estudiante
-        console.log('Inicio de sesión como estudiante exitoso:', studentData);
-        this.authService.setCurrentUserEmail(this.user.email);
-        this.router.navigate(['/folder/Inicio']);
-      })
-      .catch((error) => {
-        if (error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password') {
-          // Si no es estudiante, intentar iniciar sesión como invitado
-          this.afAuth.signInWithEmailAndPassword(this.user.email, this.user.password)
-            .then((userCredential) => {
-              // Obtener el correo del usuario autenticado
-              const authUserEmail = userCredential.user?.email;
-              if (authUserEmail) {
-                // Verificar si el email pertenece a un invitado en Firestore
-                this.invitadoService.obtenerInvitadoPorEmail(authUserEmail)
-                  .subscribe((invitado) => {
-                    if (invitado) {
-                      console.log('Inicio de sesión como invitado exitoso:', invitado);
-                      this.invitadoService.setCurrentUserEmail(authUserEmail);
-                      this.router.navigate(['/folder/Inicio']);
-                    } else {
-                      this.errorMessage = 'Correo o contraseña incorrectos para el invitado.';
-                    }
-                  }, (error: any) => {
-                    this.errorMessage = 'Ocurrió un error inesperado. Intenta de nuevo.';
-                    console.error('Error al obtener invitado:', error);
-                  });
-              }
-            })
-            .catch((error) => {
-              this.errorMessage = 'Correo o contraseña incorrectos para el invitado.';
-              console.error('Error de inicio de sesión como invitado:', error);
-            });
+        if (studentData) {
+          console.log('Inicio de sesión como estudiante exitoso:', studentData);
+          this.authService.setCurrentUserEmail(this.user.email);
+          this.router.navigate(['/folder/Inicio']);
         } else {
-          this.errorMessage = 'Correo o contraseña incorrectos.';
-          console.error('Error de inicio de sesión como estudiante:', error);
+          this.errorMessage = 'No se pudo encontrar un estudiante con este correo.';
+
+          // Si no se autentica como estudiante, intentar como invitado
+          await this.iniciarSesionComoInvitado(); // Llama al método de invitado aquí
         }
       })
-      .finally(() => {
-        // Verificar si es usuario de ventas o gestor de eventos
+      .catch(async (error) => {
+        console.error('Error al intentar iniciar sesión como estudiante:', error);
+        // Intentar iniciar sesión como invitado si falla la autenticación de estudiante
+        await this.iniciarSesionComoInvitado();
+      });
+  }
+
+  // Método para manejar la sesión como invitado
+  iniciarSesionComoInvitado() {
+    console.log('Intentando iniciar sesión como invitado con:', this.user.email);
+
+    // Usar AngularFireAuth directamente para autenticar al invitado
+    this.afAuth.signInWithEmailAndPassword(this.user.email, this.user.password)
+      .then(async (userCredential) => {
+        // Asegúrate de que userCredential no sea null
+        if (userCredential && userCredential.user) {
+          const authUserEmail = userCredential.user.email;
+
+          // Verificar que el email no sea nulo
+          if (authUserEmail) {
+            // Si el invitado se autentica correctamente
+            console.log('Inicio de sesión como invitado exitoso:', userCredential);
+            this.invitadoService.setCurrentUserEmail(authUserEmail);
+            this.router.navigate(['/folder/Inicio']);
+          } else {
+            this.errorMessage = 'No se pudo autenticar al invitado. El correo es nulo.';
+          }
+        } else {
+          this.errorMessage = 'No se pudo autenticar al invitado.';
+        }
+      })
+      .catch((error) => {
+        console.error('Error de inicio de sesión como invitado:', error);
+        this.errorMessage = 'Correo o contraseña incorrectos para el invitado.';
+
+        // Validar usuarios de Uventas y Gestor Eventos después de fallar con invitado
         this.verificarUsuarioVentasOEventos(this.user.email, this.user.password);
       });
   }
+
+
 
   verificarUsuarioVentasOEventos(email: string, password: string) {
     // Primero verificar si es un usuario de ventas

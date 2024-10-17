@@ -8,6 +8,7 @@ import { EventosService } from '../services/eventos.service';
 import { AuthService } from '../services/auth.service';
 import { InvitadoService } from '../services/invitado.service';
 import { EstudianteService } from '../services/estudiante.service';
+import { AngularFireAuth } from '@angular/fire/compat/auth';
 @Component({
   selector: 'app-folder',
   templateUrl: './folder.page.html',
@@ -35,7 +36,8 @@ export class FolderPage implements OnInit {
     private eventosService: EventosService,
     private authService: AuthService,
     private invitadoService: InvitadoService,
-    private estudianteService: EstudianteService
+    private estudianteService: EstudianteService,
+    private afAuth: AngularFireAuth
   ) {}
 
   ngOnInit() {
@@ -58,10 +60,8 @@ export class FolderPage implements OnInit {
       const emailInvitado = await firstValueFrom(this.invitadoService.getCurrentUserEmail());
       if (emailInvitado) {
         console.log('Usuario Invitado autenticado con email:', emailInvitado);
-        const invitadoObservable = this.invitadoService.obtenerInvitadoPorEmail(emailInvitado);
+        const invitado = await firstValueFrom(this.invitadoService.obtenerInvitadoPorEmail(emailInvitado));
 
-        // Usar firstValueFrom para obtener el objeto Invitado
-        const invitado = await firstValueFrom(invitadoObservable);
         if (invitado) {
           this.userId = invitado.id_Invitado!; // Ahora esto debería funcionar
           this.isInvitado = true;
@@ -130,8 +130,6 @@ export class FolderPage implements OnInit {
                 console.error('Error al verificar lista de espera:', error);
                 event.enListaEspera = false;
               }
-            } else {
-              console.warn(`No se pudo verificar inscripción para el evento ${event.id_evento}. userId o id_evento no definidos.`);
             }
           }
         } else {
@@ -308,15 +306,21 @@ export class FolderPage implements OnInit {
   }
 
   async inscribirUsuario(eventoId: string) {
+    // Intentar obtener el userId desde Firebase Authentication si no está disponible
     if (!this.userId) {
-      console.error('El ID del usuario no está disponible.');
-      const alert = await this.alertController.create({
-        header: 'Error',
-        message: 'No se pudo encontrar el usuario autenticado.',
-        buttons: ['OK'],
-      });
-      await alert.present();
-      return;
+      const currentUser = await this.afAuth.currentUser;
+      this.userId = currentUser?.uid || ''; // Asigna una cadena vacía si no hay userId
+
+      if (!this.userId) {
+        console.error('El ID del usuario no está disponible.');
+        const alert = await this.alertController.create({
+          header: 'Error',
+          message: 'No se pudo encontrar el usuario autenticado.',
+          buttons: ['OK'],
+        });
+        await alert.present();
+        return;
+      }
     }
 
     this.loading = true; // Mostrar pantalla de carga
@@ -344,7 +348,6 @@ export class FolderPage implements OnInit {
       });
       await toast.present();
 
-
     } catch (error) {
       console.error((error as Error).message);
       const alert = await this.alertController.create({
@@ -354,9 +357,15 @@ export class FolderPage implements OnInit {
       });
       await alert.present();
     } finally {
-      this.loading = false; // Ocultar pantalla de carga
+      // Retraso de 2 segundos (2000 ms) antes de ocultar la pantalla de carga
+      setTimeout(() => {
+        this.loading = false; // Ocultar pantalla de carga después del retraso
+      }, 3000); // Ajusta el tiempo de retraso en milisegundos
     }
   }
+
+
+
 
   // Método para cancelar inscripción
   async cancelarInscripcion(eventoId: string) {
