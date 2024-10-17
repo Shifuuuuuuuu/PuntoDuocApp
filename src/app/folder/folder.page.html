@@ -31,12 +31,13 @@
 
   <div class="filters-container" [ngClass]="{ 'visible': showFilters }" style="--background: #0A49A7">
     <!-- Aquí agregas las opciones de filtro -->
-    <ion-item  style="--background: #0A49A7">
+    <ion-item style="--background: #0A49A7">
       <ion-label>Sede</ion-label>
-      <ion-select  [(ngModel)]="selectedCategory" (ionChange)="filterEvents()">
-        <ion-select-option value="conciertos">Duoc Valparaiso</ion-select-option>
-        <ion-select-option value="deportes">Duoc Puente alto</ion-select-option>
-        <ion-select-option value="educacion">Duoc San bernardo</ion-select-option>
+      <ion-select [(ngModel)]="selectedSede" (ionChange)="filterEvents()">
+        <ion-select-option value="all">Todas las sedes</ion-select-option>
+        <ion-select-option value="Duoc Valparaiso">Duoc Valparaíso</ion-select-option>
+        <ion-select-option value="Duoc Puente Alto">Duoc Puente Alto</ion-select-option>
+        <ion-select-option value="Duoc San Bernardo">Duoc San Bernardo</ion-select-option>
       </ion-select>
     </ion-item>
   </div>

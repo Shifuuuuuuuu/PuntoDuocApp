@@ -15,7 +15,9 @@ import { AngularFireAuth } from '@angular/fire/compat/auth';
   styleUrls: ['./folder.page.scss'],
 })
 export class FolderPage implements OnInit {
+  selectedSede: string = 'all';
   Eventos: Observable<Evento[]> = new Observable();
+  allEvents: Evento[] = [];
   filteredEvents: Evento[] = [];
   searchText: string = '';
   showFilters: boolean = false;
@@ -96,6 +98,8 @@ export class FolderPage implements OnInit {
       async (data: Evento[]) => {
         this.loading = false; // Ocultar pantalla de carga
         console.log('Eventos obtenidos:', data);
+        this.allEvents = data; // Asignar los eventos obtenidos
+        this.filteredEvents = [...this.allEvents];
 
         if (data && data.length > 0) {
           // Aplicar los filtros directamente a los eventos obtenidos
@@ -145,9 +149,25 @@ export class FolderPage implements OnInit {
 
 
   filterEvents() {
-    this.filteredEvents = this.Eventos
-      ? this.filteredEvents.filter((evento) => evento.titulo.toLowerCase().includes(this.searchText.toLowerCase()))
-      : [];
+    this.filteredEvents = this.allEvents.filter((evento) => {
+      // Filtrar por texto de búsqueda
+      const matchesSearchText = this.searchText
+        ? evento.titulo.toLowerCase().includes(this.searchText.toLowerCase())
+        : true;
+
+      // Filtrar por categoría
+      const matchesCategory = this.selectedCategory === 'all'
+        ? true
+        : evento.categoria === this.selectedCategory;
+
+      // Filtrar por sede
+      const matchesSede = this.selectedSede === 'all'
+        ? true
+        : evento.sede === this.selectedSede;
+
+      // Retorna solo los eventos que coincidan con los tres filtros
+      return matchesSearchText && matchesCategory && matchesSede;
+    });
   }
   toggleFilters() {
     this.showFilters = !this.showFilters;
