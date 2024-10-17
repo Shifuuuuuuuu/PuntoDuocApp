@@ -3,6 +3,7 @@ import { Invitado } from '../interface/IInvitado';
 import { Router } from '@angular/router';
 import { InvitadoService } from '../services/invitado.service';
 import * as QRCode from 'qrcode';
+import { getAuth, isSignInWithEmailLink } from 'firebase/auth';
 @Component({
   selector: 'app-registrar-invitado',
   templateUrl: './registrar-invitado.page.html',
@@ -25,6 +26,15 @@ export class RegistrarInvitadoPage implements OnInit {
 
   async registrar() {
     this.errorMessage = ''; // Resetear el mensaje de error
+
+    // Validar el dominio del correo electrónico
+    const emailPattern = /^(.*@gmail\.com|.*@outlook\.com|.*@yahoo\.com)$/i;
+    if (!emailPattern.test(this.invitado.email)) {
+      this.errorMessage = 'El correo electrónico debe ser de Gmail, Outlook o Yahoo!';
+      return; // Detener la ejecución si el correo no es válido
+    }
+
+    // Verificar si el correo ya está registrado
     this.invitadoService.verificarInvitadoPorCorreo(this.invitado.email)
       .subscribe(async yaRegistrado => {
         if (yaRegistrado) {

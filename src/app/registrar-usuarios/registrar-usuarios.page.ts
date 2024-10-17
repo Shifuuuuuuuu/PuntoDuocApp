@@ -3,7 +3,10 @@ import { Estudiante } from '../interface/IEstudiante';
 import { Router } from '@angular/router';
 import { EstudianteService } from '../services/estudiante.service';
 import * as QRCode from 'qrcode';
-
+import { auth } from 'src/firebase';
+import * as firebase from 'firebase/compat';
+ // Ruta hacia tu archivo firebase.ts
+import { createUserWithEmailAndPassword, sendEmailVerification } from 'firebase/auth';
 @Component({
   selector: 'app-registrar-usuarios',
   templateUrl: './registrar-usuarios.page.html',
@@ -30,40 +33,58 @@ export class RegistrarUsuariosPage implements OnInit {
 
   async registrar() {
     this.errorMessage = '';
-    this.estudianteService.verificarEstudiantePorCorreo(this.estudiante.email)
-      .subscribe(async yaRegistrado => {
-        if (yaRegistrado) {
-          this.errorMessage = 'El correo electrónico ya está registrado.';
-        } else {
-          try {
-            // Registrar el estudiante, sin la contraseña en Firestore
-            const nuevoEstudiante = await this.estudianteService.registrarEstudiante(this.estudiante);
 
-            // Generar el código QR
-            const qrData = JSON.stringify({
-              id_estudiante: nuevoEstudiante.id_estudiante,
-              email: this.estudiante.email,
-              Nombre_completo: this.estudiante.Nombre_completo,
-              Rut: this.estudiante.Rut
-            });
+    // Validar que el correo pertenezca a Gmail, Outlook o Yahoo
+    const emailPattern = /^[a-zA-Z0-9._%+-]+@(duocuc)\.cl$/;
+    if (!emailPattern.test(this.estudiante.email)) {
+      this.errorMessage = 'El correo electrónico debe ser de Gmail, Outlook o Yahoo.';
+      return;
+    }
 
-            this.estudiante.codigoQr = await QRCode.toDataURL(qrData);
+    // Verificar si el correo ya está registrado en Firebase Authentication
+    try {
+      const userCredential = await createUserWithEmailAndPassword(
+        auth, // Se pasa el objeto auth aquí
+        this.estudiante.email,
+        this.estudiante.password
+      );
 
-            // Actualiza el estudiante sin la contraseña, usando Omit para excluir 'password'
-            await this.estudianteService.updateEstudiante({
-              ...nuevoEstudiante,
-              codigoQr: this.estudiante.codigoQr
-            } as Omit<Estudiante, 'password'>); // Omitimos la propiedad 'password'
+      // Enviar correo de verificación
+      const user = userCredential.user;
+      if (user) {
+        await sendEmailVerification(user);
 
-            console.log('Estudiante registrado correctamente. Verifique su correo electrónico.');
-            this.router.navigate(['/iniciar-sesion']);
-          } catch (error) {
-            console.error('Error al registrar estudiante:', error);
-            this.errorMessage = 'Ocurrió un error al registrar el estudiante.';
-          }
-        }
-      });
+        // Registrar el estudiante en Firestore sin contraseña
+        const nuevoEstudiante = await this.estudianteService.registrarEstudiante(this.estudiante);
+
+        // Generar el código QR
+        const qrData = JSON.stringify({
+          id_estudiante: nuevoEstudiante.id_estudiante,
+          email: this.estudiante.email,
+          Nombre_completo: this.estudiante.Nombre_completo,
+          Rut: this.estudiante.Rut
+        });
+        this.estudiante.codigoQr = await QRCode.toDataURL(qrData);
+
+        // Actualizar el estudiante en Firestore
+        await this.estudianteService.updateEstudiante({
+          ...nuevoEstudiante,
+          codigoQr: this.estudiante.codigoQr
+        } as Omit<Estudiante, 'password'>);
+
+        console.log('Estudiante registrado correctamente. Verifique su correo electrónico.');
+        this.router.navigate(['/iniciar-sesion']);
+      }
+    } catch (error: any) {  // Cambiamos 'unknown' a 'any' para manejar los errores correctamente
+      if (error.code === 'auth/email-already-in-use') {
+        this.errorMessage = 'El correo electrónico ya está registrado.';
+      } else {
+        console.error('Error al registrar estudiante:', error);
+        this.errorMessage = 'Ocurrió un error al registrar el estudiante.';
+      }
+    }
   }
+
 
   ngOnInit() { }
 }
