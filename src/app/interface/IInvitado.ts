@@ -8,3 +8,12 @@ export interface Invitado {
     codigoQr?: string;
     eventosInscritos?: string[];
   }
+export interface InvitadoSinPassword {
+    id_Invitado?: string;
+    email: string;
+    Nombre_completo: string;
+    Rut: string;
+    Telefono: string;
+    codigoQr?: string;
+    eventosInscritos?: string[];
+  }

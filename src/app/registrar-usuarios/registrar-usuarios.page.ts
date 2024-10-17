@@ -21,7 +21,7 @@ export class RegistrarUsuariosPage implements OnInit {
     Telefono: '',
     carrera: '',
     codigoQr: '',
-    puntaje: 0, // Inicializa el puntaje en 0
+    puntaje: 0,
   };
 
   errorMessage: string = '';
@@ -29,39 +29,33 @@ export class RegistrarUsuariosPage implements OnInit {
   constructor(private estudianteService: EstudianteService, private router: Router) { }
 
   async registrar() {
-    this.errorMessage = '';  // Resetear el mensaje de error
+    this.errorMessage = '';
     this.estudianteService.verificarEstudiantePorCorreo(this.estudiante.email)
       .subscribe(async yaRegistrado => {
         if (yaRegistrado) {
           this.errorMessage = 'El correo electrónico ya está registrado.';
         } else {
-          // Si no está registrado, proceder a registrarlo
           try {
-            // Registrar al estudiante primero
+            // Registrar el estudiante, sin la contraseña en Firestore
             const nuevoEstudiante = await this.estudianteService.registrarEstudiante(this.estudiante);
 
-            // Obtener el ID generado por Firestore
-            const idEstudiante = nuevoEstudiante.id_estudiante; // Asegúrate de que el método registrarEstudiante retorne el documento completo
-
-            // Crear un objeto con solo los campos necesarios para el código QR
+            // Generar el código QR
             const qrData = JSON.stringify({
-              id_estudiante: idEstudiante, // Usa el ID generado por Firestore
+              id_estudiante: nuevoEstudiante.id_estudiante,
               email: this.estudiante.email,
               Nombre_completo: this.estudiante.Nombre_completo,
               Rut: this.estudiante.Rut
             });
 
-            // Asegúrate de usar "codigoQr" con "Qr" en minúscula
             this.estudiante.codigoQr = await QRCode.toDataURL(qrData);
 
-            // Actualiza el estudiante con el código QR y el puntaje en Firestore
+            // Actualiza el estudiante sin la contraseña, usando Omit para excluir 'password'
             await this.estudianteService.updateEstudiante({
-              ...this.estudiante,
-              id_estudiante: idEstudiante, // Asegúrate de incluir el ID
+              ...nuevoEstudiante,
               codigoQr: this.estudiante.codigoQr
-            });
+            } as Omit<Estudiante, 'password'>); // Omitimos la propiedad 'password'
 
-            console.log('Estudiante registrado correctamente');
+            console.log('Estudiante registrado correctamente. Verifique su correo electrónico.');
             this.router.navigate(['/iniciar-sesion']);
           } catch (error) {
             console.error('Error al registrar estudiante:', error);
@@ -71,7 +65,5 @@ export class RegistrarUsuariosPage implements OnInit {
       });
   }
 
-  ngOnInit() {
-  }
-
+  ngOnInit() { }
 }

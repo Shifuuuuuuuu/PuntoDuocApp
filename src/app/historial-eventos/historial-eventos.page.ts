@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { Observable, of, combineLatest, Subscription } from 'rxjs';
+import { Observable, of, combineLatest, Subscription, firstValueFrom } from 'rxjs';
 import { Evento } from '../interface/IEventos';
 import { Usuario } from '../interface/IUsuario';
 import { AuthService } from '../services/auth.service';
@@ -20,7 +20,7 @@ export class HistorialEventosPage implements OnInit {
   eventosInscritos: Evento[] = [];
   userId: string = '';
   isInvitado: boolean = false;
-  isLoading: boolean = false; // Variable para el estado de carga
+  isLoading: boolean = false;
 
   private authSubscription!: Subscription;
   private invitadoSubscription!: Subscription;
@@ -37,7 +37,7 @@ export class HistorialEventosPage implements OnInit {
   ngOnInit() {
     this.authSubscription = this.authService.getCurrentUserEmail().subscribe(async (emailEstudiante) => {
       if (emailEstudiante) {
-        const estudiante = await this.authService.getEstudianteByEmail(emailEstudiante);
+        const estudiante = await firstValueFrom(this.authService.getEstudianteByEmails(emailEstudiante));
         if (estudiante) {
           this.userId = estudiante.id_estudiante!;
           this.isInvitado = false;
@@ -48,7 +48,7 @@ export class HistorialEventosPage implements OnInit {
 
       this.invitadoSubscription = this.invitadoService.getCurrentUserEmail().subscribe(async (emailInvitado) => {
         if (emailInvitado) {
-          const invitado = await this.invitadoService.obtenerInvitadoPorEmail(emailInvitado);
+          const invitado = await firstValueFrom(this.invitadoService.obtenerInvitadoPorEmail(emailInvitado));
           if (invitado) {
             this.userId = invitado.id_Invitado!;
             this.isInvitado = true;
@@ -61,6 +61,20 @@ export class HistorialEventosPage implements OnInit {
         this.router.navigate(['/iniciar-sesion']);
       });
     });
+  }
+  async doRefresh(event: any) {
+    try {
+      await this.loadInscritos();
+      const toast = await this.toastController.create({
+        message: 'Historial actualizado.',
+        duration: 2000,
+      });
+      toast.present();
+    } catch (error) {
+      console.error('Error al refrescar:', error);
+    } finally {
+      event.target.complete();
+    }
   }
 
   ngOnDestroy() {
@@ -78,7 +92,7 @@ export class HistorialEventosPage implements OnInit {
       return;
     }
 
-    this.isLoading = true; // Inicia la carga
+    this.isLoading = true;
 
     try {
       const eventosSnapshot = await this.firestore.collection<Evento>('Eventos').get().toPromise();
@@ -113,22 +127,7 @@ export class HistorialEventosPage implements OnInit {
     } catch (error) {
       console.error('Error al cargar eventos inscritos:', error);
     } finally {
-      this.isLoading = false; // Finaliza la carga
-    }
-  }
-
-  async doRefresh(event: any) {
-    try {
-      await this.loadInscritos();
-      const toast = await this.toastController.create({
-        message: 'Historial actualizado.',
-        duration: 2000,
-      });
-      toast.present();
-    } catch (error) {
-      console.error('Error al refrescar:', error);
-    } finally {
-      event.target.complete();
+      this.isLoading = false;
     }
   }
 }

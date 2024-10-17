@@ -5,7 +5,7 @@ import { AuthService } from '../services/auth.service';
 import { InvitadoService } from '../services/invitado.service';
 import { Router } from '@angular/router';
 import { QRCodeData } from '../interface/IQR';
-import { Subscription } from 'rxjs';
+import { firstValueFrom, Subscription } from 'rxjs';
 @Component({
   selector: 'app-perfil-usuario',
   templateUrl: './perfil-usuario.page.html',
@@ -24,8 +24,8 @@ export class PerfilUsuarioPage implements OnInit {
   private invitadoSubscription!: Subscription;
 
   constructor(
-    private authService: AuthService,
-    private invitadoService: InvitadoService,
+    private authService: AuthService, // Servicio para estudiantes
+    private invitadoService: InvitadoService, // Servicio para invitados
     private router: Router
   ) {}
 
@@ -37,12 +37,12 @@ export class PerfilUsuarioPage implements OnInit {
         this.loadUserData();
       } else {
         // Si no hay email en AuthService, suscribirse a InvitadoService
-        this.invitadoSubscription = this.invitadoService.getCurrentUserEmail().subscribe(invEmail => {
+        this.invitadoSubscription = this.invitadoService.getCurrentUserEmail().subscribe(async invEmail => {
           if (invEmail) {
             this.userEmail = invEmail;
-            this.loadUserData();
+            await this.loadUserData();
           } else {
-            this.errorMessage = 'Error: currentUserEmail no está definido. Asegúrate de que el usuario haya iniciado sesión correctamente.';
+            this.errorMessage = 'Error: currentUserEmail no está definido.';
             console.error(this.errorMessage);
             this.router.navigate(['/iniciar-sesion']);
           }
@@ -51,9 +51,7 @@ export class PerfilUsuarioPage implements OnInit {
     });
   }
 
-
   ngOnDestroy() {
-    // Desuscribirse para evitar fugas de memoria
     if (this.authSubscription) {
       this.authSubscription.unsubscribe();
     }
@@ -62,6 +60,7 @@ export class PerfilUsuarioPage implements OnInit {
     }
   }
 
+  // Cargar los datos del usuario
   async loadUserData() {
     if (!this.userEmail) {
       console.error('Error: userEmail no está definido.');
@@ -69,17 +68,19 @@ export class PerfilUsuarioPage implements OnInit {
     }
 
     try {
-      const estudianteResult = await this.authService.getEstudianteByEmail(this.userEmail);
+      // Primero buscar en la colección de estudiantes
+      const estudianteResult = await firstValueFrom(this.authService.getEstudianteByEmails(this.userEmail));
       if (estudianteResult) {
         this.estudiante = estudianteResult;
         this.isInvitado = false;
-        this.generateQrData();
+        this.generateQrData(); // Generar el QR si es un estudiante
       } else {
-        const invitadoResult = await this.invitadoService.obtenerInvitadoPorEmail(this.userEmail);
+        // Si no es estudiante, buscar en la colección de invitados
+        const invitadoResult = await firstValueFrom(this.invitadoService.obtenerInvitadoPorEmail(this.userEmail));
         if (invitadoResult) {
           this.invitado = invitadoResult;
           this.isInvitado = true;
-          this.generateQrData();
+          this.generateQrData(); // Generar el QR si es un invitado
         } else {
           console.error('No se encontró ningún invitado con ese email.');
           this.router.navigate(['/iniciar-sesion']);
@@ -92,41 +93,7 @@ export class PerfilUsuarioPage implements OnInit {
     }
   }
 
-  async logout() {
-    try {
-      await this.authService.logout();
-      this.router.navigate(['/iniciar-sesion']);
-    } catch (error) {
-      console.error('Error al cerrar sesión:', error);
-    }
-  }
-
-  editProfile() {
-    this.isEditing = true;
-  }
-
-  async saveProfile() {
-    if (this.estudiante) {
-      try {
-        await this.authService.updateEstudiante(this.estudiante);
-        this.isEditing = false;
-        this.generateQrData(); // Actualizar QR después de guardar cambios
-      } catch (error) {
-        console.error('Error al actualizar el perfil del estudiante:', error);
-        this.errorMessage = 'Error al actualizar el perfil del estudiante.';
-      }
-    } else if (this.invitado) {
-      try {
-        await this.invitadoService.updateInvitado(this.invitado);
-        this.isEditing = false;
-        this.generateQrData(); // Actualizar QR después de guardar cambios
-      } catch (error) {
-        console.error('Error al actualizar el perfil del invitado:', error);
-        this.errorMessage = 'Error al actualizar el perfil del invitado.';
-      }
-    }
-  }
-
+  // Generar datos QR con la información del usuario
   generateQrData() {
     const eventosInscritos = this.isInvitado
       ? this.invitado?.eventosInscritos || []
@@ -142,5 +109,33 @@ export class PerfilUsuarioPage implements OnInit {
     };
 
     this.qrData = qrDataObject.qrData;
+  }
+
+  // Activar modo de edición del perfil
+  editProfile() {
+    this.isEditing = true;
+  }
+
+  // Guardar cambios del perfil
+  async saveProfile() {
+    try {
+      if (this.isInvitado && this.invitado) {
+        await this.invitadoService.updateInvitado(this.invitado); // Guardar cambios de invitado
+      } else if (this.estudiante) {
+        await this.authService.updateEstudiante(this.estudiante); // Guardar cambios de estudiante
+      }
+      this.isEditing = false;
+      console.log('Perfil actualizado exitosamente.');
+    } catch (error) {
+      console.error('Error al guardar el perfil:', error);
+      this.errorMessage = 'Error al guardar el perfil.';
+    }
+  }
+
+  // Cerrar sesión
+  logout() {
+    this.authService.logout(); // Cerrar sesión del servicio de autenticación
+    console.log('Cerrando sesión...');
+    this.router.navigate(['/iniciar-sesion']); // Redirigir a la página de inicio de sesión
   }
 }

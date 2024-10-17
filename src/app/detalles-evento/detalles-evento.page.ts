@@ -1,11 +1,9 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { EventosGestorService } from '../services/eventos-gestor.service';
-import { QRScanner } from '@ionic-native/qr-scanner/ngx';
 import { AngularFirestore } from '@angular/fire/compat/firestore';
 import { Estudiante } from '../interface/IEstudiante';
-import { Platform } from '@ionic/angular';
-import { AndroidPermissions } from '@ionic-native/android-permissions/ngx';
+
 @Component({
   selector: 'app-detalles-evento',
   templateUrl: './detalles-evento.page.html',
@@ -18,10 +16,7 @@ export class DetallesEventoPage implements OnInit {
   constructor(
     private route: ActivatedRoute,
     private eventosService: EventosGestorService,
-    private qrScanner: QRScanner,
     private firestore: AngularFirestore,
-    private platform: Platform,
-    private androidPermissions: AndroidPermissions
   ) {}
 
   ngOnInit() {
@@ -37,49 +32,6 @@ export class DetallesEventoPage implements OnInit {
     }
   }
 
-  verificarAsistencia() {
-    // Lógica para verificar la asistencia
-    console.log(`Verificando asistencia para el evento ${this.eventoId}`);
-
-    // Verificar si Cordova está disponible
-    if (this.platform.is('cordova')) {
-      this.escanearCodigoQR(this.eventoId); // Llama a escanearCodigoQR solo si Cordova está disponible
-    } else {
-      console.error('Cordova no está disponible. Asegúrate de estar ejecutando la aplicación en un dispositivo real o emulador.');
-    }
-  }
-
-  escanearCodigoQR(eventoId: string) {
-    this.qrScanner.prepare().then((status: any) => {
-      if (status.authorized) {
-        this.qrScanner.show(); // Muestra el escáner
-        const scanSub = this.qrScanner.scan().subscribe((userId: string) => {
-          this.qrScanner.hide(); // Esconde el escáner
-          this.verificarInscripcion(eventoId, userId);
-          scanSub.unsubscribe(); // Desuscribirse después de escanear
-        });
-      } else {
-        console.error('Permiso denegado para acceder a la cámara.');
-      }
-    }).catch((e: any) => console.log('Error en el escáner: ', e));
-  }
-  verificarPermisos() {
-    this.androidPermissions.checkPermission(this.androidPermissions.PERMISSION.CAMERA).then(
-      result => {
-        if (!result.hasPermission) {
-          this.androidPermissions.requestPermission(this.androidPermissions.PERMISSION.CAMERA);
-        } else {
-          this.verificarAsistencia(); // Llama a la función para escanear
-        }
-      },
-      err => {
-        console.error('Error al verificar permisos:', err); // Manejo del error
-        this.androidPermissions.requestPermission(this.androidPermissions.PERMISSION.CAMERA);
-      }
-    );
-}
-
-
   verificarInscripcion(eventoId: string, idEstudiante: string): void {
     this.eventosService.obtenerInscripcion(eventoId, idEstudiante).then((inscripcion: boolean) => {
       if (inscripcion) {
@@ -91,7 +43,6 @@ export class DetallesEventoPage implements OnInit {
       }
     });
   }
-
 
   sumarPuntosUsuario(idEstudiante: string, puntos: number): void {
     const estudianteRef = this.firestore.doc<Estudiante>(`Estudiantes/${idEstudiante}`); // Especifica el tipo

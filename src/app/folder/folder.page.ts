@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { AngularFirestore } from '@angular/fire/compat/firestore';
 import { ActivatedRoute, Router } from '@angular/router';
 import { AlertController, ToastController } from '@ionic/angular';
-import { Observable, Subscription, lastValueFrom } from 'rxjs';
+import { Observable, Subscription, firstValueFrom, lastValueFrom } from 'rxjs';
 import { Evento } from '../interface/IEventos';
 import { EventosService } from '../services/eventos.service';
 import { AuthService } from '../services/auth.service';
@@ -41,7 +41,7 @@ export class FolderPage implements OnInit {
   ngOnInit() {
     this.folder = this.activatedRoute.snapshot.paramMap.get('id') as string;
 
-    // Suscribirse al observable de AuthService para Estudiantes
+    // Obtener el email del Estudiante desde AuthService
     this.authSubscription = this.authService.getCurrentUserEmail().subscribe(async (emailEstudiante) => {
       if (emailEstudiante) {
         console.log('Usuario Estudiante autenticado con email:', emailEstudiante);
@@ -54,23 +54,25 @@ export class FolderPage implements OnInit {
         }
       }
 
-      // Si no es Estudiante, suscribirse a InvitadoService para Invitados
-      this.invitadoSubscription = this.invitadoService.getCurrentUserEmail().subscribe(async (emailInvitado) => {
-        if (emailInvitado) {
-          console.log('Usuario Invitado autenticado con email:', emailInvitado);
-          const invitado = await this.invitadoService.obtenerInvitadoPorEmail(emailInvitado);
-          if (invitado) {
-            this.userId = invitado.id_Invitado!;
-            this.isInvitado = true;
-            this.loadEvents();
-            return;
-          }
-        }
+      // Si no es Estudiante, obtener el email del Invitado desde InvitadoService
+      const emailInvitado = await firstValueFrom(this.invitadoService.getCurrentUserEmail());
+      if (emailInvitado) {
+        console.log('Usuario Invitado autenticado con email:', emailInvitado);
+        const invitadoObservable = this.invitadoService.obtenerInvitadoPorEmail(emailInvitado);
 
-        // Si no se encuentra ningún usuario autenticado
-        console.error('No hay un usuario autenticado');
-        this.router.navigate(['/iniciar-sesion']);
-      });
+        // Usar firstValueFrom para obtener el objeto Invitado
+        const invitado = await firstValueFrom(invitadoObservable);
+        if (invitado) {
+          this.userId = invitado.id_Invitado!; // Ahora esto debería funcionar
+          this.isInvitado = true;
+          this.loadEvents();
+          return;
+        }
+      }
+
+      // Si no se encuentra ningún usuario autenticado
+      console.error('No hay un usuario autenticado');
+      this.router.navigate(['/iniciar-sesion']);
     });
   }
 
@@ -82,7 +84,6 @@ export class FolderPage implements OnInit {
       this.invitadoSubscription.unsubscribe();
     }
   }
-
 
   async loadEvents() {
     this.loading = true; // Mostrar pantalla de carga
@@ -143,7 +144,6 @@ export class FolderPage implements OnInit {
       }
     );
   }
-
 
 
   filterEvents() {
