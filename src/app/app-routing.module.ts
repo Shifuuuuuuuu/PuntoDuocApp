@@ -62,9 +62,18 @@ const routes: Routes = [
   {
     path: 'detalles-evento/:id',
     loadChildren: () => import('./detalles-evento/detalles-evento.module').then( m => m.DetallesEventoPageModule)
+  },
+  { path: 'subir-recompensa',
+    loadChildren: () => import('./subir-recompensa/subir-recompensa.module').then(m => m.SubirRecompensaPageModule)
+  },   
+  {
+    path: 'ver-recompensas',
+    loadChildren: () => import('./ver-recompensas/ver-recompensas.module').then( m => m.VerRecompensasPageModule)
+  },
+  {
+    path: 'escanear-qr',
+    loadChildren: () => import('./escanear-qr/escanear-qr.module').then( m => m.EscanearQrPageModule)
   }
-
-
 ];
 
 @NgModule({
