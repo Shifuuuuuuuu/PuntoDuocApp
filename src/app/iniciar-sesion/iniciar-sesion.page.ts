@@ -6,6 +6,7 @@ import { VentasAuthService } from '../services/ventas.service';
 import { GestorEventosService } from '../services/gestoreventos.service';
 import { AngularFireAuth } from '@angular/fire/compat/auth';
 import { firstValueFrom } from 'rxjs';
+import { MenuController } from '@ionic/angular';
 
 
 
@@ -28,9 +29,12 @@ export class IniciarSesionPage implements OnInit {
     private uventasService: VentasAuthService,
     private gestorEventosService: GestorEventosService, // Inyecta el servicio GestorEventosService
     private router: Router,
-    private afAuth: AngularFireAuth
+    private afAuth: AngularFireAuth,
+    private menu: MenuController
   ) {}
-
+  ionViewWillEnter() {
+    this.menu.enable(false);  // Deshabilita el menú en esta página
+  }
   ngOnInit() {}
 
   iniciarSesion() {

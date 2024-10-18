@@ -1,66 +1,4 @@
-/* Fondo con degradado */
-ion-content {
-  --background: linear-gradient(to bottom, #0A49A7, #6698FF); /* Degradado azul */
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  padding: 20px; /* Espacio interno para que no esté pegado a los bordes */
-}
 
-/* Estilo del contenedor del perfil */
-.profile-card {
-  background-color: rgba(255, 255, 255, 0.95); /* Color de fondo blanco con opacidad */
-  border-radius: 16px; /* Bordes ligeramente redondeados */
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15); /* Sombra más suave alrededor del contenedor */
-  margin: 20px; /* Espacio alrededor del card */
-  padding: 20px; /* Espacio interno del card */
-  max-width: 400px; /* Limitar el ancho para un diseño más controlado */
-  width: 100%; /* Para que ocupe el ancho del contenedor padre */
-  text-align: center; /* Centrar el contenido dentro del card */
-}
-
-/* Estilo de los items */
-.custom-item {
-  --background: #E9F1FC; /* Color de fondo claro para los inputs */
-  --border-radius: 8px; /* Redondear los bordes */
-  margin-bottom: 20px; /* Más espacio entre los items */
-  padding: 10px; /* Espacio interno */
-  box-shadow: 0 1px 6px rgba(0, 0, 0, 0.1); /* Sombra suave en los campos */
-}
-
-/* Asegurar que el texto de los párrafos sea negro */
-.custom-item p {
-  color: black; /* Color negro para el texto de los campos no editables */
-  opacity: 0.7; /* Hacer que el texto no editable sea un poco más claro */
-}
-
-/* Estilo de los encabezados */
-ion-header {
-  --background: transparent; /* Asegura que el fondo de la lista sea transparente */
-  background-color: #0a49a7; /* Establece el fondo de la lista a transparente */
-  box-shadow: none;
-  color: white;/* Color blanco para el texto de encabezado */
-}
-
-/* Estilo del título */
-ion-title {
-  font-size: 1.75em; /* Tamaño del título más grande */
-  font-weight: bold; /* Negrita para el título */
-  color: white; /* Color blanco para el título */
-  text-align: center; /* Centrar el título */
-}
-
-/* Estilo para los botones */
-.button-container {
-  display: flex; /* Hacer que los botones se alineen en una fila */
-  justify-content: space-around; /* Espaciado uniforme entre los botones */
-  align-items: center; /* Centrar los botones verticalmente */
-  margin: 20px 0; /* Espaciado vertical alrededor del contenedor de botones */
-}
-.button-container ion-button {
-  flex: 1; /* Hacer que cada botón ocupe el mismo espacio */
-  margin: 0 10px; /* Espacio entre botones */
-}
 
 /* Estilo del mensaje de error */
 .error-card {
@@ -70,6 +8,171 @@ ion-title {
   margin: 20px; /* Espacio alrededor del card de error */
   border-radius: 8px; /* Bordes redondeados para el card de error */
 }
-ion-toolbar {
-  --background: transparent; /* Fondo transparente */
+ion-content {
+  --background: #ffffff;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh; /* Asegura que ocupe toda la pantalla */
 }
+
+/* Ajustes del formulario */
+.form-container {
+  max-width: 400px;
+  width: 100%;
+  padding: 20px;
+  background-color: #ffffff;
+  border-radius: 15px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+/* Ajustes de los elementos del formulario */
+.custom-item {
+  --background: #f2f2f2;
+  --border-radius: 10px;
+  margin-bottom: 15px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+ion-input {
+  padding: 10px;
+  font-size: 16px;
+  color: #333;
+}
+
+/* Estilo de los botones */
+.custom-button {
+  --border-radius: 8px;
+  --background: #0a49a7;
+  color: white;
+  font-weight: bold;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.custom-button:hover {
+  background-color: #084a9a;
+}
+
+.forgot-password-link {
+  color: #0a49a7;
+  text-decoration: none;
+  font-size: 14px;
+}
+
+.forgot-password-link:hover {
+  text-decoration: underline;
+}
+
+.text-danger {
+  color: #d9534f;
+  font-weight: bold;
+  margin-top: 5px;
+  text-align: left;
+}
+
+.custom-header {
+  --background: linear-gradient(45deg, #0A49A7, #0a74da); /* Degradado de fondo */
+  position: relative;
+  z-index: 10; /* Asegura que el header esté siempre al frente */
+}
+
+.custom-toolbar {
+  height: 120px; /* Aumenta la altura del toolbar */
+  display: flex;
+  justify-content: center; /* Centra horizontalmente */
+  align-items: center; /* Centra verticalmente */
+  border-bottom-left-radius: 50px; /* Bordes redondeados */
+  border-bottom-right-radius: 50px;
+  background-color: black;
+  --background: transparent;
+}
+
+.custom-toolbar ion-title {
+  font-size: 24px;
+  font-weight: bold;
+  color: white; /* Texto en blanco */
+  text-align: center;
+}
+
+/* Para crear una curva en el borde inferior */
+.custom-header::after {
+  position: absolute;
+  bottom: -30px; /* Ajusta la altura de la curva */
+  left: 0;
+  width: 100%;
+  height: 60px; /* Altura de la curva */
+  background-color: white;
+  border-top-left-radius: 50%;
+  border-top-right-radius: 50%;
+}
+
+/* Centrar el título */
+.centered-title {
+  width: 100%; /* Asegura que el título ocupe todo el espacio disponible */
+  text-align: center; /* Alineación centrada */
+}
+
+
+
+/* Estilo para los iconos de redes sociales */
+.social-icons {
+  display: flex;
+  justify-content: center;
+  gap: 15px;
+  margin: 10px 0;
+}
+
+.social-icon {
+  font-size: 24px;
+  color: #0A49A7;
+  transition: transform 0.3s ease;
+}
+
+.social-icon:hover {
+  transform: scale(1.2);
+}
+
+/* Pie de página */
+.footer {
+  text-align: center;
+  margin-top: 20px;
+  padding: 20px;
+  background-color: #f2f2f2;
+  border-radius: 15px; /* Bordes redondeados */
+  color: #0A49A7;
+}
+
+/* Texto de derechos reservados */
+.footer p {
+  margin: 5px 0;
+  font-size: 14px;
+}
+.button-container {
+  display: flex;
+  justify-content: space-between; /* Espaciado entre botones */
+  flex-wrap: wrap; /* Permitir que los botones se ajusten en varias líneas si es necesario */
+  gap: 10px; /* Espacio entre botones */
+  margin-top: 20px; /* Margen superior para separar de otros elementos */
+}
+
+.button-inline {
+  flex: 1; /* Hacer que los botones ocupen espacio igual */
+  min-width: 120px; /* Ancho mínimo para los botones */
+}
+.qr-container {
+  text-align: center; /* Centrar texto y elementos dentro del contenedor */
+  margin-top: 20px; /* Margen superior para separar del contenido anterior */
+}
+
+.qr-image-container {
+  display: flex; /* Usar flexbox para centrar la imagen */
+  justify-content: center; /* Centrar horizontalmente */
+  align-items: center; /* Centrar verticalmente */
+  margin: 0 auto; /* Asegurar que el contenedor ocupe espacio y esté centrado */
+}
+
+.qr-image {
+  max-width: 100%; /* Ajustar el tamaño de la imagen al contenedor */
+  height: auto; /* Mantener la relación de aspecto de la imagen */
+}
+

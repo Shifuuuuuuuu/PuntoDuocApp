@@ -10,124 +10,152 @@ import { switchMap, map, catchError, tap } from 'rxjs/operators';
 import { AngularFirestore } from '@angular/fire/compat/firestore';
 import { ActivatedRoute, Router } from '@angular/router';
 import { ToastController } from '@ionic/angular';
+import { Inscripcion } from '../interface/IInscripcion';
 @Component({
   selector: 'app-historial-eventos',
   templateUrl: './historial-eventos.page.html',
   styleUrls: ['./historial-eventos.page.scss'],
 })
 export class HistorialEventosPage implements OnInit {
-  Eventos: Observable<Evento[]> = new Observable();
-  eventosInscritos: Evento[] = [];
-  userId: string = '';
-  isInvitado: boolean = false;
+  inscripciones: any[] = []; // Aquí almacenaremos las inscripciones
   isLoading: boolean = false;
 
-  private authSubscription!: Subscription;
-  private invitadoSubscription!: Subscription;
-
   constructor(
+    private eventosService: EventosService,
+    private toastController: ToastController,
     private firestore: AngularFirestore,
     private router: Router,
-    private eventosService: EventosService,
     private authService: AuthService,
-    private invitadoService: InvitadoService,
-    private toastController: ToastController
+    private invitadoService: InvitadoService
   ) {}
 
   ngOnInit() {
-    this.authSubscription = this.authService.getCurrentUserEmail().subscribe(async (emailEstudiante) => {
-      if (emailEstudiante) {
-        const estudiante = await firstValueFrom(this.authService.getEstudianteByEmails(emailEstudiante));
-        if (estudiante) {
-          this.userId = estudiante.id_estudiante!;
-          this.isInvitado = false;
-          this.loadInscritos();
-          return;
-        }
-      }
-
-      this.invitadoSubscription = this.invitadoService.getCurrentUserEmail().subscribe(async (emailInvitado) => {
-        if (emailInvitado) {
-          const invitado = await firstValueFrom(this.invitadoService.obtenerInvitadoPorEmail(emailInvitado));
-          if (invitado) {
-            this.userId = invitado.id_Invitado!;
-            this.isInvitado = true;
-            this.loadInscritos();
-            return;
-          }
-        }
-
-        console.error('No hay un usuario autenticado');
-        this.router.navigate(['/iniciar-sesion']);
-      });
-    });
+    this.loadInscripciones(); // Carga las inscripciones al iniciar
   }
+
   async doRefresh(event: any) {
-    try {
-      await this.loadInscritos();
-      const toast = await this.toastController.create({
-        message: 'Historial actualizado.',
-        duration: 2000,
-      });
-      toast.present();
-    } catch (error) {
-      console.error('Error al refrescar:', error);
-    } finally {
-      event.target.complete();
-    }
+    await this.loadInscripciones(); // Vuelve a cargar inscripciones
+    event.target.complete();
+    const toast = await this.toastController.create({
+      message: 'Historial actualizado.',
+      duration: 2000,
+    });
+    toast.present();
   }
 
-  ngOnDestroy() {
-    if (this.authSubscription) {
-      this.authSubscription.unsubscribe();
-    }
-    if (this.invitadoSubscription) {
-      this.invitadoSubscription.unsubscribe();
-    }
-  }
+  private async loadInscripciones() {
+    this.isLoading = true;
 
-  async loadInscritos() {
-    if (!this.userId) {
-      console.error('El ID del usuario no está disponible.');
+    const emailEstudiante = await this.authService.getCurrentUserEmail().toPromise();
+    let userId: string | null = null;
+
+    if (emailEstudiante) {
+      const estudiante = await this.authService.getEstudianteByEmails(emailEstudiante).toPromise();
+      userId = estudiante?.id_estudiante ?? null; // Asigna a userId o null
+    } else {
+      const emailInvitado = await this.invitadoService.getCurrentUserEmail().toPromise();
+      if (emailInvitado) {
+        const invitado = await this.invitadoService.obtenerInvitadoPorEmail(emailInvitado).toPromise();
+        userId = invitado?.id_Invitado ?? null; // Asigna a userId o null
+      }
+    }
+
+    if (!userId) {
+      console.error('No hay un usuario autenticado.');
+      this.isLoading = false;
       return;
     }
 
-    this.isLoading = true;
+    // Obtén todas las inscripciones del usuario
+    const inscripcionesRef = this.firestore.collection<Inscripcion>('Inscripciones', ref =>
+      ref.where('userId', '==', userId)
+    );
 
-    try {
-      const eventosSnapshot = await this.firestore.collection<Evento>('Eventos').get().toPromise();
+    const inscripcionesSnapshot = await inscripcionesRef.get().toPromise();
 
-      if (!eventosSnapshot) {
-        console.log('No se encontraron eventos.');
-        return;
-      }
+    this.inscripciones = []; // Asegúrate de que sea un array vacío
 
-      const eventosIdsInscritos: string[] = [];
+    if (inscripcionesSnapshot && !inscripcionesSnapshot.empty) {
+      console.log('Inscripciones encontradas:', inscripcionesSnapshot.docs.length);
+      for (const doc of inscripcionesSnapshot.docs) {
+        const inscripcion = doc.data() as Inscripcion; // Especifica el tipo de inscripcion
+        console.log('Inscripción:', inscripcion);
 
-      for (const eventoDoc of eventosSnapshot.docs) {
-        const eventoId = eventoDoc.id;
-        const isRegistered = await this.eventosService.isUserRegistered(eventoId, this.userId);
+        // Obtener detalles del evento usando el eventoId de la inscripción
+        const eventoDoc = await this.firestore.collection<Evento>('Eventos').doc(inscripcion.eventoId).get().toPromise();
 
-        if (isRegistered) {
-          eventosIdsInscritos.push(eventoId);
+        // Verifica si eventoDoc existe y tiene datos
+        if (eventoDoc && eventoDoc.exists) {
+          const eventoData = eventoDoc.data() as Evento; // Asegúrate de que Evento esté definido
+          console.log('Evento encontrado:', eventoData);
+
+          // Combina los datos de inscripción y evento
+          this.inscripciones.push({
+            inscripcionId: doc.id, // Si deseas almacenar el ID de la inscripción
+            eventoId: inscripcion.eventoId,
+            userId: inscripcion.userId,
+            timestamp: inscripcion.timestamp,
+            titulo: eventoData.titulo,
+            descripcion: eventoData.descripcion,
+            fecha: eventoData.fecha,
+            // Agrega más campos según sea necesario
+          });
+        } else {
+          console.error('El evento no existe o no se pudo obtener:', inscripcion.eventoId);
         }
       }
+    } else {
+      console.log('No se encontraron inscripciones para el usuario.');
+    }
 
-      if (eventosIdsInscritos.length > 0) {
-        this.Eventos = this.firestore.collection<Evento>('Eventos', ref =>
-          ref.where('id_evento', 'in', eventosIdsInscritos)
-        ).valueChanges();
-        this.Eventos.subscribe((data) => {
-          this.eventosInscritos = data;
-          console.log('Eventos inscritos obtenidos:', this.eventosInscritos);
-        });
-      } else {
-        console.log('No hay eventos inscritos para este usuario.');
+    this.isLoading = false;
+  }
+
+
+
+
+
+  async cancelarInscripcion(eventoId: string) {
+    const emailEstudiante = await this.authService.getCurrentUserEmail().toPromise();
+    let userId: string | null = null;
+
+    if (emailEstudiante) {
+      const estudiante = await this.authService.getEstudianteByEmails(emailEstudiante).toPromise();
+      userId = estudiante?.id_estudiante ?? null; // Asigna a userId o null
+    } else {
+      const emailInvitado = await this.invitadoService.getCurrentUserEmail().toPromise();
+      if (emailInvitado) {
+        const invitado = await this.invitadoService.obtenerInvitadoPorEmail(emailInvitado).toPromise();
+        userId = invitado?.id_Invitado ?? null; // Asigna a userId o null
       }
-    } catch (error) {
-      console.error('Error al cargar eventos inscritos:', error);
-    } finally {
-      this.isLoading = false;
+    }
+
+    if (!userId) {
+      console.error('No hay un usuario autenticado.');
+      return;
+    }
+
+    try {
+      await this.eventosService.cancelarInscripcion(eventoId, userId!); // Usa el operador de aserción para forzar el tipo
+      await this.loadInscripciones(); // Recarga inscripciones después de cancelar
+      const toast = await this.toastController.create({
+        message: 'Inscripción cancelada.',
+        duration: 2000,
+      });
+      toast.present();
+    } catch (error: any) {
+      console.error('Error al cancelar la inscripción:', error);
+      const toast = await this.toastController.create({
+        message: error.message || 'Error al cancelar la inscripción.',
+        duration: 2000,
+      });
+      toast.present();
     }
   }
+
+  verDetalles(eventoId: string) {
+    // Navega a la página de detalles del evento
+    this.router.navigate(['/eventos-detalle', eventoId]); // Asegúrate de tener la ruta correcta
+  }
 }
+

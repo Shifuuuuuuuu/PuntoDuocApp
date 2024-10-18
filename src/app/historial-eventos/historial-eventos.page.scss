@@ -1,42 +1,165 @@
-/* Estilo general del contenido */
-ion-content {
-  --background: linear-gradient(to bottom, #0A49A7, #6698FF); /* Degradado azul */ /* Degradado entre azul y negro */
-  color: white; /* Texto blanco para mayor contraste */
+/* Estilo del botón de filtro */
+.filter-button {
+  --background: #0A49A7; /* Fondo azul */
+  --color: white; /* Color del texto en blanco */
+  border-radius: 12px; /* Bordes redondeados */
+  box-shadow: 0 2px 8px #0A49A7;
 }
 
-/* Estilo del encabezado */
-ion-toolbar {
-  background-color: #0A49A7;
-  --background: transparent; /* Fondo negro para la barra de herramientas */
+/* Estado expandido para la barra de filtros */
+.filters-container {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.3s ease-in-out;
 }
 
-/* Estilo del título y botones del encabezado */
-ion-title, ion-back-button, ion-menu-button {
-  color:  white; /* Texto azul para el título */
+.filters-container.visible {
+  max-height: 500px; /* Ajusta este valor según el contenido */
 }
-/* Estilo del texto centrado */
-.centered-text {
-  text-align: center; /* Centrar texto */
+/* Estilo de los ítems de la lista de eventos */
+.event-item {
+  margin-bottom: 15px; /* Espaciado inferior */
 }
 
-/* Estilo del contenido centrado de la tarjeta */
-.centered-content {
-  text-align: center; /* Centrar contenido */
+/* Header */
+.custom-header {
+
+  position: relative;
+  z-index: 10; /* Asegura que el header esté siempre al frente */
+}
+
+.custom-toolbar {
+  height: 120px; /* Aumenta la altura del toolbar */
+  display: flex;
+  justify-content: center; /* Centra horizontalmente */
+  align-items: center; /* Centra verticalmente */
+  border-bottom-left-radius: 50px; /* Bordes redondeados */
+  border-bottom-right-radius: 50px;
+  background-color: black;
+  --background: transparent;
+}
+
+.custom-toolbar ion-title {
+  font-size: 24px;
+  font-weight: bold;
+  color: white; /* Texto en blanco */
+  text-align: center;
+}
+
+/* Para crear una curva en el borde inferior */
+.custom-header::after {
+  position: absolute;
+  bottom: -30px; /* Ajusta la altura de la curva */
+  left: 0;
+  width: 100%;
+  height: 60px; /* Altura de la curva */
+  background-color: white;
+  border-top-left-radius: 50%;
+  border-top-right-radius: 50%;
+}
+
+/* Barra de búsqueda */
+.custom-searchbar {
+  --border-radius: 20px; /* Borde redondeado */
+  background: white;
+}
+
+/* Ajustes del contenido */
+.content-center {
+  --background: #ffffff;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  height: 100%; /* Asegura que ocupe toda la pantalla */
+}
+
+/* Ajustes de los elementos de la barra de búsqueda */
+.search-container {
+  display: flex;
+  align-items: center;
+  margin: 20px 0;
+}
+
+/* Botón de filtro */
+.filter-button {
+  --border-radius: 20px; /* Borde redondeado */
+  margin-left: 10px;
+}
+
+/* Ajustes de las tarjetas */
+.event-card {
+  background-color: #ffffff; /* Fondo blanco */
+  border-radius: 15px; /* Bordes redondeados */
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+/* Imágenes de eventos */
+.event-image {
+  width: 100%; /* Se adapta al tamaño de la tarjeta */
+  height: 150px; /* Altura fija para todas las imágenes */
+  object-fit: cover; /* Mantiene la relación de aspecto */
+}
+
+/* Estilo para los iconos de redes sociales */
+.social-icons {
+  display: flex;
+  justify-content: center;
+  gap: 15px;
+  margin: 10px 0;
+}
+
+.social-icon {
+  font-size: 24px;
+  color: #0A49A7;
+  transition: transform 0.3s ease;
+}
+
+.social-icon:hover {
+  transform: scale(1.2);
+}
+
+/* Pie de página */
+.footer {
+  text-align: center;
+  margin-top: 20px;
+  padding: 20px;
+  background-color: #f2f2f2;
+  border-radius: 15px; /* Bordes redondeados */
   color: #0A49A7;
 }
-ion-item, ion-list{
-  --background: transparent; /* Asegura que el fondo de la lista sea transparente */
-  background-color: transparent; /* Establece el fondo de la lista a transparente */
-  box-shadow: none;
-  color: white;
+
+/* Texto de derechos reservados */
+.footer p {
+  margin: 5px 0;
+  font-size: 14px;
 }
-p{
-  color: white;
+/* Ajustes de las tarjetas */
+.event-card {
+  background-color: #ffffff; /* Fondo blanco */
+  border-radius: 15px; /* Bordes redondeados */
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  transition: transform 0.3s ease; /* Transición suave para el efecto de escala */
 }
 
+/* Efecto al pasar el ratón */
+.event-card:hover {
+  transform: scale(1.05); /* Aumenta el tamaño al 105% */
+}
 
+.loading-indicator {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
+}
 
+.no-events {
+  text-align: center;
+  margin-top: 20px;
+}
 
-
-
-
+.footer {
+  text-align: center;
+  padding: 10px;
+  background-color: #f8f8f8; // O cualquier otro color que desees
+}

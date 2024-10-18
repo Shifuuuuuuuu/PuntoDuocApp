@@ -1,36 +1,43 @@
 /* Cambiar el color de fondo del menú */
 ion-menu ion-content {
-  --background: #0A49A7; /* Color azul para el fondo del menú */
+  --background: #ffffff; /* Color blanco para el fondo del menú */
+}
+
+/* Cambiar el color del título del menú */
+.menu-title {
+  font-size: 24px;
+  font-weight: bold;
+  color: white; /* Azul para el título */
 }
 
 /* Ajustar el color de los íconos cuando un elemento está seleccionado */
 ion-menu.md ion-item.selected ion-icon {
-  color: white; /* Cambia el color a blanco cuando el elemento está seleccionado */
+  color: #3f3f3f; /* Cambia el color a blanco cuando el elemento está seleccionado */
 }
 
 /* Cambiar el color de los íconos para todos los elementos */
 ion-menu.md ion-item ion-icon {
-  color: white; /* Íconos blancos */
+  color:#4e4e4e; /* Íconos blancos */
 }
 
 /* Cambiar el color de las etiquetas de los ítems */
 ion-menu.md ion-item ion-label {
   font-weight: 500;
-  color: white; /* Cambia el color del texto a blanco */
+  color: #3f3f3f; /* Cambia el color del texto a blanco */
 }
 
 /* Cambiar el fondo de los elementos seleccionados */
 ion-menu.md ion-item.selected {
-  --background: #6698FF; /* Fondo azul claro cuando el elemento está seleccionado */
+  --background: #3f3f3f; /* Fondo azul claro cuando el elemento está seleccionado */
 }
 
 /* Cambiar el color del borde de la lista de elementos del menú */
-ion-menu.md ion-list#inbox-list {
-  border-bottom: 1px solid #0A49A7; /* Cambia el borde inferior a azul */
+ion-menu.md ion-list {
+  border-bottom: 1px solid #3f3f3f; /* Cambia el borde inferior a azul */
 }
 
 /* Cambiar el color del encabezado de la lista */
-ion-menu.md ion-list#inbox-list ion-list-header {
+ion-menu.md ion-list ion-list-header {
   font-size: 22px;
   font-weight: 600;
   min-height: 20px;
@@ -40,7 +47,7 @@ ion-menu.md ion-list#inbox-list ion-list-header {
 /* Cambiar los íconos en modo iOS */
 ion-menu.ios ion-item ion-icon {
   font-size: 24px;
-  color: #FF9800; /* Cambia los íconos a un naranja vibrante en iOS */
+  color: #ffffff; /* Cambia los íconos a un naranja vibrante en iOS */
 }
 
 /* Cambiar el color de las notas (ion-note) */
