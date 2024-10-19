@@ -33,6 +33,8 @@
     "@ionic-native/core": "^5.36.0",
     "@ionic-native/qr-scanner": "^5.36.0",
     "@ionic/angular": "^8.0.0",
+    "@zxing/browser": "^0.1.5",
+    "@zxing/library": "^0.21.3",
     "angularx-qrcode": "^18.0.2",
     "bootstrap": "^5.3.3",
     "cordova-plugin-android-permissions": "^1.1.5",

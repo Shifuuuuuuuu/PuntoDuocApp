@@ -1,3 +1,4 @@
+
 <ion-header [translucent]="true" class="custom-header">
   <ion-toolbar class="custom-toolbar">
     <ion-buttons slot="start">
@@ -97,57 +98,6 @@
       <ion-icon name="logo-twitter" class="social-icon"></ion-icon>
       <ion-icon name="logo-instagram" class="social-icon"></ion-icon>
     </div>
-
-    <ion-card-content>
-      <ion-item class="custom-item">
-        <ion-label>
-          <h2 style="color: black;">Nombre Completo</h2>
-          <p *ngIf="!isEditing">{{ invitado.Nombre_completo }}</p>
-          <ion-input *ngIf="isEditing" [(ngModel)]="invitado.Nombre_completo" placeholder="Nombre Completo"></ion-input>
-        </ion-label>
-      </ion-item>
-
-      <ion-item class="custom-item">
-        <ion-label>
-          <h2 style="color: black;">Correo Electrónico</h2>
-          <p *ngIf="!isEditing">{{ invitado.email }}</p>
-          <ion-input *ngIf="isEditing" [(ngModel)]="invitado.email" placeholder="Correo Electrónico"></ion-input>
-        </ion-label>
-      </ion-item>
-
-      <ion-item class="custom-item">
-        <ion-label>
-          <h2 style="color: black;">RUT</h2>
-          <p *ngIf="!isEditing">{{ invitado.Rut }}</p>
-          <ion-input *ngIf="isEditing" [(ngModel)]="invitado.Rut" placeholder="RUT"></ion-input>
-        </ion-label>
-      </ion-item>
-
-      <ion-item class="custom-item">
-        <ion-label>
-          <h2 style="color: black;">Teléfono</h2>
-          <p *ngIf="!isEditing">{{ invitado.Telefono }}</p>
-          <ion-input *ngIf="isEditing" [(ngModel)]="invitado.Telefono" placeholder="Teléfono"></ion-input>
-        </ion-label>
-      </ion-item>
-
-
-
-      <div class="qr-container" *ngIf="invitado.codigoQr">
-        <h1 style="color: black;">Código QR</h1>
-        <img [src]="invitado.codigoQr" alt="Código QR" class="qr-image" />
-      </div>
-      <ion-button class="subirQR">
-        Escanear QR
-        <ion-icon slot="end" name="scan"></ion-icon>
-      </ion-button>
-    </ion-card-content>
-  </ion-card>
-
-  <!-- Botones de acción -->
-  <div class="button-container">
-    <ion-button expand="full" *ngIf="!isEditing" (click)="editProfile()">Editar Perfil</ion-button>
-    <ion-button expand="full" color="success" *ngIf="isEditing" (click)="saveProfile()">Guardar Cambios</ion-button>
-    <ion-button expand="full" color="danger" (click)="logout()">Cerrar Sesión</ion-button>
+    <p>&copy; 2024 Punto Duoc. Todos los derechos reservados.</p>
   </div>
 </ion-content>
