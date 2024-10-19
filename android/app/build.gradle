@@ -1,43 +1,38 @@
-
-
-// android/app/build.gradle
-
 plugins {
-    id 'com.android.application'
+  id 'com.android.application'
 }
 
 android {
   compileSdk 34
 
+  namespace "com.PuntoDuocApp.app"
 
-    namespace "com.PuntoDuocApp.app"
+  defaultConfig {
+    applicationId "com.PuntoDuocApp.app"
+    minSdkVersion 22
+    targetSdkVersion 34
+    versionCode 1
+    versionName "1.0"
 
-    defaultConfig {
-        applicationId "com.PuntoDuocApp.app"
-        minSdkVersion 22
-        targetSdkVersion 34
-        versionCode 1
-        versionName "1.0"
-
-
-        javaCompileOptions {
-            annotationProcessorOptions {
-                arguments = ['room.schemaLocation': "$projectDir/schemas".toString()]
-            }
-        }
+    javaCompileOptions {
+      annotationProcessorOptions {
+        arguments = ['room.schemaLocation': "$projectDir/schemas".toString()]
+      }
     }
+  }
 
-    compileOptions {
-        sourceCompatibility JavaVersion.VERSION_17
-        targetCompatibility JavaVersion.VERSION_17
-    }
+  compileOptions {
+    sourceCompatibility JavaVersion.VERSION_17
+    targetCompatibility JavaVersion.VERSION_17
+  }
 
-    buildTypes {
-        release {
-            minifyEnabled true
-            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
-        }
+  buildTypes {
+    release {
+      minifyEnabled true
+      proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
     }
+  }
+
   buildToolsVersion '35.0.0'
 }
 

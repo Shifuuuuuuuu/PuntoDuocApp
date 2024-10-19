@@ -1,6 +1,7 @@
 import { Component } from '@angular/core';
 import { Router } from '@angular/router';
-import { BarcodeScanner } from '@capacitor-community/barcode-scanner';
+import { QRScannerStatus,QRScanner } from '@ionic-native/qr-scanner/ngx';
+
 
 @Component({
   selector: 'app-folder-ventas',
@@ -8,7 +9,7 @@ import { BarcodeScanner } from '@capacitor-community/barcode-scanner';
   styleUrls: ['./folder-ventas.page.scss'],
 })
 export class FolderVentasPage {
-  constructor(private router: Router) {}
+  constructor(private router: Router,private qrScanner: QRScanner) {}
 
   subirRecompensa() {
     this.router.navigate(['/subir-recompensa']);
@@ -19,19 +20,21 @@ export class FolderVentasPage {
   }
 
   async escanearQR() {
-    await BarcodeScanner.checkPermission({ force: true });
+    const status: QRScannerStatus = await this.qrScanner.prepare();
 
-    BarcodeScanner.hideBackground();
+    if (status.authorized) {
+      // La cámara está lista para escanear
+      const scanSub = this.qrScanner.scan().subscribe((text: string) => {
+        console.log('Contenido del código QR: ', text);
+        this.qrScanner.hide(); // Oculta la cámara
+        scanSub.unsubscribe(); // Detiene la suscripción
+      });
 
-    const result = await BarcodeScanner.startScan();
-
-    if (result.hasContent) {
-      console.log(result.content);
+      this.qrScanner.show(); // Muestra la cámara
+    } else if (status.denied) {
+      console.error('La cámara fue denegada');
     } else {
-      console.error('No se encontró contenido en el código QR');
+      console.warn('La cámara no fue autorizada');
     }
-
-    BarcodeScanner.showBackground();
-    BarcodeScanner.stopScan();
   }
 }
