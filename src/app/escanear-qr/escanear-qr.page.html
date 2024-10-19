@@ -1,13 +1,21 @@
-<ion-header [translucent]="true">
+<ion-header>
   <ion-toolbar>
-    <ion-title>escanear-qr</ion-title>
+    <ion-title>Escanear QR</ion-title>
   </ion-toolbar>
 </ion-header>
 
-<ion-content [fullscreen]="true">
-  <ion-header collapse="condense">
-    <ion-toolbar>
-      <ion-title size="large">escanear-qr</ion-title>
-    </ion-toolbar>
-  </ion-header>
+<ion-content>
+  <ion-card *ngIf="scannedData; else scanning">
+    <ion-card-header>
+      <ion-card-title>Datos Escaneados</ion-card-title>
+    </ion-card-header>
+    <ion-card-content>
+      {{ scannedData }}
+    </ion-card-content>
+  </ion-card>
+  <ng-template #scanning>
+    <ion-label>
+      Escaneando...
+    </ion-label>
+  </ng-template>
 </ion-content>

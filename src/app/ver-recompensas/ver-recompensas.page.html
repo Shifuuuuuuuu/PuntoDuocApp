@@ -4,6 +4,51 @@
   </ion-toolbar>
 </ion-header>
 
-<ion-content class="ion-padding">
-  <!-- Contenido de la página para ver recompensas -->
+<ion-content [fullscreen]="true">
+  <ion-card *ngIf="userEmail">
+    <ion-card-header>
+      <ion-card-title>Bienvenido, {{ userEmail }}</ion-card-title>
+    </ion-card-header>
+    <ion-card-content>
+      <p>Aquí están tus recompensas:</p>
+    </ion-card-content>
+  </ion-card>
+
+  <ion-card *ngIf="!userEmail">
+    <ion-card-header>
+      <ion-card-title>Error</ion-card-title>
+    </ion-card-header>
+    <ion-card-content>
+      <p>No se ha podido obtener tu correo electrónico. Por favor, inicia sesión.</p>
+    </ion-card-content>
+  </ion-card>
+
+  <ion-list *ngIf="tienePermisos && recompensas.length > 0">
+    <ion-item *ngFor="let recompensa of recompensas">
+      <ion-label>
+        <h2>{{ recompensa.nombre }}</h2>
+        <p>{{ recompensa.descripcion }}</p>
+        <p>Puntos requeridos: {{ recompensa.puntos_requeridos }}</p>
+        <p>Tema: {{ recompensa.tema }}</p>
+      </ion-label>
+    </ion-item>
+  </ion-list>
+
+  <ion-card *ngIf="tienePermisos && recompensas.length === 0">
+    <ion-card-header>
+      <ion-card-title>No hay recompensas disponibles</ion-card-title>
+    </ion-card-header>
+    <ion-card-content>
+      <p>Actualmente no tienes recompensas disponibles.</p>
+    </ion-card-content>
+  </ion-card>
+
+  <ion-card *ngIf="errorMessage">
+    <ion-card-header>
+      <ion-card-title>Error</ion-card-title>
+    </ion-card-header>
+    <ion-card-content>
+      <p>{{ errorMessage }}</p>
+    </ion-card-content>
+  </ion-card>
 </ion-content>

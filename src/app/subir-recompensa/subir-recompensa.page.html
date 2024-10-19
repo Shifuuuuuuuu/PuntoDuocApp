@@ -5,5 +5,37 @@
 </ion-header>
 
 <ion-content class="ion-padding">
-  <!-- Contenido de la página para subir recompensas -->
+  <form [formGroup]="recompensaForm" (ngSubmit)="onSubmit()">
+    <ion-item>
+      <ion-label>Descripción</ion-label>
+      <ion-input formControlName="descripcion"></ion-input>
+    </ion-item>
+
+    <ion-item>
+      <ion-label>Fecha Actualización</ion-label>
+      <ion-input type="date" formControlName="fecha_actualizacion"></ion-input>
+    </ion-item>
+
+    <ion-item>
+      <ion-label>Fecha Creación</ion-label>
+      <ion-input type="date" formControlName="fecha_creacion"></ion-input>
+    </ion-item>
+
+    <ion-item>
+      <ion-label>Nombre</ion-label>
+      <ion-input formControlName="nombre"></ion-input>
+    </ion-item>
+
+    <ion-item>
+      <ion-label>Puntos Requeridos</ion-label>
+      <ion-input type="number" formControlName="puntos_requeridos"></ion-input>
+    </ion-item>
+
+    <ion-item>
+      <ion-label>Tema</ion-label>
+      <ion-input formControlName="tema"></ion-input>
+    </ion-item>
+
+    <ion-button expand="full" type="submit">Subir Recompensa</ion-button>
+  </form>
 </ion-content>
