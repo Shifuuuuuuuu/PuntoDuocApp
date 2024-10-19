@@ -1,61 +1,68 @@
-<ion-header [translucent]="true" style="background-color: #0A49A7;">
-  <ion-toolbar style="background-color: #0A49A7;">
+<ion-header [translucent]="true" class="custom-header">
+  <ion-toolbar class="custom-toolbar">
     <!-- Botón de retroceso -->
     <ion-buttons slot="start">
       <ion-back-button defaultHref="/iniciar-sesion" style="color: white;"></ion-back-button>
     </ion-buttons>
-    <ion-title style="color: white; font-weight: bold; font-family: 'Arial', sans-serif;">
-      Registro de Invitado
-    </ion-title>
+    <ion-title class="centered-title">Registro de Usuario</ion-title>
   </ion-toolbar>
 </ion-header>
 
-<ion-content [fullscreen]="true" class="ion-padding" style="background: linear-gradient(135deg, #0A49A7, white);">
-  <div class="form-container" style="max-width: 380px; margin: auto; padding: 25px; background-color: white; border-radius: 20px; box-shadow: 0px 8px 20px;">
-    <h2 style="text-align: center; color: #0A49A7; font-family: 'Arial', sans-serif; font-weight: 600; font-size: 24px;">Registro de Invitado</h2>
+<ion-content [fullscreen]="true" class="ion-padding" style="--background: #ffffff;">
+  <div class="form-container">
+    <h2 class="centered-title"style="color: black;">Crea tu cuenta de Invitado</h2>
 
     <form #registroForm="ngForm" (ngSubmit)="registrar()" novalidate>
-      <div class="mb-3">
-        <label for="exampleFormControlInput1" class="form-label" style="color: #0A49A7;">Nombre completo</label>
-        <input type="text" [(ngModel)]="invitado.Nombre_completo" name="nombre" class="form-control" id="exampleFormControlInput1" placeholder="Juan Pérez" required style="background: transparent; color: black; border: 1px solid #0A49A7;">
-      </div>
-      <div class="mb-3">
-        <label for="exampleFormControlInput2" class="form-label" style="color: #0A49A7;">RUT</label>
-        <input type="text" [(ngModel)]="invitado.Rut" name="rut" class="form-control" id="exampleFormControlInput2" placeholder="12345678-9" required pattern="^[0-9]+-[0-9kK]{1}$" style="background: transparent; color: black; border: 1px solid #0A49A7;">
-        <div *ngIf="registroForm.controls['rut']?.invalid && registroForm.controls['rut']?.touched" class="text-danger">
-          El RUT debe tener el formato correcto (ej: 12345678-9).
-        </div>
-      </div>
-      <div class="mb-3">
-        <label for="exampleFormControlInput3" class="form-label" style="color: #0A49A7;">Teléfono</label>
-        <input type="tel" [(ngModel)]="invitado.Telefono" name="telefono" class="form-control" id="exampleFormControlInput3" placeholder="+56 9 1234 5678" required pattern="^[0-9]{11}$" style="background: transparent; color: black; border: 1px solid #0A49A7;">
-        <div *ngIf="registroForm.controls['telefono']?.invalid && registroForm.controls['telefono']?.touched" class="text-danger">
-          El teléfono debe contener exactamente 11 dígitos.
-        </div>
-      </div>
-      <div class="mb-3">
-        <label for="exampleFormControlInput4" class="form-label" style="color: #0A49A7;">Correo electrónico</label>
-        <input type="email" [(ngModel)]="invitado.email" name="correo" class="form-control" id="exampleFormControlInput4" placeholder="nombre@ejemplo.com" required email style="background: transparent; color: black; border: 1px solid #0A49A7;">
-        <div *ngIf="registroForm.controls['correo']?.invalid && registroForm.controls['correo']?.touched" class="text-danger">
-          Introduce un correo electrónico válido.
-        </div>
-      </div>
-      <div class="mb-3">
-        <label for="inputPassword5" class="form-label" style="color: #0A49A7;">Contraseña</label>
-        <input type="password" [(ngModel)]="invitado.password" name="password" id="inputPassword5" class="form-control" aria-describedby="passwordHelpBlock" required minlength="8" maxlength="20" style="background: transparent; color: black; border: 1px solid #0A49A7;">
-        <div *ngIf="registroForm.controls['contrasena']?.invalid && registroForm.controls['contrasena']?.touched" class="text-danger">
-          La contraseña debe tener entre 8 y 20 caracteres.
-        </div>
-      </div>
-      <!-- Botones -->
-      <div class="button-group">
-        <ion-button expand="block" color="primary" [disabled]="registroForm.invalid" type="submit" style="--background: #0A49A7; --color: white; font-weight: bold; border-radius: 12px;">
-          Registrar
-        </ion-button>
-        <ion-button expand="block" [routerLink]="['/iniciar-sesion']" class="custom-button">
-          Volver al inicio
-        </ion-button>
-      </div>
+      <!-- Nombre completo -->
+      <ion-item class="custom-item">
+        <ion-label position="floating"style="color: black;">Nombre completo</ion-label>
+        <ion-input type="text" [(ngModel)]="invitado.Nombre_completo" name="nombre" required></ion-input>
+      </ion-item>
+
+      <!-- RUT -->
+      <ion-item class="custom-item">
+        <ion-label position="floating"style="color: black;">RUT</ion-label>
+        <ion-input type="text" [(ngModel)]="invitado.Rut" name="rut" required pattern="^[0-9]+-[0-9kK]{1}$"></ion-input>
+      </ion-item>
+
+      <!-- Teléfono -->
+      <ion-item class="custom-item">
+        <ion-label position="floating"style="color: black;">Teléfono</ion-label>
+        <ion-input type="tel" [(ngModel)]="invitado.Telefono" name="telefono" required pattern="^[0-9]{11}$"></ion-input>
+      </ion-item>
+
+      <!-- Correo electrónico -->
+      <ion-item class="custom-item">
+        <ion-label position="floating"style="color: black;">Correo electrónico</ion-label>
+        <ion-input type="email" [(ngModel)]="invitado.email" name="correo" required></ion-input>
+      </ion-item>
+
+      <!-- Contraseña -->
+      <ion-item class="custom-item">
+        <ion-label position="floating" style="color: black;">Contraseña</ion-label>
+        <ion-input type="password" [(ngModel)]="invitado.password" name="password" required minlength="8"></ion-input>
+      </ion-item>
+
+      <!-- Botón de registro -->
+      <ion-button expand="block" type="submit" [disabled]="registroForm.invalid" class="custom-button">
+        Registrar
+      </ion-button>
+
+      <!-- Botón de volver -->
+      <ion-button expand="block" [routerLink]="['/iniciar-sesion']" class="custom-button">
+        Volver al inicio
+      </ion-button>
     </form>
+  </div>
+
+  <!-- Pie de página decorativo -->
+  <div class="footer">
+    <p>Síguenos en nuestras redes sociales:</p>
+    <div class="social-icons">
+      <ion-icon name="logo-facebook" class="social-icon"></ion-icon>
+      <ion-icon name="logo-twitter" class="social-icon"></ion-icon>
+      <ion-icon name="logo-instagram" class="social-icon"></ion-icon>
+    </div>
+    <p>&copy; 2024 Punto Duoc. Todos los derechos reservados.</p>
   </div>
 </ion-content>

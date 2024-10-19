@@ -1,86 +1,135 @@
-/* Fondo con degradado */
 ion-content {
-  --background: linear-gradient(to bottom, #0A49A7, #6698FF); /* Degradado azul */
+  --background: #ffffff;
   display: flex;
   justify-content: center;
   align-items: center;
-  height: 100vh; /* Ajusta para ocupar toda la pantalla */
+  height: 100vh; /* Asegura que ocupe toda la pantalla */
 }
 
-/* Estilo del contenedor del formulario */
+/* Ajustes del formulario */
 .form-container {
   max-width: 400px;
   width: 100%;
-  padding: 25px;
-  background-color: #ffffff; /* Color de fondo blanco */
-  border-radius: 20px; /* Bordes redondeados */
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2); /* Sombra alrededor del contenedor */
+  padding: 20px;
+  background-color: #ffffff;
+  border-radius: 15px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
 }
 
-/* Estilo de los items */
+/* Ajustes de los elementos del formulario */
 .custom-item {
-  --background: #E9F1FC; /* Color de fondo claro para los inputs */
+  --background: #f2f2f2;
   --border-radius: 10px;
   margin-bottom: 15px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1); /* Sombra ligera en los campos */
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
-/* Estilo del input de correo y contraseña */
 ion-input {
   padding: 10px;
   font-size: 16px;
   color: #333;
 }
 
-/* Estilo del botón de login */
-.custom-button {
-  --border-radius: 8px;
-  --background: #0A49A7; /* Color azul para el botón */
-  color: white; /* Color del texto en el botón */
-  font-weight: bold;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Sombra en el botón */
-}
-
-.custom-button:hover {
-  --background: #084a9a; /* Color más oscuro en hover */
-}
-
-/* Estilo de 'Forgot Password' */
-.forgot-password-link {
-  color: #0A49A7; /* Color azul para el enlace */
-  text-decoration: none;
-  font-size: 14px;
-}
-
-.forgot-password-link:hover {
-  text-decoration: underline; /* Subrayado en hover */
-}
-
-/* Estilo del mensaje de error */
-.text-danger {
-  color: #d9534f; /* Color rojo para los mensajes de error */
-  font-weight: bold;
-  margin-top: 5px;
-  text-align: left; /* Alinear a la izquierda */
-}
+/* Estilo de los botones */
 .custom-button {
   --border-radius: 8px;
   --background: #0a49a7;
   color: white;
   font-weight: bold;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Sombra en el botón */
-}
-/* Estilo de los encabezados */
-ion-header {
-  background-color: #0A49A7; /* Fondo oscuro para encabezados */
-  color: black /* Color amarillo para el texto de encabezado */
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
 }
 
-/* Estilo del título */
-ion-title {
-  font-size: 1.5em; /* Tamaño del título más grande */
+.custom-button:hover {
+  background-color: #084a9a;
 }
-/* Estilo para la barra de herramientas */
-ion-toolbar {
-  --background: transparent; /* Fondo transparente */
+
+.forgot-password-link {
+  color: #0a49a7;
+  text-decoration: none;
+  font-size: 14px;
+}
+
+.forgot-password-link:hover {
+  text-decoration: underline;
+}
+
+.text-danger {
+  color: #d9534f;
+  font-weight: bold;
+  margin-top: 5px;
+  text-align: left;
+}
+
+.custom-header {
+  --background: linear-gradient(45deg, #0A49A7, #0a74da); /* Degradado de fondo */
+  position: relative;
+  z-index: 10; /* Asegura que el header esté siempre al frente */
+}
+
+.custom-toolbar {
+  height: 120px; /* Aumenta la altura del toolbar */
+  display: flex;
+  justify-content: center; /* Centra horizontalmente */
+  align-items: center; /* Centra verticalmente */
+  border-bottom-left-radius: 50px; /* Bordes redondeados */
+  border-bottom-right-radius: 50px;
+}
+
+.custom-toolbar ion-title {
+  font-size: 24px;
+  font-weight: bold;
+  color: white; /* Texto en blanco */
+  text-align: center;
+}
+
+/* Para crear una curva en el borde inferior */
+.custom-toolbar {
+  height: 120px; /* Aumenta la altura del toolbar */
+  display: flex;
+  justify-content: center; /* Centra horizontalmente */
+  align-items: center; /* Centra verticalmente */
+  border-bottom-left-radius: 50px; /* Bordes redondeados */
+  border-bottom-right-radius: 50px;
+  background-color: black;
+  --background: transparent;
+}
+
+/* Centrar el título */
+.centered-title {
+  width: 100%; /* Asegura que el título ocupe todo el espacio disponible */
+  text-align: center; /* Alineación centrada */
+}
+/* Estilo para el contenedor del pie de página */
+.footer {
+  text-align: center;
+  margin-top: auto; /* Asegura que el pie de página se empuje hacia abajo */
+  padding: 20px;
+  background-color: #f2f2f2;
+  border-top-left-radius: 20px;
+  border-top-right-radius: 20px;
+  color: #0A49A7;
+}
+
+/* Estilo para los iconos de redes sociales */
+.social-icons {
+  display: flex;
+  justify-content: center;
+  gap: 15px;
+  margin: 10px 0;
+}
+
+.social-icon {
+  font-size: 24px;
+  color: #0A49A7;
+  transition: transform 0.3s ease;
+}
+
+.social-icon:hover {
+  transform: scale(1.2);
+}
+
+/* Texto de derechos reservados */
+.footer p {
+  margin: 5px 0;
+  font-size: 14px;
 }

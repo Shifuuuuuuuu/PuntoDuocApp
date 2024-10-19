@@ -1,10 +1,10 @@
-<ion-header [translucent]="true">
-  <ion-toolbar>
+<ion-header [translucent]="true" class="custom-header">
+  <ion-toolbar class="custom-toolbar" style="background-color: black;">
     <ion-buttons slot="end">
       <ion-button size="large" [routerLink]="['/perfil-usuario']">
         <ion-icon style="color:  white" name="person-circle-outline"></ion-icon>
       </ion-button>
-      <ion-menu-button size="medium" ></ion-menu-button>
+      <ion-menu-button size="medium"></ion-menu-button>
     </ion-buttons>
     <ion-title style="color:  white">PuntoDuoc</ion-title>
   </ion-toolbar>
@@ -13,17 +13,18 @@
 <ion-content [fullscreen]="true" class="content-center">
   <!-- Barra de búsqueda y botón de filtros -->
   <div class="search-container">
-    <ion-searchbar
+    <ion-searchbar style="--background: white; --color: #000000;"
       animated="true"
       placeholder="Buscar eventos"
       [(ngModel)]="searchText"
-      (ionInput)="filterEvents()">
+      (ionInput)="filterEvents()"
+      class="custom-searchbar">
     </ion-searchbar>
 
     <ion-button
       aria-label="Filter"
       class="filter-button"
-      style="--background: #0A49A7; --color: white;"
+      style="--background: white; --color: #000000;"
       (click)="toggleFilters()">
       <ion-icon name="options-outline"></ion-icon>
     </ion-button>
@@ -62,9 +63,9 @@
   </div>
 
   <!-- Listado de eventos (ocultarlo si loading es verdadero) -->
-  <ion-grid *ngIf="!loading" >
+  <ion-grid *ngIf="!loading">
     <ion-row>
-      <ion-col size="12" size-md="6" size-lg="4" *ngFor="let event of filteredEvents">
+      <ion-col size="12" size-md="6" *ngFor="let event of filteredEvents">
         <ion-card class="event-card">
           <img alt="Imagen del evento" [src]="event.imagen" class="event-image" />
           <ion-card-header>
@@ -121,4 +122,15 @@
       </ion-col>
     </ion-row>
   </ion-grid>
+
+  <!-- Pie de página -->
+  <div class="footer">
+    <p>Síguenos en nuestras redes sociales:</p>
+    <div class="social-icons">
+      <ion-icon name="logo-facebook" class="social-icon"></ion-icon>
+      <ion-icon name="logo-twitter" class="social-icon"></ion-icon>
+      <ion-icon name="logo-instagram" class="social-icon"></ion-icon>
+    </div>
+    <p>&copy; 2024 Punto Duoc. Todos los derechos reservados.</p>
+  </div>
 </ion-content>

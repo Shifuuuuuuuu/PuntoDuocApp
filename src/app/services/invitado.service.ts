@@ -33,6 +33,7 @@ export class InvitadoService {
 
     // Crear el objeto con la información básica
     const invitadoData: Omit<Invitado, 'password'> = {
+      id_Invitado: invitado.id_Invitado,
       email: invitado.email,
       Nombre_completo: invitado.Nombre_completo,
       Rut: invitado.Rut,

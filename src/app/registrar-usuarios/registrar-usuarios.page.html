@@ -1,49 +1,47 @@
-<ion-header [translucent]="true" style="background-color: #0A49A7">
-  <ion-toolbar style="background-color: #0A49A7">
+<ion-header [translucent]="true" class="custom-header">
+  <ion-toolbar class="custom-toolbar">
     <!-- Botón de retroceso -->
     <ion-buttons slot="start">
-      <ion-back-button defaultHref="/iniciar-sesion" style="color:  white"></ion-back-button>
+      <ion-back-button defaultHref="/iniciar-sesion" style="color: white;"></ion-back-button>
     </ion-buttons>
-    <ion-title style="font-weight: bold; font-family: 'Arial', sans-serif;color:  white">
-      Registro de Usuario
-    </ion-title>
+    <ion-title class="centered-title">Registro de Usuario</ion-title>
   </ion-toolbar>
 </ion-header>
 
-<ion-content [fullscreen]="true" class="ion-padding" style="background: linear-gradient(135deg, #333333, black);">
-  <div class="form-container" style="max-width: 380px; margin: auto; padding: 25px; background-color: white; border-radius: 20px; ">
-    <h2 style="text-align: center; color: #333; font-family: 'Arial', sans-serif; font-weight: 600; font-size: 24px;">Crea tu cuenta</h2>
+<ion-content [fullscreen]="true" class="ion-padding" style="--background: #ffffff;">
+  <div class="form-container">
+    <h2 class="centered-title"style="color: black;">Crea tu cuenta de Estudiante</h2>
 
     <form #registroForm="ngForm" (ngSubmit)="registrar()" novalidate>
       <!-- Nombre completo -->
       <ion-item class="custom-item">
-        <ion-label position="floating" style="color: #333;">Nombre completo</ion-label>
+        <ion-label position="floating"style="color: black;">Nombre completo</ion-label>
         <ion-input type="text" [(ngModel)]="estudiante.Nombre_completo" name="nombre" required></ion-input>
       </ion-item>
 
       <!-- RUT -->
       <ion-item class="custom-item">
-        <ion-label position="floating" style="color: #333;">RUT</ion-label>
+        <ion-label position="floating"style="color: black;">RUT</ion-label>
         <ion-input type="text" [(ngModel)]="estudiante.Rut" name="rut" required pattern="^[0-9]+-[0-9kK]{1}$"></ion-input>
       </ion-item>
 
       <!-- Teléfono -->
       <ion-item class="custom-item">
-        <ion-label position="floating" style="color: #333;">Teléfono</ion-label>
+        <ion-label position="floating"style="color: black;">Teléfono</ion-label>
         <ion-input type="tel" [(ngModel)]="estudiante.Telefono" name="telefono" required pattern="^[0-9]{11}$"></ion-input>
       </ion-item>
 
       <!-- Correo electrónico -->
       <ion-item class="custom-item">
-        <ion-label position="floating" style="color: #333;">Correo electrónico</ion-label>
+        <ion-label position="floating"style="color: black;">Correo electrónico</ion-label>
         <ion-input type="email" [(ngModel)]="estudiante.email" name="correo" required></ion-input>
       </ion-item>
 
       <!-- Carrera -->
-      <ion-item class="custom-item" >
-        <ion-label position="floating" style="color: #333;">Carrera</ion-label>
-        <ion-select [(ngModel)]="estudiante.carrera" name="carrera" style="color: #333;" required>
-          <ion-select-option  value="Ingeniería Civil">Ingeniería Civil</ion-select-option>
+      <ion-item class="custom-item">
+        <ion-label position="floating"style="color: black;">Carrera</ion-label>
+        <ion-select [(ngModel)]="estudiante.carrera" name="carrera" required>
+          <ion-select-option value="Ingeniería Civil">Ingeniería Civil</ion-select-option>
           <ion-select-option value="Diseño Gráfico">Diseño Gráfico</ion-select-option>
           <ion-select-option value="Técnico en Programación">Técnico en Programación</ion-select-option>
         </ion-select>
@@ -51,7 +49,7 @@
 
       <!-- Contraseña -->
       <ion-item class="custom-item">
-        <ion-label position="floating" style="color: #333;">Contraseña</ion-label>
+        <ion-label position="floating" style="color: black;">Contraseña</ion-label>
         <ion-input type="password" [(ngModel)]="estudiante.password" name="password" required minlength="8"></ion-input>
       </ion-item>
 
@@ -66,4 +64,17 @@
       </ion-button>
     </form>
   </div>
+
+  <!-- Pie de página decorativo -->
+  <div class="footer">
+    <p>Síguenos en nuestras redes sociales:</p>
+    <div class="social-icons">
+      <ion-icon name="logo-facebook" class="social-icon"></ion-icon>
+      <ion-icon name="logo-twitter" class="social-icon"></ion-icon>
+      <ion-icon name="logo-instagram" class="social-icon"></ion-icon>
+    </div>
+    <p>&copy; 2024 Punto Duoc. Todos los derechos reservados.</p>
+  </div>
 </ion-content>
+
+

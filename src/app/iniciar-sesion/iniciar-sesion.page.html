@@ -1,15 +1,19 @@
-<ion-content [fullscreen]="true" class="ion-padding" style="background: linear-gradient(135deg, #333333, black);">
-  <div class="form-container">
-    <h1 class="center" style="color: #0A49A7; text-align: center;">PuntoDuoc</h1>
+<ion-header [translucent]="true" class="custom-header">
+  <ion-toolbar class="custom-toolbar">
+    <ion-title class="centered-title">Punto Duoc</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true" class="ion-padding">
+  <div class="form-container" style="max-width: 380px; margin: auto; padding: 25px; background-color: white; border-radius: 20px; ">
+    <h1 class="center" style="color: #0A49A7; text-align: center;">Ingresa tu cuenta</h1>
     <form #loginForm="ngForm" (ngSubmit)="iniciarSesion()" novalidate>
       <!-- Correo Electrónico -->
       <div class="mb-3 position-relative">
         <ion-item class="custom-item">
           <ion-input type="text" [(ngModel)]="user.email" name="email" placeholder="Correo Electrónico" required></ion-input>
         </ion-item>
-        <div *ngIf="loginForm.controls['email']?.invalid && loginForm.controls['email']?.touched" class="text-danger">
-          Ingresa un correo electrónico válido.
-        </div>
+
       </div>
 
       <!-- Contraseña -->
@@ -49,5 +53,15 @@
         </ion-button>
       </div>
     </form>
+  </div>
+  <br>
+  <div class="footer">
+    <p>Síguenos en nuestras redes sociales:</p>
+    <div class="social-icons">
+      <ion-icon name="logo-facebook" class="social-icon"></ion-icon>
+      <ion-icon name="logo-twitter" class="social-icon"></ion-icon>
+      <ion-icon name="logo-instagram" class="social-icon"></ion-icon>
+    </div>
+    <p>&copy; 2024 Punto Duoc. Todos los derechos reservados.</p>
   </div>
 </ion-content>

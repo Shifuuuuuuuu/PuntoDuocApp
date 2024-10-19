@@ -1,50 +1,51 @@
-<ion-header [translucent]="true"style="background-color: #0A49A7">
-  <ion-toolbar style="background-color: #0A49A7" >
-    <ion-buttons slot="start" style="background-color: #0A49A7">
-      <ion-back-button defaultHref="/folder/Inicio"></ion-back-button>
+<ion-header [translucent]="true" class="custom-header">
+  <ion-toolbar class="custom-toolbar" style="background-color: black;">
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/folder/Inicio" style="color: white;"></ion-back-button>
     </ion-buttons>
     <ion-buttons slot="end">
       <ion-button size="large" [routerLink]="['/perfil-usuario']">
-        <ion-icon name="person-circle-outline"></ion-icon>
+        <ion-icon style="color: white" name="person-circle-outline"></ion-icon>
       </ion-button>
-      <ion-menu-button style="background-color: #0A49A7" ></ion-menu-button>
+      <ion-menu-button size="medium"></ion-menu-button>
     </ion-buttons>
-    <ion-title>Historial de eventos</ion-title>
+    <ion-title style="color: white">PuntoDuoc</ion-title>
   </ion-toolbar>
 </ion-header>
 
-<ion-content >
-  <!-- Pull to Refresh -->
+<ion-content [fullscreen]="true" class="content-center">
   <ion-refresher slot="fixed" (ionRefresh)="doRefresh($event)">
-    <ion-refresher-content
-      pullingIcon="arrow-dropdown"
-      pullingText="Suelta para refrescar"
-      refreshingSpinner="circles"
-      refreshingText="Cargando...">
-    </ion-refresher-content>
+    <ion-refresher-content></ion-refresher-content>
   </ion-refresher>
 
-  <!-- Cargando -->
-  <div *ngIf="isLoading" class="ion-padding" style="text-align: center;">
-    <ion-spinner name="crescent"></ion-spinner>
-    <p>Buscando eventos inscritos...</p>
+  <div *ngIf="isLoading" class="loading-indicator">
+    <ion-spinner></ion-spinner>
+    <p>Cargando eventos...</p>
   </div>
 
-  <ion-list *ngIf="!isLoading && eventosInscritos && eventosInscritos.length > 0;" style="--background: transparent; " >
-    <ion-item *ngFor="let evento of eventosInscritos" style="--background: transparent; ">
-      <ion-thumbnail slot="start">
-        <img [src]="evento.imagen" alt="{{ evento.titulo }}">
-      </ion-thumbnail>
-      <ion-label>
-        <h2>{{ evento.titulo }}</h2>
-        <p><strong>Fecha:</strong> {{ evento.fecha | date:'medium' }}</p>
-        <p><strong>Lugar:</strong> {{ evento.lugar }}</p>
-        <p><strong>Tipo:</strong> {{ evento.tipo }}</p>
-        <p><strong>Status:</strong> Estás inscrito a este evento.</p>
+  <ion-list *ngIf="!isLoading && inscripciones.length > 0">
+    <ion-item *ngFor="let inscripcion of inscripciones">
+      <ion-label (click)="verDetalles(inscripcion.eventoId)">
+        <h2>{{ inscripcion.titulo }}</h2>
+        <p>{{ inscripcion.descripcion }}</p>
+        <p><strong>Fecha:</strong> {{ inscripcion.fecha }}</p>
       </ion-label>
+      <ion-button slot="end" (click)="cancelarInscripcion(inscripcion.eventoId)">Cancelar</ion-button>
     </ion-item>
   </ion-list>
 
+  <div *ngIf="!isLoading && inscripciones.length === 0" class="no-events">
+    <p>No estás inscrito en ningún evento.</p>
+  </div>
 
 
+  <div class="footer">
+    <p>Síguenos en nuestras redes sociales:</p>
+    <div class="social-icons">
+      <ion-icon name="logo-facebook" class="social-icon"></ion-icon>
+      <ion-icon name="logo-twitter" class="social-icon"></ion-icon>
+      <ion-icon name="logo-instagram" class="social-icon"></ion-icon>
+    </div>
+    <p>&copy; 2024 Punto Duoc. Todos los derechos reservados.</p>
+  </div>
 </ion-content>

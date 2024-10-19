@@ -19,6 +19,10 @@ export class PerfilUsuarioPage implements OnInit {
   errorMessage: string | undefined;
   qrData: string = '';
   isInvitado: boolean = false;
+  public tempNombreCompleto: string = '';
+  public tempEmail: string = '';
+  public tempRut: string = '';
+  public tempTelefono: string = '';
 
   private authSubscription!: Subscription;
   private invitadoSubscription!: Subscription;
@@ -114,15 +118,30 @@ export class PerfilUsuarioPage implements OnInit {
   // Activar modo de edición del perfil
   editProfile() {
     this.isEditing = true;
+    // Inicializa las variables temporales con los datos actuales o un valor predeterminado
+    this.tempNombreCompleto = this.estudiante?.Nombre_completo || this.invitado?.Nombre_completo || '';
+    this.tempEmail = this.estudiante?.email || this.invitado?.email || '';
+    this.tempRut = this.estudiante?.Rut || this.invitado?.Rut || '';
+    this.tempTelefono = this.estudiante?.Telefono || this.invitado?.Telefono || '';
   }
+
 
   // Guardar cambios del perfil
   async saveProfile() {
     try {
       if (this.isInvitado && this.invitado) {
-        await this.invitadoService.updateInvitado(this.invitado); // Guardar cambios de invitado
+        this.invitado.Nombre_completo = this.tempNombreCompleto;
+        this.invitado.email = this.tempEmail;
+        this.invitado.Rut = this.tempRut;
+        this.invitado.Telefono = this.tempTelefono;
+        await this.invitadoService.updateInvitado(this.invitado);
       } else if (this.estudiante) {
-        await this.authService.updateEstudiante(this.estudiante); // Guardar cambios de estudiante
+        this.estudiante.Nombre_completo = this.tempNombreCompleto;
+        this.estudiante.email = this.tempEmail;
+        this.estudiante.Rut = this.tempRut;
+        this.estudiante.Telefono = this.tempTelefono;
+        // No se actualiza el puntaje, ya que no se puede editar
+        await this.authService.updateEstudiante(this.estudiante);
       }
       this.isEditing = false;
       console.log('Perfil actualizado exitosamente.');
@@ -130,6 +149,28 @@ export class PerfilUsuarioPage implements OnInit {
       console.error('Error al guardar el perfil:', error);
       this.errorMessage = 'Error al guardar el perfil.';
     }
+  }
+  cancelEdit() {
+    this.isEditing = false;
+    this.tempNombreCompleto = '';
+    this.tempEmail = '';
+    this.tempRut = '';
+    this.tempTelefono = '';
+    // Aquí podrías también volver a cargar los datos desde Firestore
+    this.loadUserData();
+  }
+  // Cerrar sesión con confirmación
+  confirmLogout() {
+    if (!this.isEditing) {
+      this.logout();
+    } else {
+      this.errorMessage = 'Por favor, guarda los cambios antes de cerrar sesión.';
+    }
+  }
+
+  // Método para salir de la página solo si no está editando
+  canGoBack() {
+    return !this.isEditing; // Solo permite volver si no se está editando
   }
 
   // Cerrar sesión
