@@ -225,22 +225,25 @@ export class FolderPage implements OnInit {
           text: 'Sí',
           handler: async () => {
             try {
-              // Obtener el nombre del usuario dependiendo de si es Invitado o Estudiante
+              // Obtener el nombre y RUT del usuario dependiendo de si es Invitado o Estudiante
               let userName = '';
+              let rut = '';
               if (this.isInvitado) {
                 const invitado = await this.invitadoService.obtenerInvitadoPorId(this.userId);
                 if (invitado) {
                   userName = invitado.Nombre_completo || 'Invitado';
+                  rut = invitado.Rut;
                 }
               } else {
                 const estudiante = await this.estudianteService.obtenerEstudiantePorId(this.userId);
                 if (estudiante) {
                   userName = estudiante.Nombre_completo || 'Estudiante';
+                  rut = estudiante.Rut;
                 }
               }
 
-              // Añadir al usuario a la lista de espera usando el ID y nombre
-              await this.eventosService.agregarUsuarioAListaEspera(event.id_evento, this.userId, userName);
+              // Añadir al usuario a la lista de espera usando el ID, nombre y RUT
+              await this.eventosService.agregarUsuarioAListaEspera(event.id_evento, this.userId, userName, rut);
 
               // Actualiza la propiedad del evento
               event.enListaEspera = true;
@@ -270,48 +273,57 @@ export class FolderPage implements OnInit {
     await alert.present();
   }
 
+
+
   // Método para manejar la inscripción desde la lista de espera
-  async inscribirDesdeListaEspera(eventoId: string, userId: string) {
-    try {
-      // Aquí obtienes el nombre del usuario.
-      let userName = await this.obtenerNombreUsuario(userId);
+// Método para manejar la inscripción desde la lista de espera
+async inscribirDesdeListaEspera(eventoId: string, userId: string) {
+  try {
+    let userName = '';
+    let rut = '';
 
-      if (!userName) {
-        userName = 'Invitado'; // Valor predeterminado
+    if (this.isInvitado) {
+      const invitado = await this.invitadoService.obtenerInvitadoPorId(userId);
+      if (invitado) { // Comprobar que invitado no sea null
+        userName = invitado.Nombre_completo || 'Invitado';
+        rut = invitado.Rut; // Asumiendo que el RUT está en el modelo Invitado
+      } else {
+        throw new Error('Invitado no encontrado.');
       }
-
-      await this.eventosService.inscribirDesdeListaEspera(eventoId, { userId, userName });
-      await this.actualizarPerfilUsuario(eventoId, 'agregar');
-
-      const alert = await this.alertController.create({
-        header: 'Inscripción exitosa',
-        message: 'Has sido inscrito al evento desde la lista de espera.',
-        buttons: ['OK'],
-      });
-      await alert.present();
-
-    } catch (error) {
-      console.error('Error al inscribir desde la lista de espera:', error);
-      const alert = await this.alertController.create({
-        header: 'Error',
-        message: 'No se pudo inscribir al evento. Inténtalo más tarde.',
-        buttons: ['OK'],
-      });
-      await alert.present();
+    } else {
+      const estudiante = await this.estudianteService.obtenerEstudiantePorId(userId);
+      if (estudiante) { // Comprobar que estudiante no sea null
+        userName = estudiante.Nombre_completo || 'Estudiante';
+        rut = estudiante.Rut; // Asumiendo que el RUT está en el modelo Estudiante
+      } else {
+        throw new Error('Estudiante no encontrado.');
+      }
     }
-  }
 
-  // Este método obtiene el nombre del usuario
-  async obtenerNombreUsuario(userId: string): Promise<string> {
-    try {
-      // Usa lastValueFrom para convertir el Observable a una Promesa y obtener el valor
-      const usuario: any = await lastValueFrom(this.estudianteService.getUserById(userId));
-      return usuario ? usuario.nombre : null; // Devuelve el nombre si existe
-    } catch (error) {
-      console.error('Error al obtener el nombre del usuario:', error);
-      return ''; // En caso de error, devuelve null
-    }
+    // Inscribir al usuario desde la lista de espera
+    await this.eventosService.inscribirDesdeListaEspera(eventoId, { userId, userName, rut });
+    await this.actualizarPerfilUsuario(eventoId, 'agregar');
+
+    // Mostrar alerta de éxito
+    const alert = await this.alertController.create({
+      header: 'Inscripción exitosa',
+      message: 'Has sido inscrito al evento desde la lista de espera.',
+      buttons: ['OK'],
+    });
+    await alert.present();
+
+  } catch (error: unknown) { // Afirmación de tipo para error
+    console.error('Error al inscribir desde la lista de espera:', error);
+    const errorMessage = (error instanceof Error) ? error.message : 'No se pudo inscribir al evento. Inténtalo más tarde.';
+    const alert = await this.alertController.create({
+      header: 'Error',
+      message: errorMessage,
+      buttons: ['OK'],
+    });
+    await alert.present();
   }
+}
+
 
 
   // Método para verificar cupos y gestionar la lista de espera
@@ -357,7 +369,24 @@ export class FolderPage implements OnInit {
         return;
       }
 
-      await this.eventosService.inscribirUsuario(eventoId, this.userId);
+      // Obtener nombre y RUT del usuario
+      let userName = '';
+      let rut = '';
+      if (this.isInvitado) {
+        const invitado = await this.invitadoService.obtenerInvitadoPorId(this.userId);
+        if (invitado) {
+          userName = invitado.Nombre_completo || 'Invitado';
+          rut = invitado.Rut;
+        }
+      } else {
+        const estudiante = await this.estudianteService.obtenerEstudiantePorId(this.userId);
+        if (estudiante) {
+          userName = estudiante.Nombre_completo || 'Estudiante';
+          rut = estudiante.Rut;
+        }
+      }
+
+      await this.eventosService.inscribirUsuario(eventoId, this.userId, userName, rut);
       await this.actualizarPerfilUsuario(eventoId, 'agregar');
 
       const toast = await this.toastController.create({
@@ -453,22 +482,25 @@ export class FolderPage implements OnInit {
     }
 
     try {
-      // Obtener el nombre del usuario dependiendo de si es Invitado o Estudiante
+      // Obtener el nombre y RUT del usuario dependiendo de si es Invitado o Estudiante
       let userName = '';
+      let rut = '';
       if (this.isInvitado) {
         const invitado = await this.invitadoService.obtenerInvitadoPorId(this.userId);
         if (invitado) {
           userName = invitado.Nombre_completo || 'Invitado';
+          rut = invitado.Rut; // Asumiendo que el RUT está en el modelo Invitado
         }
       } else {
         const estudiante = await this.estudianteService.obtenerEstudiantePorId(this.userId);
         if (estudiante) {
           userName = estudiante.Nombre_completo || 'Estudiante';
+          rut = estudiante.Rut; // Asumiendo que el RUT está en el modelo Estudiante
         }
       }
 
-      // Eliminar al usuario de la lista de espera usando el ID y nombre
-      await this.eventosService.eliminarUsuarioDeListaEspera(eventoId, this.userId, userName);
+      // Eliminar al usuario de la lista de espera usando el ID, nombre y RUT
+      await this.eventosService.eliminarUsuarioDeListaEspera(eventoId, this.userId, userName, rut);
 
       // Actualiza la propiedad del evento
       const evento = this.filteredEvents.find((event) => event.id_evento === eventoId);

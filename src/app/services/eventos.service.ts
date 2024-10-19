@@ -10,7 +10,7 @@ import {doc,updateDoc,arrayUnion,arrayRemove,increment,serverTimestamp,deleteDoc
 export class EventosService {
   constructor(private firestore: AngularFirestore) {}
 
-  async inscribirUsuario(eventoId: string, userId: string): Promise<void> {
+  async inscribirUsuario(eventoId: string, userId: string, userName: string, rut: string): Promise<void> {
     const eventoDocRef = doc(this.firestore.firestore, 'Eventos', eventoId);
     const eventoDoc = await getDoc(eventoDocRef);
 
@@ -23,6 +23,7 @@ export class EventosService {
         await updateDoc(eventoDocRef, {
           Cupos: increment(-1),
           inscritos: increment(1),
+          Inscripciones: arrayUnion({ id_estudiante: userId, Nombre_completo: userName, Rut: rut }), // Agrega la inscripción al evento
         });
 
         // Guarda la inscripción del usuario en la colección 'Inscripciones'
@@ -33,15 +34,15 @@ export class EventosService {
           timestamp: serverTimestamp(),
         });
       } else {
-        throw new Error('No hay cupos disponibles para este evento.');
+        // Si no hay cupos disponibles, intenta agregar a la lista de espera
+        await this.agregarUsuarioAListaEspera(eventoId, userId, userName, rut); // Asegúrate de incluir rut aquí
+        throw new Error('No hay cupos disponibles. Has sido añadido a la lista de espera.');
       }
     } else {
       throw new Error('Evento no encontrado.');
     }
   }
 
-
-  // Método para cancelar la inscripción de un usuario a un evento
   async cancelarInscripcion(eventoId: string, userId: string): Promise<void> {
     const inscripcionesRef = this.firestore.collection('Inscripciones', (ref) =>
       ref.where('eventoId', '==', eventoId).where('userId', '==', userId)
@@ -61,6 +62,7 @@ export class EventosService {
       await updateDoc(eventoDocRef, {
         Cupos: increment(1),
         inscritos: increment(-1),
+        Inscripciones: arrayRemove({ id_estudiante: userId }) // Elimina la inscripción del evento
       });
 
       // Gestiona la lista de espera
@@ -70,8 +72,6 @@ export class EventosService {
     }
   }
 
-
-  // Método para verificar si un usuario está inscrito en un evento
   async isUserRegistered(eventoId: string, userId: string): Promise<boolean> {
     try {
       const inscripcionesRef = this.firestore.collection('Inscripciones', (ref) =>
@@ -87,12 +87,11 @@ export class EventosService {
     }
   }
 
-  // Método para agregar a un usuario a la lista de espera
-  async agregarUsuarioAListaEspera(eventoId: string, userId: string, userName: string): Promise<void> {
+  async agregarUsuarioAListaEspera(eventoId: string, userId: string, userName: string, rut: string): Promise<void> {
     try {
       const eventoDocRef = doc(this.firestore.firestore, 'Eventos', eventoId);
       await updateDoc(eventoDocRef, {
-        listaEspera: arrayUnion({ userId, userName }), // Agrega el objeto completo
+        listaEspera: arrayUnion({ userId, userName, rut }), // Incluye rut aquí
       });
     } catch (error) {
       console.error('Error al agregar a la lista de espera:', error);
@@ -100,11 +99,12 @@ export class EventosService {
     }
   }
 
-  async eliminarUsuarioDeListaEspera(eventoId: string, userId: string, userName: string): Promise<void> {
+
+  async eliminarUsuarioDeListaEspera(eventoId: string, userId: string, userName: string,rut: string): Promise<void> {
     try {
       const eventoDocRef = doc(this.firestore.firestore, 'Eventos', eventoId);
       await updateDoc(eventoDocRef, {
-        listaEspera: arrayRemove({ userId, userName }), // Elimina el objeto exacto
+        listaEspera: arrayRemove({ userId, userName , rut}), // Elimina el objeto exacto
       });
     } catch (error) {
       console.error('Error al eliminar de la lista de espera:', error);
@@ -112,23 +112,20 @@ export class EventosService {
     }
   }
 
+  async inscribirDesdeListaEspera(eventoId: string, usuarioEnEspera: { userId: string; userName: string; rut: string }): Promise<void> {
+    try {
+      // Inscribe al usuario
+      await this.inscribirUsuario(eventoId, usuarioEnEspera.userId, usuarioEnEspera.userName, usuarioEnEspera.rut); // Asegúrate de pasar el rut
 
-  // Método para inscribir a un usuario desde la lista de espera
-async inscribirDesdeListaEspera(eventoId: string, usuarioEnEspera: { userId: string; userName: string }): Promise<void> {
-  try {
-    // Inscribe al usuario
-    await this.inscribirUsuario(eventoId, usuarioEnEspera.userId);
-
-    // Elimina al usuario de la lista de espera
-    await this.eliminarUsuarioDeListaEspera(eventoId, usuarioEnEspera.userId, usuarioEnEspera.userName);
-  } catch (error) {
-    console.error('Error al inscribir desde la lista de espera:', error);
-    throw error;
+      // Elimina al usuario de la lista de espera
+      await this.eliminarUsuarioDeListaEspera(eventoId, usuarioEnEspera.userId, usuarioEnEspera.userName, usuarioEnEspera.rut);
+    } catch (error) {
+      console.error('Error al inscribir desde la lista de espera:', error);
+      throw error;
+    }
   }
-}
 
 
-  // Método para obtener los cupos disponibles
   async obtenerCuposDisponibles(eventoId: string): Promise<number> {
     if (!eventoId) {
       console.error('Error: Evento ID no puede estar vacío');
@@ -150,7 +147,8 @@ async inscribirDesdeListaEspera(eventoId: string, usuarioEnEspera: { userId: str
       return 0;
     }
   }
-  async obtenerListaEspera(eventoId: string): Promise<{ userId: string; userName: string }[]> {
+
+  async obtenerListaEspera(eventoId: string): Promise<{ userId: string; userName: string; rut: string }[]> {
     if (!eventoId) {
       console.error('Error: Evento ID no puede estar vacío');
       return [];
@@ -162,6 +160,7 @@ async inscribirDesdeListaEspera(eventoId: string, usuarioEnEspera: { userId: str
 
       if (eventoSnapshot && eventoSnapshot.exists()) {
         const eventoData = eventoSnapshot.data() as Evento;
+        // Aquí es donde se asegura que listaEspera contenga la propiedad 'rut'
         return eventoData.listaEspera || [];
       }
 
@@ -172,6 +171,8 @@ async inscribirDesdeListaEspera(eventoId: string, usuarioEnEspera: { userId: str
     }
   }
 
+
+
   async verificarListaEspera(eventoId: string): Promise<void> {
     try {
       const cuposDisponibles = await this.obtenerCuposDisponibles(eventoId);
@@ -179,8 +180,8 @@ async inscribirDesdeListaEspera(eventoId: string, usuarioEnEspera: { userId: str
         const listaEspera = await this.obtenerListaEspera(eventoId);
         if (listaEspera.length > 0) {
           const primerUsuarioEnEspera = listaEspera[0];
-          await this.inscribirDesdeListaEspera(eventoId, primerUsuarioEnEspera);
-          // Aquí podrías notificar al usuario que ha sido inscrito automáticamente
+          // Asegúrate de que primerUsuarioEnEspera tenga rut
+          await this.inscribirDesdeListaEspera(eventoId, primerUsuarioEnEspera); // Debería funcionar ahora
         }
       }
     } catch (error) {
@@ -188,23 +189,22 @@ async inscribirDesdeListaEspera(eventoId: string, usuarioEnEspera: { userId: str
     }
   }
 
-  // Método para verificar si un usuario está en la lista de espera
-async isUserInWaitList(eventoId: string, userId: string): Promise<boolean> {
-  try {
-    const eventoDoc = await this.firestore.collection('Eventos').doc(eventoId).get().toPromise();
+  async isUserInWaitList(eventoId: string, userId: string): Promise<boolean> {
+    try {
+      const eventoDoc = await this.firestore.collection('Eventos').doc(eventoId).get().toPromise();
 
-    if (eventoDoc && eventoDoc.exists) {
-      const eventoData = eventoDoc.data() as Evento;
-      const listaEspera = eventoData.listaEspera || [];
-      return listaEspera.some((user: { userId: string; userName: string }) => user.userId === userId);
+      if (eventoDoc && eventoDoc.exists) {
+        const eventoData = eventoDoc.data() as Evento;
+        const listaEspera = eventoData.listaEspera || [];
+        return listaEspera.some((user: { userId: string; userName: string }) => user.userId === userId);
+      }
+
+      return false;
+    } catch (error) {
+      console.error('Error al verificar lista de espera:', error);
+      return false;
     }
-
-    return false;
-  } catch (error) {
-    console.error('Error al verificar lista de espera:', error);
-    return false;
   }
-}
 
   async salirDeListaEspera(eventoId: string, userId: string): Promise<void> {
     const eventoDocRef = doc(this.firestore.firestore, 'Eventos', eventoId);
@@ -214,5 +214,4 @@ async isUserInWaitList(eventoId: string, userId: string): Promise<boolean> {
       listaEspera: arrayRemove(userId)
     });
   }
-
 }
