@@ -1,23 +1,23 @@
-<ion-content *ngIf="evento">
-  <h2>{{ evento.titulo }}</h2>
-  <p>{{ evento.descripcion }}</p>
-  <p><strong>Fecha:</strong> {{ evento.fecha | date:'fullDate' }}</p>
-  <p><strong>Lugar:</strong> {{ evento.lugar }}</p>
+<ion-content class="ion-padding">
+  <!-- Título del evento -->
+  <h1 class="ion-text-center">Detalles del Evento</h1>
 
-  <ion-button expand="block" (click)="verificarInscripcion(eventoId, 'ID_ESTUDIANTE')">Verificar Asistencia</ion-button>
+  <!-- Tarjeta para mostrar los detalles del evento -->
+  <ion-card>
+    <ion-card-header>
+      <ion-card-title>Escanear Código QR</ion-card-title>
+    </ion-card-header>
+    <ion-card-content>
+      <!-- Botón para escanear el código QR -->
+      <ion-button expand="block" color="primary" (click)="verificarInscripcion()">Escanear QR</ion-button>
 
-  <p *ngIf="mensajePresencia">{{ mensajePresencia }}</p> <!-- Mensaje de presencia -->
+      <!-- Mensaje de escaneo en proceso -->
+      <ion-spinner *ngIf="escaneando" name="crescent"></ion-spinner>
 
-  <ion-list>
-    <ion-item *ngFor="let barcode of barcodes">
-      <ion-label position="stacked">{{ barcode.format }}</ion-label>
-      <ion-input type="text" [value]="barcode.rawValue" readonly></ion-input>
-    </ion-item>
-  </ion-list>
-
-  <ion-fab slot="fixed" vertical="bottom" horizontal="end">
-    <ion-fab-button (click)="scan()" [disabled]="!isSupported">
-      <ion-icon name="scan"></ion-icon>
-    </ion-fab-button>
-  </ion-fab>
+      <!-- Mensaje de verificación tras el escaneo -->
+      <p *ngIf="mensajePresencia" [ngClass]="{'verificado': esVerificado, 'no-verificado': !esVerificado}">
+        {{ mensajePresencia }}
+      </p>
+    </ion-card-content>
+  </ion-card>
 </ion-content>

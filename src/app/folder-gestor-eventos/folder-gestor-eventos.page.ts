@@ -13,7 +13,7 @@ export class FolderGestorEventosPage implements OnInit {
 
   eventos$: Observable<any[]> = new Observable<any[]>();
 
-  constructor(private eventosService: EventosGestorService,private router: Router) {}
+  constructor(private eventosService: EventosGestorService, private router: Router) {}
 
   ngOnInit() {
     this.cargarEventos();
@@ -28,18 +28,6 @@ export class FolderGestorEventosPage implements OnInit {
   verDetalles(eventoId: string) {
     // Navegar a la página de detalles con el id del evento
     this.router.navigate(['/detalles-evento', eventoId]);
-  }
-
-  // Verificar inscripción de un usuario
-  verificarInscripcion(eventoId: string, userId: string) {
-    this.eventosService.verificarInscripcion(eventoId, userId).subscribe(inscripciones => {
-      if (inscripciones.length > 0) {
-        console.log(`Usuario ${userId} está inscrito en el evento ${eventoId}`);
-        // Aquí podrías agregar puntos al usuario, mostrar una notificación, etc.
-      } else {
-        console.log('Usuario no está inscrito.');
-      }
-    });
   }
 
   // Cancelar evento

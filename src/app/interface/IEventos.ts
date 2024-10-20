@@ -1,3 +1,5 @@
+import { Inscripcion } from "./IInscripcion";
+
 export interface Evento {
   Cupos: number;
   descripcion: string;
@@ -17,4 +19,5 @@ export interface Evento {
   enListaEspera?: boolean;
   timestamp: any;
   categoria: string;
+  Inscripciones?: Inscripcion[];
 }

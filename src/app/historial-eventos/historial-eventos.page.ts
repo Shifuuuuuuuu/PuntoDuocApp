@@ -10,7 +10,7 @@ import { switchMap, map, catchError, tap } from 'rxjs/operators';
 import { AngularFirestore } from '@angular/fire/compat/firestore';
 import { ActivatedRoute, Router } from '@angular/router';
 import { ToastController } from '@ionic/angular';
-import { Inscripcion } from '../interface/IInscripcion';
+import { Inscripcion, Inscripcion2 } from '../interface/IInscripcion';
 @Component({
   selector: 'app-historial-eventos',
   templateUrl: './historial-eventos.page.html',
@@ -67,7 +67,7 @@ export class HistorialEventosPage implements OnInit {
     }
 
     // Obtén todas las inscripciones del usuario
-    const inscripcionesRef = this.firestore.collection<Inscripcion>('Inscripciones', ref =>
+    const inscripcionesRef = this.firestore.collection<Inscripcion2>('Inscripciones', ref =>
       ref.where('userId', '==', userId)
     );
 
@@ -78,7 +78,7 @@ export class HistorialEventosPage implements OnInit {
     if (inscripcionesSnapshot && !inscripcionesSnapshot.empty) {
       console.log('Inscripciones encontradas:', inscripcionesSnapshot.docs.length);
       for (const doc of inscripcionesSnapshot.docs) {
-        const inscripcion = doc.data() as Inscripcion; // Especifica el tipo de inscripcion
+        const inscripcion = doc.data() as Inscripcion2; // Especifica el tipo de inscripcion
         console.log('Inscripción:', inscripcion);
 
         // Obtener detalles del evento usando el eventoId de la inscripción

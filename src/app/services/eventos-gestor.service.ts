@@ -3,7 +3,7 @@ import { AngularFirestore } from '@angular/fire/compat/firestore';
 import {  Observable } from 'rxjs';
 import {  filter} from 'rxjs/operators';
 import { Evento } from '../interface/IEventos';
-import { Inscripcion } from '../interface/IInscripcion';
+import { Inscripcion, Inscripcion2 } from '../interface/IInscripcion';
 import {  getDoc } from '@angular/fire/firestore';
 @Injectable({
   providedIn: 'root'
@@ -42,7 +42,7 @@ export class EventosGestorService {
 
   // Agregar inscripción
   inscribirUsuario(eventoId: string, userId: string) {
-    const inscripcion: Inscripcion = {
+    const inscripcion: Inscripcion2 = {
       eventoId: eventoId,
       userId: userId,
       timestamp: new Date()

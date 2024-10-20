@@ -2,8 +2,9 @@ import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { EventosGestorService } from '../services/eventos-gestor.service';
 import { AngularFirestore } from '@angular/fire/compat/firestore';
-import { BarcodeScanner } from '@capacitor-community/barcode-scanner';
 import { Estudiante } from '../interface/IEstudiante';
+import { CapacitorBarcodeScanner } from '@capacitor/barcode-scanner';
+import { CartService } from '../services/cart.service';
 
 @Component({
   selector: 'app-detalles-evento',
@@ -11,131 +12,78 @@ import { Estudiante } from '../interface/IEstudiante';
   styleUrls: ['./detalles-evento.page.scss'],
 })
 export class DetallesEventoPage implements OnInit {
-  eventoId: string = ''; // Inicialización como cadena vacía
-  isInvitado: boolean = false;
-  evento: any;
-  barcodes: any[] = []; // Array para almacenar los resultados del escáner
-  isSupported: boolean = true; // Verificar soporte para escáner
+  eventoId: string = ''; // ID del evento
   mensajePresencia: string = ''; // Mensaje de presencia
+  esVerificado: boolean = false; // Indicador de verificación
+  escaneando: boolean = false; // Estado para mostrar si está escaneando
 
   constructor(
     private route: ActivatedRoute,
-    private eventosService: EventosGestorService,
-    private firestore: AngularFirestore,
+    private cartService: CartService // Inyectar CartService
   ) {}
 
   ngOnInit() {
-    // Manejar el caso en que 'id' puede ser null
-    const id = this.route.snapshot.paramMap.get('id');
-    if (id) {
-      this.eventoId = id;
-      this.eventosService.getEventoById(this.eventoId).subscribe((data) => {
-        this.evento = data;
-      });
-    } else {
-      console.error('No se encontró el ID del evento.');
-    }
+    // Captura el ID del evento desde los parámetros de la URL
+    this.route.paramMap.subscribe(params => {
+      const id = params.get('id');
+      if (id) {
+        this.eventoId = id;
+        console.log('Evento ID:', this.eventoId);  // Verifica que el ID del evento se recibe
+      } else {
+        console.error('No se encontró el ID del evento.');
+      }
+    });
   }
 
-  async scan() {
+  async verificarInscripcion() {
+    this.escaneando = true; // Inicia el escaneo
     try {
-      // Verifica los permisos
-      const permissionStatus = await BarcodeScanner.checkPermission({ force: true });
+      const qrData = await this.startScan(); // Inicia el escaneo
+      console.log('QR Data:', qrData); // Verifica que el QR tenga los datos correctos
+      console.log('ID del evento:', this.eventoId); // Verifica que el ID del evento sea correcto
 
-      // Verificamos si el permiso ha sido otorgado
-      if (permissionStatus.granted) {
-        // Ocultar la interfaz de usuario mientras se escanea (opcional)
-        BarcodeScanner.hideBackground();
-
-        // Comienza a escanear
-        const result = await BarcodeScanner.startScan();
-
-        // Detener el escaneo después de obtener el resultado
-        BarcodeScanner.stopScan();
-
-        // Verificar si se ha escaneado algo
-        if (result.hasContent) {
-          console.log('Código QR escaneado:', result.content);
-
-          // Agregar el contenido escaneado a la lista de códigos
-          this.barcodes.push({ rawValue: result.content, format: 'QR Code' });
-
-          // Verificar inscripción con el contenido escaneado
-          this.verificarInscripcion(this.eventoId, result.content);
+      if (qrData) {
+        // Aquí debes pasar el ID del evento que obtuviste al inicializar el componente
+        const isVerified = await this.cartService.verifyAndUpdateInscription(qrData, this.eventoId);
+        if (isVerified) {
+          this.mensajePresencia = 'Inscripción verificada con éxito.';
+          this.esVerificado = true;
         } else {
-          console.error('No se encontró contenido en el código QR');
+          this.mensajePresencia = 'No se encontró inscripción.';
+          this.esVerificado = false;
         }
-      } else if (permissionStatus.denied) {
-        // Si el permiso fue denegado permanentemente, podemos dirigir al usuario a los ajustes
-        console.error('Permiso denegado permanentemente, el usuario debe habilitarlo desde la configuración.');
-        BarcodeScanner.openAppSettings();
-      } else {
-        // Si el permiso no ha sido otorgado, muestre un mensaje adecuado
-        console.error('Permiso denegado para usar la cámara');
       }
     } catch (error) {
-      console.error('Error al escanear: ', error);
+      this.mensajePresencia = 'Error al verificar inscripción. Intenta de nuevo.';
+      this.esVerificado = false;
+      console.error(error);
+    } finally {
+      this.escaneando = false; // Termina el escaneo
     }
   }
 
 
+  async startScan() {
+    try {
+      const result = await CapacitorBarcodeScanner.scanBarcode({
+        hint: 17,
+        cameraDirection: 1,
+      });
 
-  verificarInscripcion(eventoId: string, idUsuario: string): void {
-    this.eventosService.obtenerInscripcion(eventoId, idUsuario).then((inscripcion: boolean) => {
-      if (inscripcion) {
-        if (this.isInvitado) {
-          console.log(`El invitado ${idUsuario} está presente en el evento ${eventoId}`);
-          this.mensajePresencia = `El invitado ${idUsuario} está presente en el evento.`;
-          this.actualizarEstadoAsistencia(eventoId, idUsuario); // Solo actualiza el estado de asistencia
-        } else {
-          console.log(`El estudiante ${idUsuario} está inscrito en el evento ${eventoId}`);
-          this.sumarPuntosUsuario(idUsuario, 200); // Sumar puntos por asistencia
-          this.mensajePresencia = `El estudiante ${idUsuario} está presente en el evento.`;
-          this.actualizarEstadoAsistencia(eventoId, idUsuario); // Actualizar estado de asistencia
-        }
+      const qrData = result.ScanResult; // Aquí obtienes la información del QR (ID y otros datos)
+      const parsedData = JSON.parse(qrData); // Verifica que el QR tiene datos válidos
+      console.log('Datos QR escaneados:', parsedData); // Imprime los datos del QR
+
+      // Verifica que los datos tengan las propiedades necesarias
+      if ((parsedData.id_estudiante || parsedData.id_Invitado) && parsedData.Nombre_completo) {
+        return parsedData; // Suponiendo que el QR tiene los datos en formato JSON
       } else {
-        console.log(`El usuario ${idUsuario} no está inscrito en el evento ${eventoId}`);
-        this.mensajePresencia = `El usuario ${idUsuario} no está inscrito en el evento.`;
+        console.error('Los datos del QR no son válidos:', parsedData);
+        throw new Error('Los datos del QR no son válidos');
       }
-    });
-  }
-
-  sumarPuntosUsuario(idEstudiante: string, puntos: number): void {
-    const estudianteRef = this.firestore.doc<Estudiante>(`Estudiantes/${idEstudiante}`); // Especifica el tipo
-
-    estudianteRef.ref.get().then((doc) => {
-      if (doc.exists) {
-        const estudianteData = doc.data() as Estudiante; // Asegúrate de usar la interfaz
-        const puntajeActual = estudianteData?.puntaje || 0; // Accede al puntaje
-
-        // Actualizar el puntaje del estudiante
-        estudianteRef.update({
-          puntaje: puntajeActual + puntos,
-        })
-        .then(() => {
-          console.log(`Se han añadido ${puntos} puntos al estudiante ${idEstudiante}`);
-        })
-        .catch((error) => {
-          console.error('Error al sumar puntos: ', error);
-        });
-      } else {
-        console.error(`No se encontró el estudiante con id ${idEstudiante}`);
-      }
-    });
-  }
-
-  actualizarEstadoAsistencia(eventoId: string, idUsuario: string): void {
-    const inscripcionRef = this.firestore.doc(`Inscripciones/${eventoId}_${idUsuario}`);
-
-    inscripcionRef.update({
-      asistenciaVerificada: true, // Cambiar el estado a asistencia verificada
-      fechaAsistencia: new Date(), // Registrar la fecha y hora de la asistencia
-    })
-    .then(() => {
-      console.log(`Asistencia verificada para el usuario ${idUsuario} en el evento ${eventoId}`);
-    })
-    .catch((error) => {
-      console.error('Error al actualizar la asistencia: ', error);
-    });
+    } catch (e) {
+      console.error('Error al escanear el código:', e);
+      throw e;
+    }
   }
 }
