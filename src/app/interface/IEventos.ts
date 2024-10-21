@@ -4,7 +4,7 @@ export interface Evento {
   Cupos: number;
   descripcion: string;
   estado: string;
-  fecha: string;
+  fecha: { seconds: number; nanoseconds: number } | string;  // Timestamp o string
   fecha_creacion: string;
   id_evento: string;
   imagen: string;
@@ -15,9 +15,11 @@ export interface Evento {
   titulo: string;
   show?: boolean;
   estaInscrito?: boolean;
-  listaEspera?: { userId: string; userName: string; rut: string  }[];
+  listaEspera?: { userId: string; userName: string; rut: string }[];
   enListaEspera?: boolean;
   timestamp: any;
   categoria: string;
   Inscripciones?: Inscripcion[];
 }
+
+

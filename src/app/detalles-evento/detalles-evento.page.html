@@ -1,23 +1,72 @@
-<ion-content class="ion-padding">
+<ion-header [translucent]="true" class="custom-header">
+  <ion-toolbar class="custom-toolbar" style="background-color: black;">
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/folder-gestor-eventos" style="color: white;"></ion-back-button>
+    </ion-buttons>
+    <ion-title style="color: white;">Detalle del evento</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true" class="content-center">
   <!-- Título del evento -->
   <h1 class="ion-text-center">Detalles del Evento</h1>
 
   <!-- Tarjeta para mostrar los detalles del evento -->
-  <ion-card>
+  <ion-card style="background-color: white;">
     <ion-card-header>
-      <ion-card-title>Escanear Código QR</ion-card-title>
+      <ion-card-title style="color: black;">Escanear Código QR</ion-card-title>
     </ion-card-header>
     <ion-card-content>
-      <!-- Botón para escanear el código QR -->
-      <ion-button expand="block" color="primary" (click)="verificarInscripcion()">Escanear QR</ion-button>
-
-      <!-- Mensaje de escaneo en proceso -->
+      <ion-button expand="block" color="primary" (click)="verificarInscripcion()">Verfica a los Usuarios</ion-button>
       <ion-spinner *ngIf="escaneando" name="crescent"></ion-spinner>
-
-      <!-- Mensaje de verificación tras el escaneo -->
       <p *ngIf="mensajePresencia" [ngClass]="{'verificado': esVerificado, 'no-verificado': !esVerificado}">
         {{ mensajePresencia }}
       </p>
     </ion-card-content>
   </ion-card>
+
+  <!-- Contenedor de listas paralelas -->
+  <div class="lists-container">
+    <!-- Lista de Usuarios -->
+    <ion-card class="users-list" style="background-color: white;">
+      <ion-card-header>
+        <ion-card-title style="color: black;">Lista de Usuarios</ion-card-title>
+      </ion-card-header>
+      <ion-card-content >
+        <ion-list style="background-color: white;">
+          <ion-item *ngFor="let user of usuarios" >
+            <ion-label >
+              <h2>{{ user.Nombre_completo }}</h2>
+            </ion-label>
+          </ion-item>
+        </ion-list>
+      </ion-card-content>
+    </ion-card>
+
+    <!-- Lista de Espera -->
+    <ion-card class="wait-list" style="background-color: white;">
+      <ion-card-header>
+        <ion-card-title style="color: black;" >Lista de Espera</ion-card-title>
+      </ion-card-header>
+      <ion-card-content>
+        <ion-list style="background-color: white;">
+          <ion-item *ngFor="let waitUser of listaEspera">
+            <ion-label>
+              <h2>{{ waitUser.userName }}</h2>
+            </ion-label>
+          </ion-item>
+        </ion-list>
+      </ion-card-content>
+    </ion-card>
+  </div>
+
+  <div class="footer">
+    <p>Síguenos en nuestras redes sociales:</p>
+    <div class="social-icons">
+      <ion-icon name="logo-facebook" class="social-icon"></ion-icon>
+      <ion-icon name="logo-twitter" class="social-icon"></ion-icon>
+      <ion-icon name="logo-instagram" class="social-icon"></ion-icon>
+    </div>
+    <p>&copy; 2024 Punto Duoc. Todos los derechos reservados.</p>
+  </div>
 </ion-content>

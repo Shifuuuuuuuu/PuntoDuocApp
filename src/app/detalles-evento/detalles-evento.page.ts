@@ -16,7 +16,8 @@ export class DetallesEventoPage implements OnInit {
   mensajePresencia: string = ''; // Mensaje de presencia
   esVerificado: boolean = false; // Indicador de verificación
   escaneando: boolean = false; // Estado para mostrar si está escaneando
-
+  usuarios: any[] = []; // Lista de usuarios inscritos
+  listaEspera: any[] = [];
   constructor(
     private route: ActivatedRoute,
     private cartService: CartService // Inyectar CartService
@@ -29,11 +30,25 @@ export class DetallesEventoPage implements OnInit {
       if (id) {
         this.eventoId = id;
         console.log('Evento ID capturado en DetallesEventoPage:', this.eventoId);  // Verificación del ID del evento
+        this.cargarListas(); // Llamar al método para cargar las listas de inscripciones y lista de espera
       } else {
         console.error('No se encontró el ID del evento.');
       }
     });
   }
+  // Método para cargar la lista de inscripciones y lista de espera
+  async cargarListas() {
+    try {
+      const { inscripciones, listaEspera } = await this.cartService.getDatosEvento(this.eventoId);
+      this.usuarios = inscripciones;
+      this.listaEspera = listaEspera;
+      console.log('Usuarios inscritos:', this.usuarios);
+      console.log('Lista de espera:', this.listaEspera);
+    } catch (error) {
+      console.error('Error al cargar las listas:', error);
+    }
+  }
+
 
   async verificarInscripcion() {
     this.escaneando = true; // Inicia el escaneo

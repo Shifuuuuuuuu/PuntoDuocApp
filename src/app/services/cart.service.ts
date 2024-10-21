@@ -14,6 +14,62 @@ import { AuthService } from './auth.service';
 export class CartService {
   private firestoreDB = getFirestore();
   constructor(private firestore: AngularFirestore, private authService: AuthService) {}
+  async getInscripciones(eventId: string): Promise<any[]> {
+    try {
+      const eventSnapshot = await this.firestore.collection('Eventos').doc(eventId).get().toPromise();
+
+      if (eventSnapshot && eventSnapshot.exists) {
+        const eventData = eventSnapshot.data() as Evento | undefined;
+
+        if (eventData && eventData.Inscripciones) {
+          return eventData.Inscripciones.map(inscripcion => ({
+            Nombre_completo: inscripcion.Nombre_completo,
+            id_estudiante: inscripcion.id_estudiante || null,
+            id_invitado: inscripcion.id_invitado || null
+          }));
+        }
+      }
+
+      return []; // Si no hay inscripciones, retornamos un arreglo vacío
+    } catch (error) {
+      console.error('Error al obtener inscripciones:', error);
+      throw error;
+    }
+  }
+
+  // Obtener la lista de espera por el ID del evento
+  async getDatosEvento(eventId: string): Promise<{ inscripciones: any[], listaEspera: any[] }> {
+    try {
+      // Accedemos al evento utilizando el eventId
+      const eventSnapshot = await this.firestore.collection('Eventos').doc(eventId).get().toPromise();
+
+      if (eventSnapshot && eventSnapshot.exists) {
+        const eventData = eventSnapshot.data() as Evento | undefined;
+
+        // Verificamos si existen las listas en el evento
+        const inscripciones = eventData?.Inscripciones || [];
+        const listaEspera = eventData?.listaEspera || [];
+
+        // Retornamos ambas listas
+        return {
+          inscripciones: inscripciones.map(inscripcion => ({
+            Nombre_completo: inscripcion.Nombre_completo
+          })),
+          listaEspera: listaEspera.map(user => ({
+            userName: user.userName
+          }))
+        };
+      }
+
+      return { inscripciones: [], listaEspera: [] }; // Retornamos vacíos si no existen las listas
+    } catch (error) {
+      console.error('Error al obtener los datos del evento:', error);
+      throw error;
+    }
+  }
+
+
+
 
   async startScan() {
     try {

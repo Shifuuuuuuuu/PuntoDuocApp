@@ -1,7 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import { EventosGestorService } from '../services/eventos-gestor.service';
-import { Observable } from 'rxjs';
+import { map, Observable } from 'rxjs';
 import { Router } from '@angular/router';
+import { Evento } from '../interface/IEventos';
 
 
 @Component({
@@ -11,7 +12,7 @@ import { Router } from '@angular/router';
 })
 export class FolderGestorEventosPage implements OnInit {
 
-  eventos$: Observable<any[]> = new Observable<any[]>();
+  eventos$: Observable<Evento[]> = new Observable<Evento[]>();
 
   constructor(private eventosService: EventosGestorService, private router: Router) {}
 
@@ -21,12 +22,28 @@ export class FolderGestorEventosPage implements OnInit {
 
   // Cargar eventos desde Firestore
   cargarEventos() {
-    this.eventos$ = this.eventosService.getEventos();
+    this.eventos$ = this.eventosService.getEventos().pipe(
+      map((eventos: Evento[]) => eventos.map((evento: Evento) => {
+        evento.fecha = this.transformarFecha(evento.fecha); // Transformar la fecha antes de asignarla
+        return evento;
+      }))
+    );
+  }
+
+  // Función que transforma la fecha
+  transformarFecha(fecha: any): string {
+    // Si fecha es un timestamp de Firestore, convertirla a formato legible
+    if (fecha && typeof fecha !== 'string' && fecha.seconds) {
+      const date = new Date(fecha.seconds * 1000); // Convertir seconds a milisegundos
+      return date.toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric' });
+    }
+
+    // Si ya es una cadena, devolverla tal cual
+    return fecha;
   }
 
   // Ir a los detalles del evento
   verDetalles(eventoId: string) {
-    // Navegar a la página de detalles con el id del evento
     this.router.navigate(['/detalles-evento', eventoId]);
   }
 
