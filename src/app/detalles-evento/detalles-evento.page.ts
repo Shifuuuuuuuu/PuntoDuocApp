@@ -28,7 +28,7 @@ export class DetallesEventoPage implements OnInit {
       const id = params.get('id');
       if (id) {
         this.eventoId = id;
-        console.log('Evento ID:', this.eventoId);  // Verifica que el ID del evento se recibe
+        console.log('Evento ID capturado en DetallesEventoPage:', this.eventoId);  // Verificación del ID del evento
       } else {
         console.error('No se encontró el ID del evento.');
       }
@@ -39,14 +39,20 @@ export class DetallesEventoPage implements OnInit {
     this.escaneando = true; // Inicia el escaneo
     try {
       const qrData = await this.startScan(); // Inicia el escaneo
-      console.log('QR Data:', qrData); // Verifica que el QR tenga los datos correctos
-      console.log('ID del evento:', this.eventoId); // Verifica que el ID del evento sea correcto
+      console.log('Datos del QR escaneados:', qrData); // Verifica los datos obtenidos del QR
+      console.log('ID del evento en verificación:', this.eventoId); // Verifica que el ID del evento sea correcto
 
       if (qrData) {
-        // Aquí debes pasar el ID del evento que obtuviste al inicializar el componente
+        // Verificación y actualización de inscripción
         const isVerified = await this.cartService.verifyAndUpdateInscription(qrData, this.eventoId);
         if (isVerified) {
           this.mensajePresencia = 'Inscripción verificada con éxito.';
+
+          // Si es un estudiante y se actualizó el puntaje
+          if (qrData.tipo === 'estudiante') {
+            console.log('Estudiante detectado, puntaje será actualizado.');
+            this.mensajePresencia += ' El puntaje ha sido incrementado por asistir al evento.';
+          }
           this.esVerificado = true;
         } else {
           this.mensajePresencia = 'No se encontró inscripción.';
@@ -56,12 +62,11 @@ export class DetallesEventoPage implements OnInit {
     } catch (error) {
       this.mensajePresencia = 'Error al verificar inscripción. Intenta de nuevo.';
       this.esVerificado = false;
-      console.error(error);
+      console.error('Error durante la verificación de inscripción:', error);
     } finally {
       this.escaneando = false; // Termina el escaneo
     }
   }
-
 
   async startScan() {
     try {
@@ -72,7 +77,7 @@ export class DetallesEventoPage implements OnInit {
 
       const qrData = result.ScanResult; // Aquí obtienes la información del QR (ID y otros datos)
       const parsedData = JSON.parse(qrData); // Verifica que el QR tiene datos válidos
-      console.log('Datos QR escaneados:', parsedData); // Imprime los datos del QR
+      console.log('Datos QR escaneados correctamente:', parsedData); // Imprime los datos del QR
 
       // Verifica que los datos tengan las propiedades necesarias
       if ((parsedData.id_estudiante || parsedData.id_Invitado) && parsedData.Nombre_completo) {

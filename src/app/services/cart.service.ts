@@ -2,15 +2,18 @@ import { Injectable } from '@angular/core';
 import { AngularFirestore } from '@angular/fire/compat/firestore';
 import { CapacitorBarcodeScanner } from '@capacitor/barcode-scanner';
 import { Evento } from '../interface/IEventos';
-import { Estudiante } from '../interface/IEstudiante';
 import { QRCodeData2 } from '../interface/IQR';
 import { doc, getDoc, increment, updateDoc } from 'firebase/firestore';
+import { getFirestore } from 'firebase/firestore';
+import { Estudiante } from '../interface/IEstudiante';
+import { AuthService } from './auth.service';
 
 @Injectable({
   providedIn: 'root'
 })
 export class CartService {
-  constructor(private firestore: AngularFirestore) {}
+  private firestoreDB = getFirestore();
+  constructor(private firestore: AngularFirestore, private authService: AuthService) {}
 
   async startScan() {
     try {
@@ -48,12 +51,7 @@ export class CartService {
 
             // Incrementar puntaje solo si es un estudiante
             if (qrData.tipo === 'estudiante' && qrData.id_estudiante) {
-              const puntajeIncrementado = await this.incrementarPuntajeEstudiante(qrData.id_estudiante);
-              if (puntajeIncrementado) {
-                console.log('Puntaje incrementado con éxito.');
-              } else {
-                console.log('Error al incrementar el puntaje.');
-              }
+              await this.incrementarPuntajeEstudiante(qrData.id_estudiante, 200);
             }
 
             await this.firestore.collection('Eventos').doc(eventId).update({
@@ -66,7 +64,6 @@ export class CartService {
             return false;
           }
         } else {
-          console.log('ID del evento:', eventId);
           console.log('No se encontraron datos del evento');
           return false;
         }
@@ -80,31 +77,37 @@ export class CartService {
     }
   }
 
-  async incrementarPuntajeEstudiante(estudianteId: string): Promise<boolean> {
-    const estudianteDocRef = doc(this.firestore.firestore, 'Estudiantes', estudianteId); // Referencia al documento del estudiante
-
+  async incrementarPuntajeEstudiante(estudianteId: string, puntos: number): Promise<void> {
     try {
-      const estudianteDoc = await getDoc(estudianteDocRef); // Obtener el documento del estudiante
+      // Obtener el estudiante desde Firestore
+      const estudianteDocRef = this.firestore.collection('Estudiantes').doc(estudianteId);
+      const estudianteSnapshot = await estudianteDocRef.get().toPromise();
 
-      if (estudianteDoc.exists()) {
-        const estudianteData = estudianteDoc.data() as Estudiante; // Afirmar el tipo a 'Estudiante'
-        const puntajeActual = estudianteData.puntaje || 0; // Acceder a 'puntaje' directamente
-
-        // Actualizar el puntaje sumando 200
-        await updateDoc(estudianteDocRef, {
-          puntaje: increment(200), // Usar 'increment' para sumar 200
-        });
-
-        console.log('Puntaje anterior:', puntajeActual); // Imprimir el puntaje anterior
-        console.log('Puntaje incrementado para el estudiante:', estudianteId);
-        return true; // Retornamos verdadero si se actualizó correctamente
-      } else {
-        console.log('Estudiante no encontrado');
-        return false; // Retornamos falso si no se encontró el estudiante
+      // Verificamos si el snapshot no existe o si no contiene datos
+      if (!estudianteSnapshot || !estudianteSnapshot.exists) {
+        throw new Error('Estudiante no encontrado');
       }
+
+      const estudianteData = estudianteSnapshot.data() as Estudiante;
+
+      // Incrementar el puntaje
+      const nuevoPuntaje = (estudianteData.puntaje || 0) + puntos;
+
+      // Actualizar el puntaje en la base de datos
+      estudianteData.puntaje = nuevoPuntaje;
+
+      // Usar tu método en authService para actualizar el estudiante
+      await this.authService.updateEstudiante(estudianteData);
+
+      console.log(`Puntaje actualizado: ${nuevoPuntaje} para el estudiante con ID ${estudianteId}`);
     } catch (error) {
-      console.error('Error al actualizar el puntaje del estudiante:', error);
-      return false; // Retornamos falso si ocurrió un error
+      console.error('Error al actualizar el puntaje:', error);
+      throw error;
     }
   }
+
 }
+
+
+
+

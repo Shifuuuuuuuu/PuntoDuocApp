@@ -6,7 +6,7 @@ include ':capacitor-app'
 project(':capacitor-app').projectDir = new File('../node_modules/@capacitor/app/android')
 
 include ':capacitor-barcode-scanner'
-project(':capacitor-barcode-scanner').projectDir = new File(rootProject.projectDir, '../node_modules/@capacitor/barcode-scanner/android')
+project(':capacitor-barcode-scanner').projectDir = new File('../node_modules/@capacitor/barcode-scanner/android')
 
 include ':capacitor-haptics'
 project(':capacitor-haptics').projectDir = new File('../node_modules/@capacitor/haptics/android')
@@ -16,6 +16,3 @@ project(':capacitor-keyboard').projectDir = new File('../node_modules/@capacitor
 
 include ':capacitor-status-bar'
 project(':capacitor-status-bar').projectDir = new File('../node_modules/@capacitor/status-bar/android')
-
-include ':barcode-scanner'
-project(':barcode-scanner').projectDir = new File(rootProject.projectDir, '../node_modules/capacitor-community/barcode-scanner/android')

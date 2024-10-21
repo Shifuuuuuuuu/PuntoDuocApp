@@ -273,9 +273,6 @@ export class FolderPage implements OnInit {
     await alert.present();
   }
 
-
-
-  // Método para manejar la inscripción desde la lista de espera
 // Método para manejar la inscripción desde la lista de espera
 async inscribirDesdeListaEspera(eventoId: string, userId: string) {
   try {
