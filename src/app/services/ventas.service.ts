@@ -66,10 +66,12 @@ export class VentasAuthService {
   // Método para cerrar sesión
   async logout(): Promise<void> {
     try {
+      console.log("aaaaaaaaaaaaaaaaaa");
       // Limpiar el correo electrónico
       this.currentUserEmailSubject.next(undefined);
       localStorage.removeItem('currentUserEmail');
     } catch (error) {
+      console.log("aaaaaaaaaaaaaaaaaa");
       console.error('Error en VentasAuthService.logout:', error);
       throw error;
     }

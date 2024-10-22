@@ -8,6 +8,7 @@ import { RouterModule, Routes } from '@angular/router';
 import { FolderVentasPage } from './folder-ventas.page';
 import { TabBarModule } from '../tab-bar/tab-bar.module';
 
+
 const routes: Routes = [
   {
     path: '',
@@ -21,7 +22,7 @@ const routes: Routes = [
     FormsModule,
     IonicModule,
     RouterModule.forChild(routes),
-    TabBarModule
+    TabBarModule,
   ],
   declarations: [FolderVentasPage]
 })

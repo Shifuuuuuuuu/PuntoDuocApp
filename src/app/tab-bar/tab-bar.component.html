@@ -1,9 +1,12 @@
 <ion-tab-bar>
+  <ion-tab-button (click)="inicio()">
+    <ion-icon name="home"></ion-icon>
+    <ion-label>Inicio</ion-label>
+  </ion-tab-button>
   <ion-tab-button (click)="subirRecompensa()">
     <ion-icon name="add"></ion-icon>
     <ion-label>Subir Recompensa</ion-label>
   </ion-tab-button>
-
   <ion-tab-button (click)="verRecompensas()">
     <ion-icon name="list"></ion-icon>
     <ion-label>Ver Recompensas</ion-label>
@@ -12,10 +15,5 @@
   <ion-tab-button tab="dashboard">
     <ion-icon name="library"></ion-icon>
     <ion-label>Dashboard</ion-label>
-  </ion-tab-button>
-
-  <ion-tab-button (click)="logout()">
-    <ion-icon name="log-out"></ion-icon>
-    <ion-label>Logout</ion-label>
   </ion-tab-button>
 </ion-tab-bar>

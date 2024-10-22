@@ -24,4 +24,8 @@ import { TabBarAdminModule } from './tab-bar-admin/tab-bar-admin.module';
   providers: [{ provide: RouteReuseStrategy, useClass: IonicRouteStrategy },InvitadoService, ],
   bootstrap: [AppComponent],
 })
-export class AppModule {}
+export class AppModule {
+  static forChild(): any[] | import("@angular/core").Type<any> | import("@angular/core").ModuleWithProviders<{}> {
+    throw new Error('Method not implemented.');
+  }
+}

@@ -3,6 +3,7 @@ import { Routes, RouterModule } from '@angular/router';
 
 import { FolderVentasPage } from './folder-ventas.page';
 
+
 const routes: Routes = [
   {
     path: '',
@@ -13,5 +14,6 @@ const routes: Routes = [
 @NgModule({
   imports: [RouterModule.forChild(routes)],
   exports: [RouterModule],
+
 })
 export class FolderVentasPageRoutingModule {}

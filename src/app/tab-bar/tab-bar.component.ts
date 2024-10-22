@@ -10,14 +10,14 @@ export class TabBarComponent  implements OnInit {
   constructor(private router: Router) { }
 
   ngOnInit() {}
+  inicio() {
+    this.router.navigate(['../folder-ventas']);
+  }
   subirRecompensa() {
     this.router.navigate(['../subir-recompensa']);
   }
 
   verRecompensas() {
-    this.router.navigate(['./ver-recompensas']);
-  }
-  logout() {
-    this.router.navigate(['./iniciar-sesion']);
+    this.router.navigate(['../ver-recompensas']);
   }
 }
