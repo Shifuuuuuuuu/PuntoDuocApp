@@ -1,10 +1,11 @@
 <ion-header [translucent]="true" class="custom-header">
   <ion-toolbar class="custom-toolbar" style="background-color: black;">
-    <ion-title style="color: white;">Gestion de eventos</ion-title>
+    <ion-title style="color: white;">Gestión de eventos</ion-title>
   </ion-toolbar>
 </ion-header>
 
 <ion-content [fullscreen]="true" class="content-center">
+  <!-- Lista de eventos -->
   <ion-list style="background-color: white;">
     <ion-item *ngFor="let evento of eventos$ | async" class="event-item" lines="none">
       <ion-thumbnail slot="start">
@@ -14,16 +15,28 @@
         <h2>{{ evento.titulo }}</h2>
         <p>{{ evento.fecha }}</p>
         <p><ion-icon name="location-outline"></ion-icon> {{ evento.lugar }}</p>
+
+        <!-- Contenedor para los botones debajo del texto -->
+        <div class="button-container">
+          <ion-button (click)="verDetalles(evento.id_evento)" class="details-button">Ver detalles</ion-button>
+          <ion-button color="danger" (click)="cancelarEvento(evento.id_evento)" *ngIf="evento.estado !== 'cancelado'">
+            Cancelar
+          </ion-button>
+        </div>
       </ion-label>
-
-      <!-- Contenedor para los botones -->
-      <div class="button-container">
-        <ion-button (click)="verDetalles(evento.id_evento)" class="details-button">Ver detalles</ion-button>
-        <ion-button color="danger" (click)="cancelarEvento(evento.id_evento)" *ngIf="evento.estado !== 'cancelado'">
-          Cancelar
-        </ion-button>
-      </div>
-
     </ion-item>
   </ion-list>
+
+<ion-footer collapse="fade" class="footer">
+  <p>Síguenos en nuestras redes sociales:</p>
+  <div class="social-icons">
+    <ion-icon name="logo-facebook" class="social-icon"></ion-icon>
+    <ion-icon name="logo-twitter" class="social-icon"></ion-icon>
+    <ion-icon name="logo-instagram" class="social-icon"></ion-icon>
+  </div>
+  <p>&copy; 2024 Punto Duoc. Todos los derechos reservados.</p>
+</ion-footer>
 </ion-content>
+
+<app-tab-bar-admin></app-tab-bar-admin>
+

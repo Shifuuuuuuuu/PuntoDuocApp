@@ -154,3 +154,17 @@ ion-button[color="danger"] {
 .social-icon:hover {
   transform: scale(1.2);
 }
+.content-center {
+  padding-bottom: 60px; /* Añadimos un padding-bottom para que no quede nada debajo de la barra */
+}
+
+.custom-tab-bar {
+  position: absolute;  /* Cambiamos a absolute */
+  bottom: 0;
+  width: 100%;
+  z-index: 5; /* Asegura que no se superponga sobre el contenido */
+}
+
+ion-content {
+  --padding-bottom: 70px; /* Aumentamos el padding-bottom para que el contenido se ajuste mejor */
+}
