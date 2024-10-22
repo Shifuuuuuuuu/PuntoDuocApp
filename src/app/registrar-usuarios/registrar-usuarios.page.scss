@@ -1,9 +1,10 @@
 ion-content {
   --background: #ffffff;
   display: flex;
-  justify-content: center;
-  align-items: center;
+  justify-content: center; /* Centra horizontalmente */
+  align-items: center; /* Centra verticalmente */
   height: 100vh; /* Asegura que ocupe toda la pantalla */
+  padding: 20px; /* Un pequeño relleno para que no toque los bordes de la pantalla */
 }
 
 /* Ajustes del formulario */
@@ -14,6 +15,7 @@ ion-content {
   background-color: #ffffff;
   border-radius: 15px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  margin: 0 auto; /* Asegura que esté centrado horizontalmente */
 }
 
 /* Ajustes de los elementos del formulario */
@@ -94,7 +96,7 @@ ion-input {
 /* Centrar el título */
 .centered-title {
   width: 100%; /* Asegura que el título ocupe todo el espacio disponible */
-  text-align: end; /* Alineación centrada */
+  text-align: center; /* Alineación centrada */
 }
 /* Estilo para el contenedor del pie de página */
 .footer {

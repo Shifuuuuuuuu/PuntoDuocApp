@@ -4,4 +4,5 @@ export interface GestorEventos {
   password: string;
   Nombre_completo: string;
   rut: string;
+
 }

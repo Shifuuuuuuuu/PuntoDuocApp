@@ -3,8 +3,6 @@ import { AngularFirestore } from '@angular/fire/compat/firestore';
 import { CapacitorBarcodeScanner } from '@capacitor/barcode-scanner';
 import { Evento } from '../interface/IEventos';
 import { QRCodeData2 } from '../interface/IQR';
-import { doc, getDoc, increment, updateDoc } from 'firebase/firestore';
-import { getFirestore } from 'firebase/firestore';
 import { Estudiante } from '../interface/IEstudiante';
 import { AuthService } from './auth.service';
 
@@ -12,8 +10,8 @@ import { AuthService } from './auth.service';
   providedIn: 'root'
 })
 export class CartService {
-  private firestoreDB = getFirestore();
-  constructor(private firestore: AngularFirestore, private authService: AuthService) {}
+
+  constructor(public firestore: AngularFirestore, private authService: AuthService) {}
   async getInscripciones(eventId: string): Promise<any[]> {
     try {
       const eventSnapshot = await this.firestore.collection('Eventos').doc(eventId).get().toPromise();
@@ -106,7 +104,8 @@ export class CartService {
             inscripciones[index].verificado = true;
 
             // Incrementar puntaje solo si es un estudiante
-            if (qrData.tipo === 'estudiante' && qrData.id_estudiante) {
+            if (qrData.id_estudiante) {
+              console.log('ID de Estudiante:', qrData.id_estudiante); // Verificación de ID
               await this.incrementarPuntajeEstudiante(qrData.id_estudiante, 200);
             }
 
@@ -135,25 +134,27 @@ export class CartService {
 
   async incrementarPuntajeEstudiante(estudianteId: string, puntos: number): Promise<void> {
     try {
-      // Obtener el estudiante desde Firestore
+      // Obtener el documento del estudiante
       const estudianteDocRef = this.firestore.collection('Estudiantes').doc(estudianteId);
+
+      // Obtener los datos actuales del estudiante
       const estudianteSnapshot = await estudianteDocRef.get().toPromise();
 
-      // Verificamos si el snapshot no existe o si no contiene datos
+      // Verificar si el snapshot existe y no es undefined
       if (!estudianteSnapshot || !estudianteSnapshot.exists) {
         throw new Error('Estudiante no encontrado');
       }
 
       const estudianteData = estudianteSnapshot.data() as Estudiante;
 
+      // Obtener el puntaje actual o inicializarlo en 0
+      const puntajeActual = estudianteData?.puntaje || 0;
+
       // Incrementar el puntaje
-      const nuevoPuntaje = (estudianteData.puntaje || 0) + puntos;
+      const nuevoPuntaje = puntajeActual + puntos;
 
-      // Actualizar el puntaje en la base de datos
-      estudianteData.puntaje = nuevoPuntaje;
-
-      // Usar tu método en authService para actualizar el estudiante
-      await this.authService.updateEstudiante(estudianteData);
+      // Actualizar solo el campo 'puntaje' utilizando set con merge para no sobrescribir otros datos
+      await estudianteDocRef.set({ puntaje: nuevoPuntaje }, { merge: true });
 
       console.log(`Puntaje actualizado: ${nuevoPuntaje} para el estudiante con ID ${estudianteId}`);
     } catch (error) {

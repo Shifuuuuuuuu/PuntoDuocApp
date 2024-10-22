@@ -11,7 +11,7 @@ export class AppComponent {
     { title: 'Centro de ayuda', url: '/centro-ayuda', icon: 'help-buoy' },
     { title: 'Estadistica de usuario', url: '/estadistica-usuario', icon: 'bar-chart' },
     { title: 'Accesibilidad', url: '/accesibilidad', icon: 'accessibility' },
-    { title: 'Spam', url: '/permisos-dispositivo', icon: 'warning' },
+    { title: 'Ticket Recompensa', url: '/ver-recompensas', icon: 'cash' },
   ];
   constructor() {}
 }

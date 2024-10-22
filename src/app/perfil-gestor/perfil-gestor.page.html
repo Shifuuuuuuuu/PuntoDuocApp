@@ -1,0 +1,67 @@
+<ion-header [translucent]="true" class="custom-header">
+  <ion-toolbar class="custom-toolbar">
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/folder-gestor-eventos" style="color: white;"></ion-back-button>
+    </ion-buttons>
+    <ion-title style="color: white;">Perfil del Gestor</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true" class="ion-padding">
+  <ion-card *ngIf="errorMessage" class="error-card">
+    <ion-card-header>
+      <ion-card-title>Error</ion-card-title>
+    </ion-card-header>
+    <ion-card-content>
+      <p>{{ errorMessage }}</p>
+    </ion-card-content>
+  </ion-card>
+
+  <div class="form-container">
+    <h1 class="center" style="color: #0A49A7; text-align: center;">Información personal</h1>
+    <div class="profile-icon-container">
+      <ion-icon name="person-circle-outline" size="large"></ion-icon>
+    </div>
+
+    <form *ngIf="gestor">
+      <div class="mb-3 position-relative">
+        <ion-item class="custom-item">
+          <ion-label>
+            <h2 style="color: black;">Nombre Completo</h2>
+            <p *ngIf="!isEditing">{{ gestor.Nombre_completo }}</p>
+            <ion-input *ngIf="isEditing" [(ngModel)]="tempNombreCompleto" [placeholder]="gestor.Nombre_completo"></ion-input>
+          </ion-label>
+        </ion-item>
+      </div>
+
+      <div class="mb-3 position-relative">
+        <ion-item class="custom-item">
+          <ion-label>
+            <h2 style="color: black;">Correo Electrónico</h2>
+            <p *ngIf="!isEditing">{{ gestor.email }}</p>
+            <ion-input *ngIf="isEditing" [(ngModel)]="tempEmail" [placeholder]="gestor.email"></ion-input>
+          </ion-label>
+        </ion-item>
+      </div>
+
+      <div class="mb-3 position-relative">
+        <ion-item class="custom-item">
+          <ion-label>
+            <h2 style="color: black;">RUT</h2>
+            <p *ngIf="!isEditing">{{ gestor.rut }}</p>
+            <ion-input *ngIf="isEditing" [(ngModel)]="tempRut" [placeholder]="gestor.rut"></ion-input>
+          </ion-label>
+        </ion-item>
+      </div>
+
+      <div class="button-container">
+        <ion-button class="button-inline" *ngIf="!isEditing" (click)="editProfile()">Editar Perfil</ion-button>
+        <ion-button class="button-inline" color="success" *ngIf="isEditing" (click)="saveProfile()">Guardar Cambios</ion-button>
+        <ion-button class="button-inline" color="danger" *ngIf="isEditing" (click)="cancelEdit()">Cancelar</ion-button>
+        <ion-button class="button-inline" color="danger" (click)="confirmLogout()" *ngIf="!isEditing">Cerrar Sesión</ion-button>
+      </div>
+    </form>
+  </div>
+</ion-content>
+<app-tab-bar-admin></app-tab-bar-admin>
+

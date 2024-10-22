@@ -4,10 +4,10 @@ export interface QRCodeData {
   eventosInscritos: string[];
 }
 export interface QRCodeData2 {
-  qrData: string; // Asegúrate de que esto refleje la estructura real de tus datos
-  id_estudiante?: string; // Ahora es opcional
-  id_Invitado?: string; // Ahora es opcional
+  qrData: string;
+  id_estudiante?: string;
+  id_Invitado?: string;
   eventosInscritos: string[];
-  Nombre_completo?: string; // Ahora es opcional
-  tipo: string; // Asegúrate de tener este campo
+  Nombre_completo?: string;
+  tipo: string;
 }

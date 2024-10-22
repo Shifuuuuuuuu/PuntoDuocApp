@@ -10,7 +10,7 @@ import { GestorEventosService } from '../services/gestoreventos.service';
 export class TabBarAdminComponent  implements OnInit {
   public appPages = [
     { title: 'Inicio', url: '/folder-gestor-eventos', icon: 'home' },
-    { title: 'Historial de eventos', url: '/historial-eventos', icon: 'reader' },
+    { title: 'Perfil', url: '/perfil-gestor', icon: 'person-circle' },
   ];
 
   constructor(private router: Router, private gestorEventosService: GestorEventosService) {}

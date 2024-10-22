@@ -74,7 +74,11 @@ const routes: Routes = [
   {
     path: 'escanear-qr',
     loadChildren: () => import('./escanear-qr/escanear-qr.module').then( m => m.EscanearQrPageModule)
+  },  {
+    path: 'perfil-gestor',
+    loadChildren: () => import('./perfil-gestor/perfil-gestor.module').then( m => m.PerfilGestorPageModule)
   }
+
 ];
 
 @NgModule({

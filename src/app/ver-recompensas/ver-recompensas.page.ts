@@ -52,7 +52,7 @@ export class VerRecompensasPage implements OnInit {
 
   verificarUsuarioVentasOEventos(email: string | undefined): Promise<boolean> {
     return new Promise((resolve) => {
-      resolve(email === 'ja.gonzalezsi@duocuc.cl'); // Lógica de verificación de permisos
+      resolve(email === 'ron.sanhueza@duocuc.cl'); // Lógica de verificación de permisos
     });
   }
 }

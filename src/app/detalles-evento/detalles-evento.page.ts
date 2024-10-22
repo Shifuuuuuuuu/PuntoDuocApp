@@ -62,17 +62,11 @@ export class DetallesEventoPage implements OnInit {
       console.log('ID del evento en verificación:', this.eventoId); // Verifica que el ID del evento sea correcto
 
       if (qrData) {
+
         // Verificación y actualización de inscripción
         const isVerified = await this.cartService.verifyAndUpdateInscription(qrData, this.eventoId);
         if (isVerified) {
           this.mensajePresencia = 'Inscripción verificada con éxito.';
-
-          // Si es un estudiante y se actualizó el puntaje
-          if (qrData.tipo === 'estudiante') {
-            console.log('Estudiante detectado, puntaje será actualizado.');
-            this.mensajePresencia += ' El puntaje ha sido incrementado por asistir al evento.';
-          }
-          this.esVerificado = true;
         } else {
           this.mensajePresencia = 'No se encontró inscripción.';
           this.esVerificado = false;
