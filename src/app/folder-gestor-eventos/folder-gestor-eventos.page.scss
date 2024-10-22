@@ -35,7 +35,7 @@ ion-content {
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  height: 100vh; /* Asegura que el contenido ocupe toda la altura de la pantalla */
+  height: 100vh;
 }
 
 /* Estilo de los ítems de la lista */
@@ -87,9 +87,8 @@ ion-content {
 .button-container {
   display: flex;
   gap: 5px;
-  justify-content: flex-end;
-  flex-wrap: wrap;
-  max-width: 100%;
+  width: 100%; /* Ocupa todo el ancho del contenedor */
+  justify-content: space-between; /* Alinea los botones uno en cada extremo */
 }
 
 .details-button {
@@ -97,34 +96,21 @@ ion-content {
   color: white;
   padding: 5px 10px;
   font-size: 14px;
+  flex-grow: 1; /* Hace que el botón crezca para ocupar más espacio */
+  text-align: center;
   margin-right: 5px;
-  width: auto;
-  min-width: 90px;
 }
 
 ion-button[color="danger"] {
   padding: 5px 10px;
   font-size: 14px;
-  width: auto;
-  min-width: 90px;
-  margin-left: 5px;
+  flex-grow: 1; /* Hace que el botón crezca para ocupar más espacio */
+  text-align: center;
 }
 
-/* Pantallas pequeñas: Ocultar parte del texto */
+/* Pantallas pequeñas: Hacer que los botones se apilen */
 @media (max-width: 600px) {
-  .event-item h2 {
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    max-width: 200px;
-  }
-
-  .event-item ion-label {
-    width: 100%;
-  }
-
   .button-container {
-    width: 100%;
     flex-direction: column;
     align-items: stretch;
   }
@@ -143,7 +129,7 @@ ion-button[color="danger"] {
   background-color: #f2f2f2;
   border-radius: 15px;
   color: #0A49A7;
-  margin-top: auto; /* Esto asegura que el footer se quede en la parte inferior */
+  margin-top: auto;
 }
 
 .footer p {

@@ -11,6 +11,7 @@ import { FormsModule } from '@angular/forms';
 import { InvitadoService } from './services/invitado.service'; // Importa el nuevo servicio
 import { AngularFirestoreModule } from '@angular/fire/compat/firestore';
 import { TabBarModule } from './tab-bar/tab-bar.module';
+import { TabBarAdminModule } from './tab-bar-admin/tab-bar-admin.module';
 
 
 
@@ -19,7 +20,7 @@ import { TabBarModule } from './tab-bar/tab-bar.module';
 @NgModule({
   declarations: [AppComponent, ],
   imports: [AngularFireModule.initializeApp(environment.firebaseConfig),
-    AngularFireAuthModule ,BrowserModule, IonicModule.forRoot(), AppRoutingModule,FormsModule,AngularFirestoreModule,TabBarModule],
+    AngularFireAuthModule ,BrowserModule, IonicModule.forRoot(), AppRoutingModule,FormsModule,AngularFirestoreModule,TabBarModule,TabBarAdminModule ],
   providers: [{ provide: RouteReuseStrategy, useClass: IonicRouteStrategy },InvitadoService, ],
   bootstrap: [AppComponent],
 })
