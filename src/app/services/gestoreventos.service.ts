@@ -49,4 +49,11 @@ export class GestorEventosService {
       throw error;
     }
   }
+
+  // Método de logout
+  logout(): void {
+    this.currentUserEmailSubject.next(undefined); // Resetea el subject del correo electrónico
+    localStorage.removeItem('currentUserEmail'); // Elimina el correo del localStorage
+    console.log('Usuario deslogueado correctamente');
+  }
 }

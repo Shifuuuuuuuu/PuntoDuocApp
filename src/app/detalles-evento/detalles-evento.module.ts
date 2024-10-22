@@ -8,6 +8,7 @@ import { DetallesEventoPageRoutingModule } from './detalles-evento-routing.modul
 
 import { DetallesEventoPage } from './detalles-evento.page';
 import { AngularFirestoreModule } from '@angular/fire/compat/firestore';
+import { TabBarAdminModule } from '../tab-bar-admin/tab-bar-admin.module';
 
 @NgModule({
   imports: [
@@ -15,7 +16,8 @@ import { AngularFirestoreModule } from '@angular/fire/compat/firestore';
     FormsModule,
     IonicModule,
     DetallesEventoPageRoutingModule,
-    AngularFirestoreModule
+    AngularFirestoreModule,
+    TabBarAdminModule
   ],
   declarations: [DetallesEventoPage]
 })
