@@ -11,13 +11,13 @@ export class RecompensaService {
   async getRecompensas(): Promise<Recompensa[]> {
     try {
       const snapshot = await this.firestore.collection<Recompensa>('Recompensas').get().toPromise();
-      
+
       // Verifica si el snapshot existe y tiene documentos
       if (!snapshot || snapshot.empty) {
         console.warn('No se encontraron recompensas');
         return []; // Retorna un array vacío si no hay recompensas
       }
-  
+
       return snapshot.docs.map(doc => {
         const data = doc.data() as Recompensa;
         return { id_recompensa: doc.id, ...data }; // Incluye el ID de la recompensa

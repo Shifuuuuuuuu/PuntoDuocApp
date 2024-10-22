@@ -3,6 +3,7 @@ import { EventosGestorService } from '../services/eventos-gestor.service';
 import { map, Observable } from 'rxjs';
 import { Router } from '@angular/router';
 import { Evento } from '../interface/IEventos';
+import { MenuController } from '@ionic/angular';
 
 
 @Component({
@@ -14,8 +15,10 @@ export class FolderGestorEventosPage implements OnInit {
 
   eventos$: Observable<Evento[]> = new Observable<Evento[]>();
 
-  constructor(private eventosService: EventosGestorService, private router: Router) {}
-
+  constructor(private eventosService: EventosGestorService, private router: Router,private menu: MenuController) {}
+  ionViewWillEnter() {
+    this.menu.enable(false);  // Deshabilita el menú en esta página
+  }
   ngOnInit() {
     this.cargarEventos();
   }

@@ -5,6 +5,7 @@ import { AngularFirestore } from '@angular/fire/compat/firestore';
 import { Estudiante } from '../interface/IEstudiante';
 import { CapacitorBarcodeScanner } from '@capacitor/barcode-scanner';
 import { CartService } from '../services/cart.service';
+import { MenuController } from '@ionic/angular';
 
 @Component({
   selector: 'app-detalles-evento',
@@ -20,9 +21,12 @@ export class DetallesEventoPage implements OnInit {
   listaEspera: any[] = [];
   constructor(
     private route: ActivatedRoute,
-    private cartService: CartService // Inyectar CartService
+    private cartService: CartService,
+    private menu: MenuController
   ) {}
-
+  ionViewWillEnter() {
+    this.menu.enable(false);  // Deshabilita el menú en esta página
+  }
   ngOnInit() {
     // Captura el ID del evento desde los parámetros de la URL
     this.route.paramMap.subscribe(params => {

@@ -7,13 +7,15 @@ import { IonicModule } from '@ionic/angular';
 import { VerRecompensasPageRoutingModule } from './ver-recompensas-routing.module';
 
 import { VerRecompensasPage } from './ver-recompensas.page';
+import { TabBarModule } from '../tab-bar/tab-bar.module';
 
 @NgModule({
   imports: [
     CommonModule,
     FormsModule,
     IonicModule,
-    VerRecompensasPageRoutingModule
+    VerRecompensasPageRoutingModule,
+    TabBarModule
   ],
   declarations: [VerRecompensasPage]
 })

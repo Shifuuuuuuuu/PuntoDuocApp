@@ -3,9 +3,7 @@ import { AngularFirestore } from '@angular/fire/compat/firestore';
 import { BehaviorSubject, Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { GestorEventos } from '../interface/IGestorEventos';
-@Injectable({
-  providedIn: 'root'
-})
+
 
 @Injectable({
   providedIn: 'root'

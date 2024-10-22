@@ -5,6 +5,7 @@ import { IonicModule } from '@ionic/angular';
 
 import { SubirRecompensaPageRoutingModule } from './subir-recompensa-routing.module'; // Asegúrate de importar el módulo de routing
 import { SubirRecompensaPage } from './subir-recompensa.page';
+import { TabBarModule } from '../tab-bar/tab-bar.module';
 
 @NgModule({
   imports: [
@@ -12,7 +13,8 @@ import { SubirRecompensaPage } from './subir-recompensa.page';
     FormsModule,
     ReactiveFormsModule,
     IonicModule,
-    SubirRecompensaPageRoutingModule // Importa el módulo de routing aquí
+    SubirRecompensaPageRoutingModule,
+    TabBarModule
   ],
   declarations: [SubirRecompensaPage],
 })
