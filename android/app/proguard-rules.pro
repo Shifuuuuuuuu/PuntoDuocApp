@@ -37,3 +37,6 @@
 
 # Preserve line number information for debugging stack traces.
 -keepattributes SourceFile,LineNumberTable
+
+-keep class com.google.zxing.** { *; }
+-keep class com.journeyapps.barcodescanner.** { *; }

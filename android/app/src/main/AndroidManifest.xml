@@ -47,6 +47,11 @@
         android:resource="@xml/file_paths"></meta-data>
     </provider>
 
+<<<<<<< Updated upstream
   </application>
+=======
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
+<uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+>>>>>>> Stashed changes
 
 </manifest>
