@@ -52,7 +52,10 @@ export class VerRecompensasPage implements OnInit {
 
   verificarUsuarioVentasOEventos(email: string | undefined): Promise<boolean> {
     return new Promise((resolve) => {
-      resolve(email === 'ron.sanhueza@duocuc.cl'); // Lógica de verificación de permisos
+      // Verificar si el email es definido y termina en '@duocuc.cl'
+      const isValidEmail = email ? email.endsWith('@duocuc.cl') : false;
+      resolve(isValidEmail); // Devuelve true si el email es válido, false de lo contrario
     });
   }
+  
 }

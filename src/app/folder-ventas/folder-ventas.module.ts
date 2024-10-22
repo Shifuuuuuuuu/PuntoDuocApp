@@ -7,10 +7,6 @@ import { RouterModule, Routes } from '@angular/router';
 
 import { FolderVentasPage } from './folder-ventas.page';
 import { TabBarModule } from '../tab-bar/tab-bar.module';
-<<<<<<< Updated upstream
-
-=======
->>>>>>> Stashed changes
 
 const routes: Routes = [
   {
@@ -25,11 +21,7 @@ const routes: Routes = [
     FormsModule,
     IonicModule,
     RouterModule.forChild(routes),
-<<<<<<< Updated upstream
     TabBarModule,
-=======
-    TabBarModule
->>>>>>> Stashed changes
   ],
   declarations: [FolderVentasPage]
 })
