@@ -61,6 +61,8 @@
 .custom-searchbar {
   --border-radius: 20px; /* Borde redondeado */
   background: white;
+  flex-grow: 1;
+  margin-right: 10px;
 }
 
 /* Ajustes del contenido */
@@ -77,12 +79,15 @@
   display: flex;
   align-items: center;
   margin: 20px 0;
+  justify-content: space-between;
 }
 
 /* Botón de filtro */
 .filter-button {
   --border-radius: 20px; /* Borde redondeado */
   margin-left: 10px;
+  display: flex;
+  align-items: center;
 }
 
 /* Ajustes de las tarjetas */

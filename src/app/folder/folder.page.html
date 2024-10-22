@@ -2,18 +2,19 @@
   <ion-toolbar class="custom-toolbar" style="background-color: black;">
     <ion-buttons slot="end">
       <ion-button size="large" [routerLink]="['/perfil-usuario']">
-        <ion-icon style="color:  white" name="person-circle-outline"></ion-icon>
+        <ion-icon style="color: white" name="person-circle-outline"></ion-icon>
       </ion-button>
       <ion-menu-button size="medium"></ion-menu-button>
     </ion-buttons>
-    <ion-title style="color:  white">PuntoDuoc</ion-title>
+    <ion-title style="color: white">PuntoDuoc</ion-title>
   </ion-toolbar>
 </ion-header>
 
 <ion-content [fullscreen]="true" class="content-center">
   <!-- Barra de búsqueda y botón de filtros -->
   <div class="search-container">
-    <ion-searchbar style="--background: white; --color: #000000;"
+    <ion-searchbar
+      style="--background: white; --color: #000000;"
       animated="true"
       placeholder="Buscar eventos"
       [(ngModel)]="searchText"
@@ -22,38 +23,44 @@
     </ion-searchbar>
 
     <ion-button
+      id="popover-button"
       aria-label="Filter"
       class="filter-button"
-      style="--background: white; --color: #000000;"
-      (click)="toggleFilters()">
+      style="--background: white; --color: #000000;">
       <ion-icon name="options-outline"></ion-icon>
     </ion-button>
-  </div>
 
-  <div class="filters-container" [ngClass]="{ 'visible': showFilters }" style="--background: #0A49A7">
-    <!-- Aquí agregas las opciones de filtro -->
-    <ion-item style="--background: #0A49A7">
-      <ion-label>Sede</ion-label>
-      <ion-select [(ngModel)]="selectedSede" (ionChange)="filterEvents()">
-          <ion-select-option value="all">Todas las sedes</ion-select-option>
-          <ion-select-option value="Duoc Alameda">Duoc Alameda</ion-select-option>
-          <ion-select-option value="Duoc Antonio Varas">Duoc Antonio Varas</ion-select-option>
-          <ion-select-option value="Duoc Maipú">Duoc Maipú</ion-select-option>
-          <ion-select-option value="Duoc Plaza Oeste">Duoc Plaza Oeste</ion-select-option>
-          <ion-select-option value="Duoc Puente Alto">Duoc Puente Alto</ion-select-option>
-          <ion-select-option value="Duoc San Bernardo">Duoc San Bernardo</ion-select-option>
-          <ion-select-option value="Duoc San Joaquín">Duoc San Joaquín</ion-select-option>
-          <ion-select-option value="Duoc Plaza Vespucio">Duoc Plaza Vespucio</ion-select-option>
-          <ion-select-option value="Duoc Viña del Mar">Duoc Viña del Mar</ion-select-option>
-          <ion-select-option value="Duoc Valparaíso">Duoc Valparaíso</ion-select-option>
-          <ion-select-option value="Duoc Melipilla">Duoc Melipilla</ion-select-option>
-          <ion-select-option value="Duoc Renca">Duoc Renca</ion-select-option>
-          <ion-select-option value="Duoc Padre Alonso de Ovalle">Duoc Padre Alonso de Ovalle</ion-select-option>
-          <ion-select-option value="Duoc Concepción">Duoc Concepción</ion-select-option>
-          <ion-select-option value="Duoc San Andrés de Concepción">Duoc San Andrés de Concepción</ion-select-option>
-          <ion-select-option value="Duoc Villarrica">Duoc Villarrica</ion-select-option>
-      </ion-select>
-    </ion-item>
+    <!-- Popover para los filtros -->
+    <ion-popover trigger="popover-button" [dismissOnSelect]="true">
+      <ng-template>
+        <ion-content>
+          <ion-list>
+            <ion-item>
+              <ion-label>Sede</ion-label>
+              <ion-select [(ngModel)]="selectedSede" (ionChange)="filterEvents()">
+                <ion-select-option value="all">Todas las sedes</ion-select-option>
+                <ion-select-option value="Duoc Alameda">Duoc Alameda</ion-select-option>
+                <ion-select-option value="Duoc Antonio Varas">Duoc Antonio Varas</ion-select-option>
+                <ion-select-option value="Duoc Maipú">Duoc Maipú</ion-select-option>
+                <ion-select-option value="Duoc Plaza Oeste">Duoc Plaza Oeste</ion-select-option>
+                <ion-select-option value="Duoc Puente Alto">Duoc Puente Alto</ion-select-option>
+                <ion-select-option value="Duoc San Bernardo">Duoc San Bernardo</ion-select-option>
+                <ion-select-option value="Duoc San Joaquín">Duoc San Joaquín</ion-select-option>
+                <ion-select-option value="Duoc Plaza Vespucio">Duoc Plaza Vespucio</ion-select-option>
+                <ion-select-option value="Duoc Viña del Mar">Duoc Viña del Mar</ion-select-option>
+                <ion-select-option value="Duoc Valparaíso">Duoc Valparaíso</ion-select-option>
+                <ion-select-option value="Duoc Melipilla">Duoc Melipilla</ion-select-option>
+                <ion-select-option value="Duoc Renca">Duoc Renca</ion-select-option>
+                <ion-select-option value="Duoc Padre Alonso de Ovalle">Duoc Padre Alonso de Ovalle</ion-select-option>
+                <ion-select-option value="Duoc Concepción">Duoc Concepción</ion-select-option>
+                <ion-select-option value="Duoc San Andrés de Concepción">Duoc San Andrés de Concepción</ion-select-option>
+                <ion-select-option value="Duoc Villarrica">Duoc Villarrica</ion-select-option>
+              </ion-select>
+            </ion-item>
+          </ion-list>
+        </ion-content>
+      </ng-template>
+    </ion-popover>
   </div>
 
   <!-- Cargando -->
@@ -62,8 +69,8 @@
     <p style="color: white">Cargando...</p>
   </div>
 
-  <!-- Listado de eventos (ocultarlo si loading es verdadero) -->
-  <ion-grid *ngIf="!loading">
+  <!-- Listado de eventos filtrados -->
+  <ion-grid *ngIf="!loading && filteredEvents.length > 0">
     <ion-row>
       <ion-col size="12" size-md="6" *ngFor="let event of filteredEvents">
         <ion-card class="event-card">
@@ -123,14 +130,18 @@
     </ion-row>
   </ion-grid>
 
-  <!-- Pie de página -->
-  <div class="footer">
-    <p>Síguenos en nuestras redes sociales:</p>
-    <div class="social-icons">
-      <ion-icon name="logo-facebook" class="social-icon"></ion-icon>
-      <ion-icon name="logo-twitter" class="social-icon"></ion-icon>
-      <ion-icon name="logo-instagram" class="social-icon"></ion-icon>
-    </div>
-    <p>&copy; 2024 Punto Duoc. Todos los derechos reservados.</p>
-  </div>
+  <!-- Mensaje cuando no hay eventos -->
+  <ion-item *ngIf="!loading && filteredEvents.length === 0">
+    <ion-label>No se encontraron eventos.</ion-label>
+  </ion-item>
 </ion-content>
+
+<ion-footer collapse="fade" class="footer">
+  <p>Síguenos en nuestras redes sociales:</p>
+  <div class="social-icons">
+    <ion-icon name="logo-facebook" class="social-icon"></ion-icon>
+    <ion-icon name="logo-twitter" class="social-icon"></ion-icon>
+    <ion-icon name="logo-instagram" class="social-icon"></ion-icon>
+  </div>
+  <p>&copy; 2024 Punto Duoc. Todos los derechos reservados.</p>
+</ion-footer>

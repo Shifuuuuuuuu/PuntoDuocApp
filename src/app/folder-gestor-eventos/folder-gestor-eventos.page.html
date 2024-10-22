@@ -7,8 +7,9 @@
 <ion-content [fullscreen]="true" class="content-center">
   <ion-list style="background-color: white;">
     <ion-item *ngFor="let evento of eventos$ | async" class="event-item" lines="none">
-      <img [src]="evento.imagen" alt="{{ evento.titulo }}" class="event-image">
-
+      <ion-thumbnail slot="start">
+        <img [src]="evento.imagen" alt="{{ evento.titulo }}" class="event-image">
+      </ion-thumbnail>
       <ion-label>
         <h2>{{ evento.titulo }}</h2>
         <p>{{ evento.fecha }}</p>
@@ -23,15 +24,13 @@
 
     </ion-item>
   </ion-list>
-
-  <!-- Pie de página -->
-  <div class="footer">
-    <p>Síguenos en nuestras redes sociales:</p>
-    <div class="social-icons">
-      <ion-icon name="logo-facebook" class="social-icon"></ion-icon>
-      <ion-icon name="logo-twitter" class="social-icon"></ion-icon>
-      <ion-icon name="logo-instagram" class="social-icon"></ion-icon>
-    </div>
-    <p>&copy; 2024 Punto Duoc. Todos los derechos reservados.</p>
-  </div>
 </ion-content>
+<ion-footer collapse="fade" class="footer">
+  <p>Síguenos en nuestras redes sociales:</p>
+  <div class="social-icons">
+    <ion-icon name="logo-facebook" class="social-icon"></ion-icon>
+    <ion-icon name="logo-twitter" class="social-icon"></ion-icon>
+    <ion-icon name="logo-instagram" class="social-icon"></ion-icon>
+  </div>
+  <p>&copy; 2024 Punto Duoc. Todos los derechos reservados.</p>
+</ion-footer>
