@@ -4,8 +4,10 @@ import { Invitado } from '../interface/IInvitado';
 import { AuthService } from '../services/auth.service';
 import { InvitadoService } from '../services/invitado.service';
 import { Router } from '@angular/router';
-import { QRCodeData } from '../interface/IQR';
+import { QRCodeData, QRCodeData2 } from '../interface/IQR';
 import { firstValueFrom, Subscription } from 'rxjs';
+import { CartService } from '../services/cart.service';
+import { AlertController } from '@ionic/angular';
 @Component({
   selector: 'app-perfil-usuario',
   templateUrl: './perfil-usuario.page.html',
@@ -19,28 +21,32 @@ export class PerfilUsuarioPage implements OnInit {
   errorMessage: string | undefined;
   qrData: string = '';
   isInvitado: boolean = false;
+  eventoId: string = '';
   public tempNombreCompleto: string = '';
   public tempEmail: string = '';
   public tempRut: string = '';
   public tempTelefono: string = '';
-
+  puntajeCargado: number = 0;
+  haSidoVerificado: boolean = false;
+  escaneoCompletado: boolean = false;
   private authSubscription!: Subscription;
   private invitadoSubscription!: Subscription;
+  private verificacionSubscription!: Subscription;
 
   constructor(
-    private authService: AuthService, // Servicio para estudiantes
-    private invitadoService: InvitadoService, // Servicio para invitados
+    private authService: AuthService,
+    private invitadoService: InvitadoService,
+    private cartService: CartService,
+    private alertController: AlertController,
     private router: Router
   ) {}
 
   ngOnInit() {
-    // Suscribirse al observable de AuthService para Estudiantes
     this.authSubscription = this.authService.getCurrentUserEmail().subscribe(email => {
       if (email) {
         this.userEmail = email;
         this.loadUserData();
       } else {
-        // Si no hay email en AuthService, suscribirse a InvitadoService
         this.invitadoSubscription = this.invitadoService.getCurrentUserEmail().subscribe(async invEmail => {
           if (invEmail) {
             this.userEmail = invEmail;
@@ -62,6 +68,9 @@ export class PerfilUsuarioPage implements OnInit {
     if (this.invitadoSubscription) {
       this.invitadoSubscription.unsubscribe();
     }
+    if (this.verificacionSubscription) {
+      this.verificacionSubscription.unsubscribe();
+    }
   }
 
   // Cargar los datos del usuario
@@ -72,19 +81,15 @@ export class PerfilUsuarioPage implements OnInit {
     }
 
     try {
-      // Primero buscar en la colección de estudiantes
       const estudianteResult = await firstValueFrom(this.authService.getEstudianteByEmails(this.userEmail));
       if (estudianteResult) {
         this.estudiante = estudianteResult;
-        this.isInvitado = false;
-        this.generateQrData(); // Generar el QR si es un estudiante
+        this.eventoId = this.estudiante.eventosInscritos?.[0] || ''; // Asignar eventoId correctamente
       } else {
-        // Si no es estudiante, buscar en la colección de invitados
         const invitadoResult = await firstValueFrom(this.invitadoService.obtenerInvitadoPorEmail(this.userEmail));
         if (invitadoResult) {
           this.invitado = invitadoResult;
-          this.isInvitado = true;
-          this.generateQrData(); // Generar el QR si es un invitado
+          this.eventoId = this.invitado.eventosInscritos?.[0] || ''; // Asignar eventoId correctamente
         } else {
           console.error('No se encontró ningún invitado con ese email.');
           this.router.navigate(['/iniciar-sesion']);
@@ -92,9 +97,77 @@ export class PerfilUsuarioPage implements OnInit {
       }
     } catch (error) {
       console.error('Error al cargar los datos del usuario:', error);
-      this.errorMessage = 'Error al cargar los datos del usuario.';
-      this.router.navigate(['/iniciar-sesion']);
     }
+  }
+
+  // Método para iniciar la verificación del escaneo de QR
+  async verificarInscripcionAlEscanear() {
+    try {
+      const qrData = await this.cartService.startScan();  // Iniciar el escaneo del QR
+      if (qrData) {
+        this.escaneoCompletado = true;  // Marcar que se ha completado el escaneo
+        // Verificar la inscripción después del escaneo
+        await this.verificarInscripcionEventos(qrData.id_estudiante || qrData.id_Invitado, this.eventoId, true); // Mostrar alerta cuando se escanea
+      }
+    } catch (error) {
+      console.error('Error al escanear el código QR:', error);
+    }
+  }
+
+  // Verificar si el estudiante o invitado ya está verificado en los eventos inscritos
+  async verificarInscripcionEventos(userId: string | undefined, eventoId: string, mostrarAlerta: boolean = false) {
+    if (!userId || this.haSidoVerificado) return; // No verificar si ya se ha verificado o no hay usuario
+
+    try {
+      const qrData: QRCodeData2 = {
+        id_estudiante: this.isInvitado ? undefined : userId,
+        id_Invitado: this.isInvitado ? userId : undefined,
+        qrData: '',
+        eventosInscritos: [],
+        tipo: this.isInvitado ? 'Invitado' : 'Estudiante',
+      };
+
+      const resultado = await this.cartService.verifyAndUpdateInscription(qrData, eventoId);
+
+      // Si el usuario ha sido verificado correctamente y no ha sido verificado antes
+      if (resultado.verificado && !this.haSidoVerificado) {
+        this.haSidoVerificado = true; // Marcar como verificado
+
+        // Mostrar alertas solo cuando se escanea el QR
+        if (mostrarAlerta && this.escaneoCompletado) {  // Solo si se escanea
+          if (resultado.puntaje) {
+            await this.mostrarAlertaVerificacion(resultado.puntaje, eventoId); // Mostrar alerta de verificación exitosa
+          } else {
+            await this.mostrarAlertaYaVerificado();
+          }
+        }
+      } else if (!resultado.verificado) {
+        console.error('No se pudo verificar la inscripción.');
+      }
+    } catch (error) {
+      console.error('Error al verificar la inscripción mediante QR:', error);
+    }
+  }
+
+  // Función para mostrar una alerta cuando el usuario está verificado en un evento
+  async mostrarAlertaVerificacion(puntaje: number, eventoId: string) {
+    const alert = await this.alertController.create({
+      header: '¡Verificación Exitosa!',
+      subHeader: `Evento ID: ${eventoId}`,
+      message: `Has sido verificado en el evento. Tu puntaje actual es: ${puntaje} puntos.`,
+      buttons: ['OK'],
+    });
+    await alert.present();
+  }
+
+  // Mostrar alerta de ya verificado
+  async mostrarAlertaYaVerificado() {
+    const alert = await this.alertController.create({
+      header: 'Ya verificado',
+      message: 'Ya has sido verificado para este evento.',
+      buttons: ['OK'],
+    });
+    await alert.present();
   }
 
   // Generar datos QR con la información del usuario
@@ -106,27 +179,26 @@ export class PerfilUsuarioPage implements OnInit {
     const qrDataObject: QRCodeData = {
       qrData: JSON.stringify({
         userId: this.isInvitado ? this.invitado?.id_Invitado : this.estudiante?.id_estudiante,
-        eventosInscritos: eventosInscritos
+        eventosInscritos: eventosInscritos,
       }),
       userId: this.isInvitado ? (this.invitado?.id_Invitado || '') : (this.estudiante?.id_estudiante || ''),
-      eventosInscritos: eventosInscritos
+      eventosInscritos: eventosInscritos,
     };
 
     this.qrData = qrDataObject.qrData;
   }
 
-  // Activar modo de edición del perfil
+
+  // Activar el modo de edición del perfil
   editProfile() {
     this.isEditing = true;
-    // Inicializa las variables temporales con los datos actuales o un valor predeterminado
     this.tempNombreCompleto = this.estudiante?.Nombre_completo || this.invitado?.Nombre_completo || '';
     this.tempEmail = this.estudiante?.email || this.invitado?.email || '';
     this.tempRut = this.estudiante?.Rut || this.invitado?.Rut || '';
     this.tempTelefono = this.estudiante?.Telefono || this.invitado?.Telefono || '';
   }
 
-
-  // Guardar cambios del perfil
+  // Guardar los cambios del perfil
   async saveProfile() {
     try {
       if (this.isInvitado && this.invitado) {
@@ -140,7 +212,6 @@ export class PerfilUsuarioPage implements OnInit {
         this.estudiante.email = this.tempEmail;
         this.estudiante.Rut = this.tempRut;
         this.estudiante.Telefono = this.tempTelefono;
-        // No se actualiza el puntaje, ya que no se puede editar
         await this.authService.updateEstudiante(this.estudiante);
       }
       this.isEditing = false;
@@ -150,16 +221,16 @@ export class PerfilUsuarioPage implements OnInit {
       this.errorMessage = 'Error al guardar el perfil.';
     }
   }
+
   cancelEdit() {
     this.isEditing = false;
     this.tempNombreCompleto = '';
     this.tempEmail = '';
     this.tempRut = '';
     this.tempTelefono = '';
-    // Aquí podrías también volver a cargar los datos desde Firestore
     this.loadUserData();
   }
-  // Cerrar sesión con confirmación
+
   confirmLogout() {
     if (!this.isEditing) {
       this.logout();
@@ -168,15 +239,9 @@ export class PerfilUsuarioPage implements OnInit {
     }
   }
 
-  // Método para salir de la página solo si no está editando
-  canGoBack() {
-    return !this.isEditing; // Solo permite volver si no se está editando
-  }
-
-  // Cerrar sesión
   logout() {
-    this.authService.logout(); // Cerrar sesión del servicio de autenticación
+    this.authService.logout();
     console.log('Cerrando sesión...');
-    this.router.navigate(['/iniciar-sesion']); // Redirigir a la página de inicio de sesión
+    this.router.navigate(['/iniciar-sesion']);
   }
 }

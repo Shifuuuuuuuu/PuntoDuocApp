@@ -17,7 +17,7 @@
       <ion-card-title style="color: black;">Escanear Código QR</ion-card-title>
     </ion-card-header>
     <ion-card-content>
-      <ion-button expand="block" color="primary" (click)="verificarInscripcion()">Verfica a los Usuarios</ion-button>
+      <ion-button expand="block" color="primary" (click)="verificarInscripcion()">Verifica a los Usuarios</ion-button>
       <ion-spinner *ngIf="escaneando" name="crescent"></ion-spinner>
       <p *ngIf="mensajePresencia" [ngClass]="{'verificado': esVerificado, 'no-verificado': !esVerificado}">
         {{ mensajePresencia }}

@@ -1,4 +1,3 @@
-
 <ion-header [translucent]="true" class="custom-header">
   <ion-toolbar class="custom-toolbar">
     <ion-buttons slot="start">
@@ -7,7 +6,7 @@
     <ion-buttons slot="end">
       <ion-menu-button size="medium"></ion-menu-button>
     </ion-buttons>
-    <ion-title style="color:  white">Mi cuenta</ion-title>
+    <ion-title style="color: white;">Mi cuenta</ion-title>
   </ion-toolbar>
 </ion-header>
 
@@ -21,6 +20,7 @@
     </ion-card-content>
   </ion-card>
 
+  <!-- Información personal -->
   <div class="form-container" style="max-width: 380px; margin: auto; padding: 25px; background-color: white; border-radius: 20px;">
     <h1 class="center" style="color: #0A49A7; text-align: center;">Información personal</h1>
     <div class="profile-icon-container">
@@ -28,6 +28,7 @@
     </div>
 
     <form *ngIf="estudiante || invitado">
+      <!-- Nombre Completo -->
       <div class="mb-3 position-relative">
         <ion-item class="custom-item">
           <ion-label>
@@ -37,6 +38,8 @@
           </ion-label>
         </ion-item>
       </div>
+
+      <!-- Correo Electrónico -->
       <div class="mb-3 position-relative">
         <ion-item class="custom-item">
           <ion-label>
@@ -46,6 +49,8 @@
           </ion-label>
         </ion-item>
       </div>
+
+      <!-- RUT -->
       <div class="mb-3 position-relative">
         <ion-item class="custom-item">
           <ion-label>
@@ -55,6 +60,8 @@
           </ion-label>
         </ion-item>
       </div>
+
+      <!-- Teléfono -->
       <div class="mb-3 position-relative">
         <ion-item class="custom-item">
           <ion-label>
@@ -65,6 +72,7 @@
         </ion-item>
       </div>
 
+      <!-- Puntaje -->
       <div class="mb-3 position-relative" *ngIf="estudiante">
         <ion-item class="custom-item">
           <ion-label>
@@ -74,6 +82,7 @@
         </ion-item>
       </div>
 
+      <!-- Código QR -->
       <div class="qr-container" *ngIf="(estudiante && estudiante.codigoQr) || (invitado && invitado.codigoQr)">
         <h1 style="color: black;">Código QR</h1>
         <div class="qr-image-container">
@@ -81,6 +90,7 @@
         </div>
       </div>
 
+      <!-- Botones de acción -->
       <div class="button-container">
         <ion-button class="button-inline" *ngIf="!isEditing" (click)="editProfile()">Editar Perfil</ion-button>
         <ion-button class="button-inline" color="success" *ngIf="isEditing" (click)="saveProfile()">Guardar Cambios</ion-button>
@@ -90,6 +100,8 @@
     </form>
   </div>
 </ion-content>
+
+<!-- Footer con redes sociales -->
 <ion-footer collapse="fade" class="footer">
   <p>Síguenos en nuestras redes sociales:</p>
   <div class="social-icons">

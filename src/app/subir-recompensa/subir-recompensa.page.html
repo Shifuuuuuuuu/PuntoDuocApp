@@ -1,17 +1,18 @@
-<ion-header>
-  <ion-toolbar>
-    <ion-title>Subir Recompensa</ion-title>
+<ion-header [translucent]="true" class="custom-header">
+  <ion-toolbar class="custom-toolbar" style="background-color: black;">
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/folder-ventas" style="color: white;"></ion-back-button>
+    </ion-buttons>
+    <ion-title style="color:  white">Subir recompensas</ion-title>
   </ion-toolbar>
 </ion-header>
+<ion-content [fullscreen]="true" class="content-center">
 
-<ion-content class="ion-padding">
-  <form [formGroup]="recompensaForm" (ngSubmit)="onSubmit()">
+  <form [formGroup]="recompensaForm" (ngSubmit)="onSubmit()" >
     <ion-item>
       <ion-label>Descripción</ion-label>
       <ion-input formControlName="descripcion"></ion-input>
     </ion-item>
-
-
 
     <ion-item>
       <ion-label>Fecha Creación</ion-label>

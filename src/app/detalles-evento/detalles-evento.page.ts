@@ -19,14 +19,17 @@ export class DetallesEventoPage implements OnInit {
   escaneando: boolean = false; // Estado para mostrar si está escaneando
   usuarios: any[] = []; // Lista de usuarios inscritos
   listaEspera: any[] = [];
+
   constructor(
     private route: ActivatedRoute,
     private cartService: CartService,
     private menu: MenuController
   ) {}
+
   ionViewWillEnter() {
     this.menu.enable(false);  // Deshabilita el menú en esta página
   }
+
   ngOnInit() {
     // Captura el ID del evento desde los parámetros de la URL
     this.route.paramMap.subscribe(params => {
@@ -40,6 +43,7 @@ export class DetallesEventoPage implements OnInit {
       }
     });
   }
+
   // Método para cargar la lista de inscripciones y lista de espera
   async cargarListas() {
     try {
@@ -53,7 +57,7 @@ export class DetallesEventoPage implements OnInit {
     }
   }
 
-
+  // Verifica la inscripción, valida si ya está verificado y suma puntos si corresponde
   async verificarInscripcion() {
     this.escaneando = true; // Inicia el escaneo
     try {
@@ -62,6 +66,13 @@ export class DetallesEventoPage implements OnInit {
       console.log('ID del evento en verificación:', this.eventoId); // Verifica que el ID del evento sea correcto
 
       if (qrData) {
+        // Verificar si ya está verificado
+        const inscripcion = await this.cartService.getInscripcionVerificada(qrData, this.eventoId);
+        if (inscripcion && inscripcion.verificado) {
+          this.mensajePresencia = 'Este usuario ya ha sido verificado.';
+          this.esVerificado = true;
+          return; // No se sigue con el proceso, ya está verificado
+        }
 
         // Verificación y actualización de inscripción
         const isVerified = await this.cartService.verifyAndUpdateInscription(qrData, this.eventoId);
