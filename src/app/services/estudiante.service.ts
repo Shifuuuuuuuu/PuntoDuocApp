@@ -1,9 +1,9 @@
 import { Injectable } from '@angular/core';
 import { AngularFirestore } from '@angular/fire/compat/firestore';
-import { Estudiante } from '../interface/IEstudiante'; // Asegúrate de tener la interfaz creada
+import { Estudiante, EstudianteSinPassword } from '../interface/IEstudiante'; // Asegúrate de tener la interfaz creada
 import { map } from 'rxjs/operators';
 import firebase from 'firebase/compat/app';
-import { Observable } from 'rxjs';
+import { firstValueFrom, Observable } from 'rxjs';
 import { AngularFireAuth } from '@angular/fire/compat/auth';
 @Injectable({
   providedIn: 'root'
@@ -55,6 +55,9 @@ export class EstudianteService {
   getUserById(userId: string): Observable<any> {
     return this.firestore.collection('Estudiantes').doc(userId).valueChanges();
   }
+  getEstudianteByEmail(email: string): Promise<EstudianteSinPassword[]> {
+    return firstValueFrom(this.firestore.collection<EstudianteSinPassword>('Estudiantes', ref => ref.where('email', '==', email)).valueChanges({ idField: 'id_estudiante' }));
+  }
 
   verificarEstudiantePorCorreo(correo: string): Observable<boolean> {
     return this.firestore
@@ -100,5 +103,8 @@ export class EstudianteService {
       console.error('Error al obtener el estudiante por ID:', error);
       throw error;
     }
+  }
+  updateEstudiantePuntaje(id_estudiante: string, puntaje: number) {
+    return this.firestore.collection('Estudiantes').doc(id_estudiante).update({ puntaje });
   }
 }

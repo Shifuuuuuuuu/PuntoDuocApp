@@ -27,10 +27,9 @@
   <ion-list *ngIf="tienePermisos && recompensas.length > 0">
     <ion-item *ngFor="let recompensa of recompensas">
       <ion-label>
-        <h2>{{ recompensa.nombre }}</h2>
         <p>{{ recompensa.descripcion }}</p>
         <p>Puntos requeridos: {{ recompensa.puntos_requeridos }}</p>
-        <p>Tema: {{ recompensa.tema }}</p>
+        <ion-button (click)="reclamarRecompensa(recompensa.id_recompensa!, recompensa.puntos_requeridos)">Reclamar</ion-button>
       </ion-label>
     </ion-item>
   </ion-list>
