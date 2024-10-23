@@ -3,7 +3,7 @@ import { AuthService } from '../services/auth.service';
 import { RecompensaService } from '../services/recompensa-service.service';
 import { Recompensa } from '../interface/IRecompensa';
 import { Router } from '@angular/router';
-import { Firestore, doc, getDoc, updateDoc, addDoc, collection } from '@angular/fire/firestore';
+import { AngularFirestore } from '@angular/fire/compat/firestore';
 import { EstudianteService } from '../services/estudiante.service';
 import { EstudianteSinPassword } from '../interface/IEstudiante';
 
@@ -23,22 +23,9 @@ export class VerRecompensasPage implements OnInit {
     private authService: AuthService,
     private recompensaService: RecompensaService,
     private router: Router,
-    private firestore: Firestore,
+    private firestore: AngularFirestore,
     private estudianteService: EstudianteService
   ) {}
-
-  ngOnInit() {
-    this.authService.getCurrentUserEmail().subscribe(email => {
-      if (email) {
-        this.userEmail = email;
-        this.loadUserData();
-      } else {
-        this.errorMessage = 'Error: currentUserEmail no está definido.';
-        console.error(this.errorMessage);
-        this.router.navigate(['/iniciar-sesion']);
-      }
-    });
-  }
 
   async loadUserData() {
     try {
@@ -52,7 +39,8 @@ export class VerRecompensasPage implements OnInit {
       }
 
       if (this.userEmail) {
-        this.estudiante = (await this.estudianteService.getEstudianteByEmail(this.userEmail))[0];
+        const estudiantes = await this.estudianteService.getEstudianteByEmail(this.userEmail);
+        this.estudiante = estudiantes[0];
       }
     } catch (error) {
       this.errorMessage = 'Error al cargar los datos del usuario.';
@@ -69,27 +57,27 @@ export class VerRecompensasPage implements OnInit {
 
   async reclamarRecompensa(id_recompensa: string, puntos_requeridos: number): Promise<void> {
     if (this.estudiante && this.estudiante.id_estudiante) {
-      const recompensaRef = doc(this.firestore, `Recompensas/${id_recompensa}`);
-      const estudianteRef = doc(this.firestore, `Estudiantes/${this.estudiante.id_estudiante}`);
+      const recompensaRef = this.firestore.collection('Recompensas').doc(id_recompensa).ref;
+      const estudianteRef = this.firestore.collection('Estudiantes').doc(this.estudiante.id_estudiante).ref;
 
-      const recompensaSnap = await getDoc(recompensaRef);
-      const estudianteSnap = await getDoc(estudianteRef);
+      const recompensaSnap = await recompensaRef.get();
+      const estudianteSnap = await estudianteRef.get();
 
-      if (recompensaSnap.exists() && estudianteSnap.exists()) {
+      if (recompensaSnap.exists && estudianteSnap.exists) {
         const recompensa = recompensaSnap.data() as Recompensa;
         const estudiante = estudianteSnap.data() as EstudianteSinPassword;
 
         if (estudiante.puntaje >= puntos_requeridos && recompensa.cantidad > 0) {
-          await updateDoc(estudianteRef, {
+          await estudianteRef.update({
             puntaje: estudiante.puntaje - puntos_requeridos
           });
 
-          await updateDoc(recompensaRef, {
+          await recompensaRef.update({
             cantidad: recompensa.cantidad - 1
           });
 
-          const gestorRecompensaRef = collection(this.firestore, 'GestorRecompensa');
-          await addDoc(gestorRecompensaRef, {
+          const gestorRecompensaRef = this.firestore.collection('GestorRecompensa');
+          await gestorRecompensaRef.add({
             id_estudiante: this.estudiante.id_estudiante,
             id_recompensa: id_recompensa,
             fecha_reclamacion: new Date().toISOString()
@@ -105,5 +93,18 @@ export class VerRecompensasPage implements OnInit {
     } else {
       console.error('Datos del estudiante no disponibles.');
     }
+  }
+
+  ngOnInit() {
+    this.authService.getCurrentUserEmail().subscribe(email => {
+      if (email) {
+        this.userEmail = email;
+        this.loadUserData();
+      } else {
+        this.errorMessage = 'Error: currentUserEmail no está definido.';
+        console.error(this.errorMessage);
+        this.router.navigate(['/iniciar-sesion']);
+      }
+    });
   }
 }
