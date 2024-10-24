@@ -1,4 +1,3 @@
-
 <ion-header>
   <ion-toolbar>
     <ion-title>Ver Recompensas</ion-title>
@@ -15,42 +14,21 @@
     </ion-card-content>
   </ion-card>
 
-  <ion-card *ngIf="!userEmail">
-    <ion-card-header>
-      <ion-card-title>Error</ion-card-title>
-    </ion-card-header>
-    <ion-card-content>
-      <p>No se ha podido obtener tu correo electrónico. Por favor, inicia sesión.</p>
-    </ion-card-content>
-  </ion-card>
-
-  <ion-list *ngIf="tienePermisos && recompensas.length > 0">
+  <ion-list>
     <ion-item *ngFor="let recompensa of recompensas">
       <ion-label>
-        <p>{{ recompensa.descripcion }}</p>
+        <h2>{{ recompensa.descripcion }}</h2>
         <p>Puntos requeridos: {{ recompensa.puntos_requeridos }}</p>
-        <ion-button (click)="reclamarRecompensa(recompensa.id_recompensa!, recompensa.puntos_requeridos)">Reclamar</ion-button>
+        <p>Cantidad disponible: {{ recompensa.cantidad }}</p>
       </ion-label>
+      <ion-button *ngIf="estudiante && estudiante.puntaje >= recompensa.puntos_requeridos && !hasReclamado(recompensa)" (click)="reclamar(recompensa)">
+        Reclamar
+      </ion-button>
+      <ion-button *ngIf="hasReclamado(recompensa)" (click)="generarQR(recompensa)">
+        Ver QR
+      </ion-button>
     </ion-item>
   </ion-list>
-
-  <ion-card *ngIf="tienePermisos && recompensas.length === 0">
-    <ion-card-header>
-      <ion-card-title>No hay recompensas disponibles</ion-card-title>
-    </ion-card-header>
-    <ion-card-content>
-      <p>Actualmente no tienes recompensas disponibles.</p>
-    </ion-card-content>
-  </ion-card>
-
-  <ion-card *ngIf="errorMessage">
-    <ion-card-header>
-      <ion-card-title>Error</ion-card-title>
-    </ion-card-header>
-    <ion-card-content>
-      <p>{{ errorMessage }}</p>
-    </ion-card-content>
-  </ion-card>
 </ion-content>
-<app-tab-bar></app-tab-bar>
 
+<app-tab-bar></app-tab-bar>

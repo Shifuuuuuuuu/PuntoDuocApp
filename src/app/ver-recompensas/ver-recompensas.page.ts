@@ -6,6 +6,8 @@ import { Router } from '@angular/router';
 import { AngularFirestore } from '@angular/fire/compat/firestore';
 import { EstudianteService } from '../services/estudiante.service';
 import { EstudianteSinPassword } from '../interface/IEstudiante';
+import * as QRCode from 'qrcode';
+import { AlertController } from '@ionic/angular';
 
 @Component({
   selector: 'app-ver-recompensas',
@@ -24,7 +26,8 @@ export class VerRecompensasPage implements OnInit {
     private recompensaService: RecompensaService,
     private router: Router,
     private firestore: AngularFirestore,
-    private estudianteService: EstudianteService
+    private estudianteService: EstudianteService,
+    private alertController: AlertController
   ) {}
 
   async loadUserData() {
@@ -55,43 +58,37 @@ export class VerRecompensasPage implements OnInit {
     });
   }
 
-  async reclamarRecompensa(id_recompensa: string, puntos_requeridos: number): Promise<void> {
-    if (this.estudiante && this.estudiante.id_estudiante) {
-      const recompensaRef = this.firestore.collection('Recompensas').doc(id_recompensa).ref;
-      const estudianteRef = this.firestore.collection('Estudiantes').doc(this.estudiante.id_estudiante).ref;
-
-      const recompensaSnap = await recompensaRef.get();
-      const estudianteSnap = await estudianteRef.get();
-
-      if (recompensaSnap.exists && estudianteSnap.exists) {
-        const recompensa = recompensaSnap.data() as Recompensa;
-        const estudiante = estudianteSnap.data() as EstudianteSinPassword;
-
-        if (estudiante.puntaje >= puntos_requeridos && recompensa.cantidad > 0) {
-          await estudianteRef.update({
-            puntaje: estudiante.puntaje - puntos_requeridos
-          });
-
-          await recompensaRef.update({
-            cantidad: recompensa.cantidad - 1
-          });
-
-          const gestorRecompensaRef = this.firestore.collection('GestorRecompensa');
-          await gestorRecompensaRef.add({
-            id_estudiante: this.estudiante.id_estudiante,
-            id_recompensa: id_recompensa,
-            fecha_reclamacion: new Date().toISOString()
-          });
-
-          console.log(`Recompensa ${id_recompensa} reclamada con éxito por el estudiante ${this.estudiante.id_estudiante}.`);
-        } else {
-          console.error('Puntos insuficientes o recompensa agotada.');
-        }
-      } else {
-        console.error('Estudiante o recompensa no encontrados.');
+  async getRecompensas(): Promise<void> {
+    try {
+      const snapshot = await this.firestore.collection<Recompensa>('Recompensas').get().toPromise();
+      if (!snapshot || snapshot.empty) {
+        console.warn('No se encontraron recompensas');
+        return;
       }
-    } else {
-      console.error('Datos del estudiante no disponibles.');
+      this.recompensas = snapshot.docs.map(doc => {
+        const data = doc.data() as Recompensa;
+        return { id_recompensa: doc.id, ...data };
+      });
+    } catch (error) {
+      console.error('Error al obtener las recompensas:', error);
+    }
+  }
+
+  async reclamar(recompensa: Recompensa) {
+    if (this.estudiante) {
+      try {
+        await this.recompensaService.reclamarRecompensa(recompensa.id_recompensa!, this.estudiante);
+        this.loadRecompensas();
+      } catch (error) {
+        console.error('Error al reclamar recompensa:', error);
+      }
+    }
+  }
+  async loadRecompensas() {
+    try {
+      this.recompensas = await this.recompensaService.getRecompensas();
+    } catch (error) {
+      console.error('Error al cargar recompensas:', error);
     }
   }
 
@@ -106,5 +103,46 @@ export class VerRecompensasPage implements OnInit {
         this.router.navigate(['/iniciar-sesion']);
       }
     });
+  }
+
+  hasReclamado(recompensa: any): boolean {
+    if (!this.estudiante || !recompensa.estudiantesReclamaron) {
+      return false;
+    }
+
+    return recompensa.estudiantesReclamaron.some((e: any) => 
+      e.id_estudiante === this.estudiante!.id_estudiante && !e.reclamado
+    );
+  }
+
+  async generarQR(recompensa: any) {
+    try {
+      if (!this.estudiante) {
+        throw new Error('No hay estudiante disponible para generar QR.');
+      }
+
+      // Datos para el QR
+      const qrData = JSON.stringify({
+        id_estudiante: this.estudiante.id_estudiante,
+        recompensa_id: recompensa.id,
+        fecha: new Date().toISOString()
+      });
+
+      // Generar código QR
+      const codigoQR = await QRCode.toDataURL(qrData);
+      console.log('Código QR generado:', codigoQR);
+
+      // Mostrar el mensaje flotante con el código QR
+      const alert = await this.alertController.create({
+        header: 'Reclama tu recompensa',
+        message: `<p>Reclama tu ${recompensa.descripcion}</p><img src="${codigoQR}" alt="QR Code" style="width: 100%; height: auto;">`,
+        buttons: ['OK']
+      });
+
+      await alert.present();
+
+    } catch (error) {
+      console.error('Error al generar el código QR:', error);
+    }
   }
 }

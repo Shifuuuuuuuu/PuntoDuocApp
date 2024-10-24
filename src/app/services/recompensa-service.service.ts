@@ -3,6 +3,7 @@ import { AngularFirestore } from '@angular/fire/compat/firestore';
 import { Recompensa } from '../interface/IRecompensa'; // Asegúrate de tener la interfaz creada
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
+import { EstudianteSinPassword } from '../interface/IEstudiante';
 
 @Injectable({
   providedIn: 'root'
@@ -39,6 +40,7 @@ export class RecompensaService {
       throw error;
     }
   }
+  
 
   // Obtener todas las recompensas
   obtenerRecompensas(): Observable<Recompensa[]> {
@@ -84,6 +86,42 @@ export class RecompensaService {
       console.error('Error al eliminar la recompensa:', error);
       throw error;
     }
+  }
+  async reclamarRecompensa(recompensaId: string, estudiante: EstudianteSinPassword): Promise<void> {
+    const recompensaRef = this.firestore.collection('Recompensas').doc(recompensaId);
+    const recompensaDoc = await recompensaRef.get().toPromise();
+
+    if (recompensaDoc) {
+      const recompensa = recompensaDoc.data() as Recompensa;
+
+      if (estudiante.puntaje >= recompensa.puntos_requeridos && recompensa.cantidad > 0) {
+        const reclamacion = {
+          id_estudiante: estudiante.id_estudiante!,
+          reclamado: false
+        };
+
+        const estudiantesReclamaron = recompensa.estudiantesReclamaron || [];
+        estudiantesReclamaron.push(reclamacion);
+
+        await recompensaRef.update({
+          estudiantesReclamaron,
+          cantidad: recompensa.cantidad - 1
+        });
+
+        console.log('Recompensa reclamada correctamente.');
+      } else {
+        console.log('No tienes suficientes puntos o la recompensa no está disponible.');
+      }
+    } else {
+      console.error('Recompensa no encontrada.');
+    }
+  }
+
+
+  generarCodigoQR(recompensa: Recompensa, estudiante: EstudianteSinPassword): string {
+    // Implementa la lógica para generar el código QR
+    // Puede ser una URL con información codificada, o cualquier otro formato
+    return `QR_DATA_${recompensa.id_recompensa}_${estudiante.id_estudiante}`;
   }
 }
 
