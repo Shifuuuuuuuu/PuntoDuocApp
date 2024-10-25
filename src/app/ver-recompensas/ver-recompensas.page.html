@@ -4,31 +4,29 @@
   </ion-toolbar>
 </ion-header>
 
-<ion-content [fullscreen]="true">
-  <ion-card *ngIf="userEmail">
-    <ion-card-header>
-      <ion-card-title>Bienvenido, {{ userEmail }}</ion-card-title>
-    </ion-card-header>
-    <ion-card-content>
-      <p>Aquí están tus recompensas:</p>
-    </ion-card-content>
-  </ion-card>
-
+<ion-content *ngIf="recompensas.length > 0; else noRecompensasTemplate">
   <ion-list>
     <ion-item *ngFor="let recompensa of recompensas">
       <ion-label>
         <h2>{{ recompensa.descripcion }}</h2>
         <p>Puntos requeridos: {{ recompensa.puntos_requeridos }}</p>
-        <p>Cantidad disponible: {{ recompensa.cantidad }}</p>
       </ion-label>
-      <ion-button *ngIf="estudiante && estudiante.puntaje >= recompensa.puntos_requeridos && !hasReclamado(recompensa)" (click)="reclamar(recompensa)">
-        Reclamar
-      </ion-button>
+
+      <!-- Botón para generar el QR -->
       <ion-button *ngIf="hasReclamado(recompensa)" (click)="generarQR(recompensa)">
-        Ver QR
+        Generar QR
       </ion-button>
     </ion-item>
   </ion-list>
+
+  <!-- Mostrar el QR Code generado -->
+  <ion-card *ngIf="qrCodeImage">
+    <img [src]="qrCodeImage" alt="QR Code">
+  </ion-card>
 </ion-content>
 
-<app-tab-bar></app-tab-bar>
+<ng-template #noRecompensasTemplate>
+  <ion-item>
+    <ion-label>No hay recompensas disponibles</ion-label>
+  </ion-item>
+</ng-template>

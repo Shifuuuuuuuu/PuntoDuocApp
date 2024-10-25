@@ -20,6 +20,9 @@ export class VerRecompensasPage implements OnInit {
   errorMessage: string | undefined;
   tienePermisos: boolean = false;
   estudiante: EstudianteSinPassword | undefined;
+  qrData: string = ''; 
+  qrCodeImage: string | undefined;
+  recompensaSeleccionada: any;
 
   constructor(
     private authService: AuthService,
@@ -114,6 +117,22 @@ export class VerRecompensasPage implements OnInit {
       e.id_estudiante === this.estudiante!.id_estudiante && !e.reclamado
     );
   }
+  generateQrData(recompensa: any) {
+    const qrDataObject = {
+      qrData: JSON.stringify({
+        userId: this.estudiante?.id_estudiante || '',
+        recompensaId: recompensa.id || '',
+        descripcion: recompensa.descripcion || '',
+        puntosRequeridos: recompensa.puntos_requeridos || 0,
+        fecha: new Date().toISOString()
+      }),
+      userId: this.estudiante?.id_estudiante || '',
+      recompensaId: recompensa.id || '',
+      descripcion: recompensa.descripcion || '',
+    };
+
+    this.qrData = qrDataObject.qrData;
+  }
 
   async generarQR(recompensa: any) {
     try {
@@ -121,25 +140,21 @@ export class VerRecompensasPage implements OnInit {
         throw new Error('No hay estudiante disponible para generar QR.');
       }
 
-      // Datos para el QR
-      const qrData = JSON.stringify({
+      // Guardar la recompensa seleccionada
+      this.recompensaSeleccionada = recompensa;
+
+      // Generar los datos del QR basados en la recompensa y el estudiante
+      const qrDataObject = {
         id_estudiante: this.estudiante.id_estudiante,
-        recompensa_id: recompensa.id,
-        fecha: new Date().toISOString()
-      });
+        recompensa: recompensa.descripcion,
+        puntos: recompensa.puntos_requeridos
+      };
 
-      // Generar código QR
-      const codigoQR = await QRCode.toDataURL(qrData);
-      console.log('Código QR generado:', codigoQR);
+      // Convertir el objeto en una cadena JSON
+      const qrData = JSON.stringify(qrDataObject);
 
-      // Mostrar el mensaje flotante con el código QR
-      const alert = await this.alertController.create({
-        header: 'Reclama tu recompensa',
-        message: `<p>Reclama tu ${recompensa.descripcion}</p><img src="${codigoQR}" alt="QR Code" style="width: 100%; height: auto;">`,
-        buttons: ['OK']
-      });
-
-      await alert.present();
+      // Generar el QR Code en formato Data URL
+      this.qrCodeImage = await QRCode.toDataURL(qrData);
 
     } catch (error) {
       console.error('Error al generar el código QR:', error);
