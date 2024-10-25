@@ -11,10 +11,10 @@
         <h2>{{ recompensa.descripcion }}</h2>
         <p>Puntos requeridos: {{ recompensa.puntos_requeridos }}</p>
       </ion-label>
-
-      <!-- Botón para generar el QR -->
-      <ion-button *ngIf="hasReclamado(recompensa)" (click)="generarQR(recompensa)">
-        Generar QR
+  
+      <!-- Mostrar el botón "Reclamar" solo si el estudiante NO ha reclamado la recompensa -->
+      <ion-button *ngIf="!hasReclamado(recompensa)" (click)="reclamar(recompensa)">
+        Reclamar
       </ion-button>
     </ion-item>
   </ion-list>

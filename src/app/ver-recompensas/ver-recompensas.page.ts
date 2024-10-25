@@ -110,13 +110,15 @@ export class VerRecompensasPage implements OnInit {
 
   hasReclamado(recompensa: any): boolean {
     if (!this.estudiante || !recompensa.estudiantesReclamaron) {
-      return false;
+      return false; // Si no hay estudiante o no hay registros de reclamaciones
     }
-
+  
+    // Verificar si el estudiante ha reclamado la recompensa
     return recompensa.estudiantesReclamaron.some((e: any) => 
       e.id_estudiante === this.estudiante!.id_estudiante && !e.reclamado
     );
   }
+  
   generateQrData(recompensa: any) {
     const qrDataObject = {
       qrData: JSON.stringify({
