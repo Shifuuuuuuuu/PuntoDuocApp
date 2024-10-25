@@ -5,7 +5,8 @@ import { AngularFirestore } from '@angular/fire/compat/firestore';
 import { Estudiante } from '../interface/IEstudiante';
 import { CapacitorBarcodeScanner } from '@capacitor/barcode-scanner';
 import { CartService } from '../services/cart.service';
-import { MenuController } from '@ionic/angular';
+import { AlertController, MenuController } from '@ionic/angular';
+import { Evento } from '../interface/IEventos';
 
 @Component({
   selector: 'app-detalles-evento',
@@ -13,83 +14,115 @@ import { MenuController } from '@ionic/angular';
   styleUrls: ['./detalles-evento.page.scss'],
 })
 export class DetallesEventoPage implements OnInit {
-  eventoId: string = ''; // ID del evento
-  mensajePresencia: string = ''; // Mensaje de presencia
-  esVerificado: boolean = false; // Indicador de verificación
-  escaneando: boolean = false; // Estado para mostrar si está escaneando
-  usuarios: any[] = []; // Lista de usuarios inscritos
+  eventoId: string = '';
+  mensajePresencia: string = '';
+  esVerificado: boolean = false;
+  escaneando: boolean = false;
+  usuarios: any[] = [];
   listaEspera: any[] = [];
+  evento: Evento | undefined;
 
   constructor(
     private route: ActivatedRoute,
     private cartService: CartService,
-    private menu: MenuController
+    private menu: MenuController,
+    private alertController: AlertController
   ) {}
 
   ionViewWillEnter() {
-    this.menu.enable(false);  // Deshabilita el menú en esta página
+    this.menu.enable(false);
   }
 
   ngOnInit() {
-    // Captura el ID del evento desde los parámetros de la URL
     this.route.paramMap.subscribe(params => {
       const id = params.get('id');
       if (id) {
         this.eventoId = id;
-        console.log('Evento ID capturado en DetallesEventoPage:', this.eventoId);  // Verificación del ID del evento
-        this.cargarListas(); // Llamar al método para cargar las listas de inscripciones y lista de espera
+        this.cargarEvento();
+        this.cargarListas();
       } else {
         console.error('No se encontró el ID del evento.');
       }
     });
   }
 
-  // Método para cargar la lista de inscripciones y lista de espera
+  async cargarEvento() {
+    try {
+      this.evento = await this.cartService.getEvento(this.eventoId);
+    } catch (error) {
+      console.error('Error al cargar el evento:', error);
+    }
+  }
+
   async cargarListas() {
     try {
       const { inscripciones, listaEspera } = await this.cartService.getDatosEvento(this.eventoId);
       this.usuarios = inscripciones;
       this.listaEspera = listaEspera;
-      console.log('Usuarios inscritos:', this.usuarios);
-      console.log('Lista de espera:', this.listaEspera);
     } catch (error) {
       console.error('Error al cargar las listas:', error);
     }
   }
 
-  // Verifica la inscripción, valida si ya está verificado y suma puntos si corresponde
   async verificarInscripcion() {
-    this.escaneando = true; // Inicia el escaneo
+    this.escaneando = true;
     try {
-      const qrData = await this.startScan(); // Inicia el escaneo
-      console.log('Datos del QR escaneados:', qrData); // Verifica los datos obtenidos del QR
-      console.log('ID del evento en verificación:', this.eventoId); // Verifica que el ID del evento sea correcto
+      const qrData = await this.startScan();
 
       if (qrData) {
-        // Verificar si ya está verificado
         const inscripcion = await this.cartService.getInscripcionVerificada(qrData, this.eventoId);
+
         if (inscripcion && inscripcion.verificado) {
-          this.mensajePresencia = 'Este usuario ya ha sido verificado.';
-          this.esVerificado = true;
-          return; // No se sigue con el proceso, ya está verificado
+          this.mensajePresencia = 'Este usuario ya ha sido acreditado.';
+          await this.presentAlertAcreditacion(qrData.Nombre_completo, this.evento?.titulo || 'Evento', 0, 'yaAcreditado');
+          return;
         }
 
-        // Verificación y actualización de inscripción
-        const isVerified = await this.cartService.verifyAndUpdateInscription(qrData, this.eventoId);
-        if (isVerified) {
-          this.mensajePresencia = 'Inscripción verificada con éxito.';
-        } else {
-          this.mensajePresencia = 'No se encontró inscripción.';
-          this.esVerificado = false;
-        }
+        const result = await this.cartService.verifyAndUpdateInscription(qrData, this.eventoId);
+        this.esVerificado = result.verificado;
+        this.mensajePresencia = this.esVerificado ? 'Inscripción verificada con éxito.' : 'No se encontró inscripción.';
+        await this.presentAlertAcreditacion(qrData.Nombre_completo, this.evento?.titulo || 'Evento', result.puntaje || 200, this.esVerificado ? 'acreditado' : 'noInscrito');
       }
     } catch (error) {
       this.mensajePresencia = 'Error al verificar inscripción. Intenta de nuevo.';
       this.esVerificado = false;
       console.error('Error durante la verificación de inscripción:', error);
     } finally {
-      this.escaneando = false; // Termina el escaneo
+      this.escaneando = false;
     }
+  }
+
+  async presentAlertAcreditacion(nombreUsuario: string, nombreEvento: string, puntos: number, estado: 'yaAcreditado' | 'acreditado' | 'noInscrito') {
+    let headerText = '';
+    let messageText = '';
+    let iconName = '';
+
+    if (estado === 'yaAcreditado') {
+      headerText = 'Ya Acreditado';
+      messageText = `${nombreUsuario} ya está acreditado para el evento ${nombreEvento}.`;
+      iconName = 'checkmark-circle';
+    } else if (estado === 'acreditado') {
+      headerText = 'Acreditación Exitosa';
+      messageText = `${nombreUsuario} ha sido acreditado para el evento ${nombreEvento}. Se han añadido <strong>${puntos} puntos a su cuenta.`;
+      iconName = 'checkmark-circle';
+    } else {
+      headerText = 'No Inscrito';
+      messageText = `${nombreUsuario} no está inscrito en el evento ${nombreEvento}.`;
+      iconName = 'close-circle';
+    }
+
+    const alert = await this.alertController.create({
+      header: headerText,
+      message: `
+        <div class="custom-alert-content">
+          <ion-icon name="${iconName}" class="alert-icon ${estado === 'noInscrito' ? 'error' : 'success'}"></ion-icon>
+          <p>${messageText}</p>
+        </div>
+      `,
+      cssClass: 'custom-alert',
+      buttons: ['OK']
+    });
+    await alert.present();
   }
 
   async startScan() {
@@ -99,15 +132,12 @@ export class DetallesEventoPage implements OnInit {
         cameraDirection: 1,
       });
 
-      const qrData = result.ScanResult; // Aquí obtienes la información del QR (ID y otros datos)
-      const parsedData = JSON.parse(qrData); // Verifica que el QR tiene datos válidos
-      console.log('Datos QR escaneados correctamente:', parsedData); // Imprime los datos del QR
+      const qrData = result.ScanResult;
+      const parsedData = JSON.parse(qrData);
 
-      // Verifica que los datos tengan las propiedades necesarias
       if ((parsedData.id_estudiante || parsedData.id_Invitado) && parsedData.Nombre_completo) {
-        return parsedData; // Suponiendo que el QR tiene los datos en formato JSON
+        return parsedData;
       } else {
-        console.error('Los datos del QR no son válidos:', parsedData);
         throw new Error('Los datos del QR no son válidos');
       }
     } catch (e) {

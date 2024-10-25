@@ -209,6 +209,21 @@ export class CartService {
       throw error;
     }
   }
+  async getEvento(eventId: string): Promise<Evento | undefined> {
+    try {
+        const eventSnapshot = await this.firestore.collection('Eventos').doc(eventId).get().toPromise();
+
+        if (eventSnapshot && eventSnapshot.exists) {
+            return eventSnapshot.data() as Evento;
+        } else {
+            console.log('Evento no encontrado');
+            return undefined; // Si no encuentra el evento, retorna undefined
+        }
+    } catch (error) {
+        console.error('Error al obtener el evento:', error);
+        throw error;
+    }
+}
 
 }
 

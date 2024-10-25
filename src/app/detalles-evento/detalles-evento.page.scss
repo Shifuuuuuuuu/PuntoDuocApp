@@ -85,3 +85,30 @@ ion-item {
   margin: 5px 0;
   font-size: 14px;
 }
+
+/* lo nuevo */
+.custom-alert .alert-wrapper {
+  background-color: white !important;
+  color: black !important;
+  border-radius: 12px;
+}
+
+.custom-alert-content {
+  text-align: center;
+  font-size: 1.1em;
+}
+
+.success {
+  color: #28a745; /* Verde para éxito */
+}
+
+.error {
+  color: #dc3545; /* Rojo para error */
+}
+
+.alert-icon {
+  font-size: 4em;
+  margin-bottom: 8px;
+}
+
+
