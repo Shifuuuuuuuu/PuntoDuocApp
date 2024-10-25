@@ -8,10 +8,9 @@
 </ion-header>
 
 <ion-content [fullscreen]="true" class="content-center">
-  <!-- Título del evento -->
   <h1 class="ion-text-center">Detalles del Evento</h1>
 
-  <!-- Tarjeta para mostrar los detalles del evento -->
+  <!-- Escanear Código QR -->
   <ion-card style="background-color: white;">
     <ion-card-header>
       <ion-card-title style="color: black;">Escanear Código QR</ion-card-title>
@@ -25,16 +24,16 @@
     </ion-card-content>
   </ion-card>
 
-  <!-- Contenedor de listas paralelas -->
-  <div class="lists-container">
-    <!-- Lista de Usuarios -->
-    <ion-card class="users-list" style="background-color: white;">
+  <!-- Contenedor de listas de usuarios en paralelo -->
+  <div class="users-lists-container">
+    <!-- Usuarios No Verificados -->
+    <ion-card class="unverified-users" style="background-color: white;">
       <ion-card-header>
-        <ion-card-title style="color: black;">Lista de Usuarios</ion-card-title>
+        <ion-card-title style="color: black; text-align: center;">Usuarios No Verificados</ion-card-title>
       </ion-card-header>
       <ion-card-content>
         <ion-list style="background-color: white;">
-          <ion-item *ngFor="let user of usuarios">
+          <ion-item *ngFor="let user of usuariosNoVerificados">
             <ion-label>
               <h2>{{ user.Nombre_completo }}</h2>
             </ion-label>
@@ -43,22 +42,40 @@
       </ion-card-content>
     </ion-card>
 
-    <!-- Lista de Espera -->
-    <ion-card class="wait-list" style="background-color: white;">
+    <!-- Usuarios Verificados con ícono de ticket verde -->
+    <ion-card class="verified-users" style="background-color: white;">
       <ion-card-header>
-        <ion-card-title style="color: black;">Lista de Espera</ion-card-title>
+        <ion-card-title style="color: black; text-align: center;">Usuarios Verificados</ion-card-title>
       </ion-card-header>
       <ion-card-content>
         <ion-list style="background-color: white;">
-          <ion-item *ngFor="let waitUser of listaEspera">
+          <ion-item *ngFor="let user of usuariosVerificados">
             <ion-label>
-              <h2>{{ waitUser.userName }}</h2>
+              <h2>{{ user.Nombre_completo }}</h2>
             </ion-label>
+            <!-- Ícono de ticket verde al lado del nombre -->
+            <ion-icon name="checkmark-circle" slot="end" style="color: green;"></ion-icon>
           </ion-item>
         </ion-list>
       </ion-card-content>
     </ion-card>
   </div>
+
+  <!-- Lista de Espera -->
+  <ion-card class="wait-list" style="background-color: white; margin-top: 20px;">
+    <ion-card-header>
+      <ion-card-title style="color: black;">Lista de Espera</ion-card-title>
+    </ion-card-header>
+    <ion-card-content>
+      <ion-list style="background-color: white;">
+        <ion-item *ngFor="let waitUser of listaEspera">
+          <ion-label>
+            <h2>{{ waitUser.userName }}</h2>
+          </ion-label>
+        </ion-item>
+      </ion-list>
+    </ion-card-content>
+  </ion-card>
 </ion-content>
 
 <app-tab-bar-admin></app-tab-bar-admin>

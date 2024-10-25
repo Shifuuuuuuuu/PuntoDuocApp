@@ -10,4 +10,5 @@ export interface Inscripcion {
   Nombre_completo: string;
   Rut: string;
   verificado?: boolean;
+  puntaje?: number;
 }

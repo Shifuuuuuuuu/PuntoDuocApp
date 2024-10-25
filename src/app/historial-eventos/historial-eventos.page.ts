@@ -19,7 +19,7 @@ import { Inscripcion, Inscripcion2 } from '../interface/IInscripcion';
 export class HistorialEventosPage implements OnInit {
   inscripciones: any[] = []; // Aquí almacenaremos las inscripciones
   isLoading: boolean = false;
-
+  isInvitado: boolean = false;
   constructor(
     private eventosService: EventosService,
     private toastController: ToastController,
@@ -118,15 +118,18 @@ export class HistorialEventosPage implements OnInit {
   async cancelarInscripcion(eventoId: string) {
     const emailEstudiante = await this.authService.getCurrentUserEmail().toPromise();
     let userId: string | null = null;
+    let isInvitado = false;
 
     if (emailEstudiante) {
       const estudiante = await this.authService.getEstudianteByEmails(emailEstudiante).toPromise();
-      userId = estudiante?.id_estudiante ?? null; // Asigna a userId o null
+      userId = estudiante?.id_estudiante ?? null;
+      isInvitado = false; // Es estudiante
     } else {
       const emailInvitado = await this.invitadoService.getCurrentUserEmail().toPromise();
       if (emailInvitado) {
         const invitado = await this.invitadoService.obtenerInvitadoPorEmail(emailInvitado).toPromise();
-        userId = invitado?.id_Invitado ?? null; // Asigna a userId o null
+        userId = invitado?.id_Invitado ?? null;
+        isInvitado = true; // Es invitado
       }
     }
 
@@ -136,7 +139,13 @@ export class HistorialEventosPage implements OnInit {
     }
 
     try {
-      await this.eventosService.cancelarInscripcion(eventoId, userId!); // Usa el operador de aserción para forzar el tipo
+      // Llama al método correcto según el tipo de usuario
+      if (isInvitado) {
+        await this.eventosService.cancelarInscripcionInvitado(eventoId, userId);
+      } else {
+        await this.eventosService.cancelarInscripcionEstudiante(eventoId, userId);
+      }
+
       await this.loadInscripciones(); // Recarga inscripciones después de cancelar
       const toast = await this.toastController.create({
         message: 'Inscripción cancelada.',
@@ -152,6 +161,7 @@ export class HistorialEventosPage implements OnInit {
       toast.present();
     }
   }
+
 
   verDetalles(eventoId: string) {
     // Navega a la página de detalles del evento
