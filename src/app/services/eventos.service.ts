@@ -231,8 +231,12 @@ async eliminarUsuarioDeListaEspera(eventoId: string, userId: string): Promise<vo
     if (eventoSnapshot.exists()) {
       const eventoData = eventoSnapshot.data() as Evento;
 
-      // Filtrar la lista de espera para excluir el usuario con el userId proporcionado
-      const listaEsperaActualizada = eventoData.listaEspera?.filter((user) => user.userId !== userId);
+      // Filtrar la lista de espera para excluir el usuario con el ID correspondiente a id_estudiante o id_invitado
+      const listaEsperaActualizada = eventoData.listaEspera?.filter((user) => {
+        const isEstudiante = (user as { id_estudiante?: string }).id_estudiante !== userId;
+        const isInvitado = (user as { id_invitado?: string }).id_invitado !== userId;
+        return isEstudiante && isInvitado;
+      });
 
       await updateDoc(eventoDocRef, { listaEspera: listaEsperaActualizada });
     }
@@ -241,7 +245,6 @@ async eliminarUsuarioDeListaEspera(eventoId: string, userId: string): Promise<vo
     throw error;
   }
 }
-
 
 // Verificar lista de espera y añadir usuario si hay cupos
 async verificarListaEspera(eventoId: string): Promise<void> {
@@ -252,30 +255,41 @@ async verificarListaEspera(eventoId: string): Promise<void> {
       if (listaEspera.length > 0) {
         const primerUsuarioEnEspera = listaEspera[0];
 
-        if ('id_invitado' in primerUsuarioEnEspera) {
+        // Detectar el tipo de usuario en la lista de espera y proceder con la inscripción adecuada
+        if ((primerUsuarioEnEspera as any).id_invitado || primerUsuarioEnEspera.userId.startsWith('invitado_')) {
+          const invitado = {
+            id_invitado: primerUsuarioEnEspera.userId,
+            Nombre_completo: primerUsuarioEnEspera.userName,
+            Rut: primerUsuarioEnEspera.rut
+          };
           await this.inscribirInvitado(
             eventoId,
-            primerUsuarioEnEspera.userId,
-            primerUsuarioEnEspera.userName,
-            primerUsuarioEnEspera.rut
+            invitado.id_invitado,
+            invitado.Nombre_completo,
+            invitado.Rut
           );
-        } else if ('id_estudiante' in primerUsuarioEnEspera) {
+          await this.eliminarUsuarioDeListaEspera(eventoId, invitado.id_invitado);
+        } else if ((primerUsuarioEnEspera as any).id_estudiante || primerUsuarioEnEspera.userId.startsWith('estudiante_')) {
+          const estudiante = {
+            id_estudiante: primerUsuarioEnEspera.userId,
+            Nombre_completo: primerUsuarioEnEspera.userName,
+            Rut: primerUsuarioEnEspera.rut
+          };
           await this.inscribirEstudiante(
             eventoId,
-            primerUsuarioEnEspera.userId,
-            primerUsuarioEnEspera.userName,
-            primerUsuarioEnEspera.rut
+            estudiante.id_estudiante,
+            estudiante.Nombre_completo,
+            estudiante.Rut
           );
+          await this.eliminarUsuarioDeListaEspera(eventoId, estudiante.id_estudiante);
         }
-
-        // Eliminar al usuario de la lista de espera después de inscribirlo
-        await this.eliminarUsuarioDeListaEspera(eventoId, primerUsuarioEnEspera.userId || primerUsuarioEnEspera.userId);
       }
     }
   } catch (error) {
     console.error('Error al verificar la lista de espera:', error);
   }
 }
+
 async isUserInWaitList(eventoId: string, userId: string): Promise<boolean> {
   try {
     const eventoDocRef = doc(this.firestore.firestore, 'Eventos', eventoId);
@@ -285,8 +299,12 @@ async isUserInWaitList(eventoId: string, userId: string): Promise<boolean> {
       const eventoData = eventoSnapshot.data() as Evento;
       const listaEspera = eventoData.listaEspera || [];
 
-      // Verificar si el usuario (ya sea estudiante o invitado) está en la lista de espera
-      return listaEspera.some((user) => user.userId === userId);
+      // Verificar si el usuario está en la lista de espera como estudiante o invitado
+      return listaEspera.some((user) => {
+        const estudiante = user as { id_estudiante?: string };
+        const invitado = user as { id_invitado?: string };
+        return estudiante.id_estudiante === userId || invitado.id_invitado === userId;
+      });
     }
     return false;
   } catch (error) {
@@ -294,6 +312,8 @@ async isUserInWaitList(eventoId: string, userId: string): Promise<boolean> {
     return false;
   }
 }
+
+
 // Eliminar usuario de inscripciones (maneja estudiante o invitado)
 async eliminarUsuarioDeInscripciones(eventoId: string, userId: string): Promise<void> {
   try {

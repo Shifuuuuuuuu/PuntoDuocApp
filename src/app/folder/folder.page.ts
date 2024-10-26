@@ -1,7 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { AngularFirestore } from '@angular/fire/compat/firestore';
 import { ActivatedRoute, Router } from '@angular/router';
-import { AlertController, ToastController } from '@ionic/angular';
 import { Observable, Subscription, firstValueFrom} from 'rxjs';
 import { Evento } from '../interface/IEventos';
 import { EventosService } from '../services/eventos.service';
@@ -360,8 +359,23 @@ export class FolderPage implements OnInit {
     }
 
     try {
+      // Verificar si el usuario ya estaba en la lista de espera antes de intentar eliminarlo
+      const enListaEspera = await this.eventosService.isUserInWaitList(eventoId, this.userId);
+
+      if (!enListaEspera) {
+        Swal.fire({
+          icon: 'info',
+          title: 'No estás en la lista de espera para este evento.',
+          timer: 2000,
+          showConfirmButton: false,
+        });
+        return;
+      }
+
+      // Eliminar al usuario de la lista de espera
       await this.eventosService.eliminarUsuarioDeListaEspera(eventoId, this.userId);
 
+      // Actualizar el estado local del evento para reflejar el cambio en la lista de espera
       const evento = this.filteredEvents.find((event) => event.id_evento === eventoId);
       if (evento) {
         evento.enListaEspera = false;
@@ -374,8 +388,10 @@ export class FolderPage implements OnInit {
         showConfirmButton: false,
       });
 
+      // Recargar los eventos para asegurarse de que la interfaz esté actualizada
       this.loadEvents();
     } catch (error) {
+      console.error('Error al intentar salir de la lista de espera:', error);
       Swal.fire({
         icon: 'error',
         title: 'Error',
