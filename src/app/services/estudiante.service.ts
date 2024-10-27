@@ -9,6 +9,9 @@ import { AngularFireAuth } from '@angular/fire/compat/auth';
   providedIn: 'root'
 })
 export class EstudianteService {
+  actualizarPuntaje(id_estudiante: string | undefined, arg1: number) {
+    throw new Error('Method not implemented.');
+  }
   constructor(private firestore: AngularFirestore, private afAuth: AngularFireAuth) { }
 
   // Registrar estudiante y enviar correo de verificación

@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { AngularFirestore } from '@angular/fire/compat/firestore';
 import { Estudiante } from '../interface/IEstudiante';
-import { BehaviorSubject, Observable } from 'rxjs';
+import { BehaviorSubject, Observable, of } from 'rxjs';
 import { map} from 'rxjs/operators';
 import 'firebase/compat/auth';
 import firebase from 'firebase/compat/app';
@@ -31,8 +31,9 @@ export class AuthService {
 
    // Método para obtener el correo electrónico actual como observable
    getCurrentUserEmail(): Observable<string | undefined> {
-     return this.currentUserEmail$;
-   }
+    const correo = localStorage.getItem('currentUserEmail');
+    return of(correo ? correo : undefined); // Convierte a Observable
+  }
 
    // Método para obtener el correo electrónico actual de forma síncrona (si está disponible)
    getCurrentUserEmailSync(): string | undefined {

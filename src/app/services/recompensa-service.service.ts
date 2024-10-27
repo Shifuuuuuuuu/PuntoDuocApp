@@ -9,6 +9,7 @@ import { EstudianteSinPassword } from '../interface/IEstudiante';
   providedIn: 'root'
 })
 export class RecompensaService {
+
   async getRecompensas(): Promise<Recompensa[]> {
     try {
       const snapshot = await this.firestore.collection<Recompensa>('Recompensas').get().toPromise();
@@ -16,6 +17,7 @@ export class RecompensaService {
       // Verifica si el snapshot existe y tiene documentos
       if (!snapshot || snapshot.empty) {
         console.warn('No se encontraron recompensas');
+        console.log(localStorage.getItem('currentUserEmail'));  // Pa
         return []; // Retorna un array vacío si no hay recompensas
       }
 
@@ -40,88 +42,21 @@ export class RecompensaService {
       throw error;
     }
   }
+    // Método para obtener la recompensa por ID
+    getRecompensaById(id: string) {
+      return this.firestore.collection<Recompensa>('Recompensas').doc(id).get();
+    }
   
-
-  // Obtener todas las recompensas
-  obtenerRecompensas(): Observable<Recompensa[]> {
-    return this.firestore.collection<Recompensa>('Recompensas').snapshotChanges().pipe(
-      map(actions => actions.map(a => {
-        const data = a.payload.doc.data() as Recompensa;
-        const id = a.payload.doc.id;
-        return { id_recompensa: id, ...data };
-      }))
-    );
-  }
-
-  // Obtener una recompensa por ID
-  obtenerRecompensaPorId(id: string): Observable<Recompensa | undefined> {
-    return this.firestore.collection('Recompensas').doc<Recompensa>(id).valueChanges().pipe(
-      map(recompensa => {
-        if (recompensa) {
-          return { id_recompensa: id, ...recompensa };
-        }
-        return undefined;
-      })
-    );
-  }
-
-  // Actualizar una recompensa
-  async actualizarRecompensa(recompensa: Recompensa): Promise<void> {
-    try {
-      if (!recompensa.id_recompensa) {
-        throw new Error('La recompensa no tiene un ID asignado');
-      }
-      await this.firestore.collection('Recompensas').doc(recompensa.id_recompensa).update(recompensa);
-    } catch (error) {
-      console.error('Error al actualizar la recompensa:', error);
-      throw error;
+    async actualizarRecompensa(id: string, data: Partial<Recompensa>) {
+      await this.firestore.collection('Recompensas').doc(id).update(data);
     }
-  }
-
-  // Eliminar una recompensa
-  async eliminarRecompensa(id: string): Promise<void> {
-    try {
-      await this.firestore.collection('Recompensas').doc(id).delete();
-    } catch (error) {
-      console.error('Error al eliminar la recompensa:', error);
-      throw error;
+  
+    // Método para actualizar el puntaje del estudiante
+    actualizarPuntajeEstudiante(idEstudiante: string, nuevoPuntaje: number) {
+      return this.firestore.collection('Estudiantes').doc(idEstudiante).update({
+        puntaje: nuevoPuntaje
+      });
     }
+    
   }
-  async reclamarRecompensa(recompensaId: string, estudiante: EstudianteSinPassword): Promise<void> {
-    const recompensaRef = this.firestore.collection('Recompensas').doc(recompensaId);
-    const recompensaDoc = await recompensaRef.get().toPromise();
-
-    if (recompensaDoc) {
-      const recompensa = recompensaDoc.data() as Recompensa;
-
-      if (estudiante.puntaje >= recompensa.puntos_requeridos && recompensa.cantidad > 0) {
-        const reclamacion = {
-          id_estudiante: estudiante.id_estudiante!,
-          reclamado: false
-        };
-
-        const estudiantesReclamaron = recompensa.estudiantesReclamaron || [];
-        estudiantesReclamaron.push(reclamacion);
-
-        await recompensaRef.update({
-          estudiantesReclamaron,
-          cantidad: recompensa.cantidad - 1
-        });
-
-        console.log('Recompensa reclamada correctamente.');
-      } else {
-        console.log('No tienes suficientes puntos o la recompensa no está disponible.');
-      }
-    } else {
-      console.error('Recompensa no encontrada.');
-    }
-  }
-
-
-  generarCodigoQR(recompensa: Recompensa, estudiante: EstudianteSinPassword): string {
-    // Implementa la lógica para generar el código QR
-    // Puede ser una URL con información codificada, o cualquier otro formato
-    return `QR_DATA_${recompensa.id_recompensa}_${estudiante.id_estudiante}`;
-  }
-}
 

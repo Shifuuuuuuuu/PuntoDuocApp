@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { CapacitorBarcodeScanner } from '@capacitor/barcode-scanner';
+import { QRCodeData, QRCodeData2 } from '../interface/IQR'
 import { CartService } from '../services/cart.service';
 import { AlertController, MenuController } from '@ionic/angular';
 import { Evento } from '../interface/IEventos';
@@ -156,4 +157,6 @@ export class DetallesEventoPage implements OnInit {
       throw e;
     }
   }
+
+  
 }

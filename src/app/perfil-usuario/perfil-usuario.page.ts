@@ -7,6 +7,7 @@ import { Router } from '@angular/router';
 import { firstValueFrom, Subscription } from 'rxjs';
 import { CartService } from '../services/cart.service';
 import Swal from 'sweetalert2';
+import { QRCodeData } from '../interface/IQR';
 @Component({
   selector: 'app-perfil-usuario',
   templateUrl: './perfil-usuario.page.html',
@@ -179,4 +180,21 @@ export class PerfilUsuarioPage implements OnInit {
     this.authService.logout();
     this.router.navigate(['/iniciar-sesion']);
   }
+  generateQrData() {
+    const eventosInscritos = this.isInvitado
+      ? this.invitado?.eventosInscritos || []
+      : this.estudiante?.eventosInscritos || [];
+
+    const qrDataObject: QRCodeData = {
+      qrData: JSON.stringify({
+        userId: this.isInvitado ? this.invitado?.id_Invitado : this.estudiante?.id_estudiante,
+        eventosInscritos: eventosInscritos,
+      }),
+      userId: this.isInvitado ? (this.invitado?.id_Invitado || '') : (this.estudiante?.id_estudiante || ''),
+      eventosInscritos: eventosInscritos,
+    };
+
+    this.qrData = qrDataObject.qrData;
+  }
+
 }

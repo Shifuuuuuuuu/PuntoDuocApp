@@ -1,0 +1,34 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>Ver Recompensas</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <ion-card *ngIf="errorMessage">
+    <ion-card-header>
+      <ion-card-title>Error</ion-card-title>
+    </ion-card-header>
+    <ion-card-content>
+      <p>{{ errorMessage }}</p>
+    </ion-card-content>
+  </ion-card>
+
+  <ion-list *ngIf="!errorMessage">
+    <ion-item *ngFor="let recompensa of recompensas">
+      <ion-label>
+        <h2>{{ recompensa.descripcion }}</h2>
+      </ion-label>
+      <ion-button slot="end" (click)="reclamar(recompensa)">Reclamar</ion-button>
+    </ion-item>
+  </ion-list>
+
+  <ion-card *ngIf="!errorMessage && recompensas.length === 0">
+    <ion-card-header>
+      <ion-card-title>No hay Recompensas</ion-card-title>
+    </ion-card-header>
+    <ion-card-content>
+      <p>No hay recompensas disponibles.</p>
+    </ion-card-content>
+  </ion-card>
+</ion-content>
