@@ -134,17 +134,16 @@ export class VerRecompensasComponent implements OnInit {
       alert('Hubo un error al reclamar la recompensa.');
   }
 }
-  async generarQR(recompensa: Recompensa) {
-    if (!this.estudiante) return;
-
-    const qrDataObject = {
-      id_estudiante: this.estudiante.id_estudiante,
-      recompensa: recompensa.descripcion,
-      puntos: recompensa.puntos_requeridos
-    };
-
-    this.qrCodeImage = await QRCode.toDataURL(JSON.stringify(qrDataObject));
-  }
+async generarQR(recompensa: Recompensa) {
+  if (!this.estudiante) return;
+  const qrDataObject = {
+    id_estudiante: this.estudiante.id_estudiante,
+    id_recompensa: recompensa.id_recompensa,  // Agrega el id_recompensa aquí
+    recompensa: recompensa.descripcion,
+    puntos: recompensa.puntos_requeridos
+  };
+  this.qrCodeImage = await QRCode.toDataURL(JSON.stringify(qrDataObject));
+}
 
   async verQRConSweetAlert(qrCode: string) {
     await Swal.fire({

@@ -3,6 +3,7 @@ import { AngularFirestore } from '@angular/fire/compat/firestore';
 import { BehaviorSubject, Observable } from 'rxjs';
 import { UsuarioVentas } from '../interface/IUVentas'; // Asegúrate de colocar la interfaz en la carpeta correcta
 import { Recompensa } from '../interface/IRecompensa';
+import { CapacitorBarcodeScanner } from '@capacitor/barcode-scanner';
 
 
 @Injectable({
@@ -123,5 +124,7 @@ export class VentasAuthService {
       throw error;
     }
   }
+
+
 }
 
