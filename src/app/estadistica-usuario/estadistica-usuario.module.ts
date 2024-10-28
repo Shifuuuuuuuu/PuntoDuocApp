@@ -7,13 +7,15 @@ import { IonicModule } from '@ionic/angular';
 import { EstadisticaUsuarioPageRoutingModule } from './estadistica-usuario-routing.module';
 
 import { EstadisticaUsuarioPage } from './estadistica-usuario.page';
+import { TabUsuarioModule } from '../tab-usuario/tab-usuario.module';
 
 @NgModule({
   imports: [
     CommonModule,
     FormsModule,
     IonicModule,
-    EstadisticaUsuarioPageRoutingModule
+    EstadisticaUsuarioPageRoutingModule,
+    TabUsuarioModule
   ],
   declarations: [EstadisticaUsuarioPage]
 })

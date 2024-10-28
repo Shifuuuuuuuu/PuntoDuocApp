@@ -16,7 +16,7 @@ import Swal from 'sweetalert2';
   styleUrls: ['./folder.page.scss'],
 })
 export class FolderPage implements OnInit {
-  selectedSede: string = 'all';
+  selectedSede: string = '';
   Eventos: Observable<Evento[]> = new Observable();
   allEvents: Evento[] = [];
   filteredEvents: Evento[] = [];
@@ -29,7 +29,12 @@ export class FolderPage implements OnInit {
   selectedCategory: string = 'all';
   private authSubscription!: Subscription;
   private invitadoSubscription!: Subscription;
-
+  slideOpts = {
+    initialSlide: 0,
+    speed: 400,
+    slidesPerView: 1.2, // Muestra 1.2 tarjetas, ajusta este valor según tus necesidades
+    spaceBetween: 10, // Espacio entre las tarjetas
+  };
   constructor(
     private firestore: AngularFirestore,
     private router: Router,

@@ -7,13 +7,15 @@ import { IonicModule } from '@ionic/angular';
 import { HistorialEventosPageRoutingModule } from './historial-eventos-routing.module';
 
 import { HistorialEventosPage } from './historial-eventos.page';
+import { TabUsuarioModule } from '../tab-usuario/tab-usuario.module';
 
 @NgModule({
   imports: [
     CommonModule,
     FormsModule,
     IonicModule,
-    HistorialEventosPageRoutingModule
+    HistorialEventosPageRoutingModule,
+    TabUsuarioModule
   ],
   declarations: [HistorialEventosPage]
 })

@@ -1,11 +1,5 @@
 <ion-header [translucent]="true" class="custom-header">
   <ion-toolbar class="custom-toolbar" style="background-color: black;">
-    <ion-buttons slot="end">
-      <ion-button size="large" [routerLink]="['/perfil-usuario']">
-        <ion-icon style="color: white" name="person-circle-outline"></ion-icon>
-      </ion-button>
-      <ion-menu-button size="medium"></ion-menu-button>
-    </ion-buttons>
     <ion-title style="color: white">PuntoDuoc</ion-title>
   </ion-toolbar>
 </ion-header>
@@ -65,8 +59,8 @@
 
   <!-- Cargando -->
   <div *ngIf="loading" class="ion-padding" style="text-align: center;">
-    <ion-spinner name="crescent" style="color: white"></ion-spinner>
-    <p style="color: white">Cargando...</p>
+    <ion-spinner name="crescent" style="color: #0A49A7;"></ion-spinner>
+    <p style="color: #0A49A7;">Cargando...</p>
   </div>
 
   <!-- Listado de eventos filtrados -->
@@ -129,19 +123,16 @@
       </ion-col>
     </ion-row>
   </ion-grid>
-
-  <!-- Mensaje cuando no hay eventos -->
-  <ion-item *ngIf="!loading && filteredEvents.length === 0">
-    <ion-label>No se encontraron eventos.</ion-label>
-  </ion-item>
+  <ion-footer collapse="fade" class="footer">
+    <p>Síguenos en nuestras redes sociales:</p>
+    <div class="social-icons">
+      <ion-icon name="logo-facebook" class="social-icon"></ion-icon>
+      <ion-icon name="logo-twitter" class="social-icon"></ion-icon>
+      <ion-icon name="logo-instagram" class="social-icon"></ion-icon>
+    </div>
+    <p>&copy; 2024 Punto Duoc. Todos los derechos reservados.</p>
+  </ion-footer>
 </ion-content>
+<app-tab-usuario></app-tab-usuario>
 
-<ion-footer collapse="fade" class="footer">
-  <p>Síguenos en nuestras redes sociales:</p>
-  <div class="social-icons">
-    <ion-icon name="logo-facebook" class="social-icon"></ion-icon>
-    <ion-icon name="logo-twitter" class="social-icon"></ion-icon>
-    <ion-icon name="logo-instagram" class="social-icon"></ion-icon>
-  </div>
-  <p>&copy; 2024 Punto Duoc. Todos los derechos reservados.</p>
-</ion-footer>
+

@@ -15,4 +15,5 @@ export class AppComponent {
     { title: 'Perfil', url: '/perfil-usuario', icon: 'person-circle' },
   ];
   constructor() {}
+
 }

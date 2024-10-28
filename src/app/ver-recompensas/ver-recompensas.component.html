@@ -1,20 +1,14 @@
-<ion-header>
-  <ion-toolbar>
-    <ion-title>Ver Recompensas</ion-title>
-  </ion-toolbar>
-</ion-header>
-  <!-- Lista de Recompensas para Reclamar -->
-  <ion-card>
+  <ion-card class="event-card">
     <ion-card-header>
-      <ion-card-title>Recompensas Disponibles para Reclamar</ion-card-title>
+      <ion-card-title style="color: black;">Recompensas Disponibles para Reclamar</ion-card-title>
     </ion-card-header>
-    <ion-list *ngIf="recompensas.length > 0">
-      <ion-item *ngFor="let recompensa of recompensas">
-        <ion-label>
+    <ion-list *ngIf="recompensas.length > 0" style="background-color: white;">
+      <ion-item *ngFor="let recompensa of recompensas" style="--background: transparent;">
+        <ion-label style="color: black;">
           <h2>{{ recompensa.descripcion }}</h2>
           <p>Puntos requeridos: {{ recompensa.puntos_requeridos }}</p>
         </ion-label>
-        <ion-button (click)="reclamarRecompensa(recompensa.id_recompensa)">Reclamar</ion-button>
+        <ion-button style="background-color: white;" (click)="reclamarRecompensa(recompensa.id_recompensa)">Reclamar</ion-button>
       </ion-item>
     </ion-list>
     <ion-card-content *ngIf="recompensas.length === 0">
@@ -22,14 +16,14 @@
     </ion-card-content>
   </ion-card>
 
-  <!-- Lista de Recompensas con QR -->
-  <ion-card>
+  <!-- Recompensas con QR -->
+  <ion-card class="event-card">
     <ion-card-header>
-      <ion-card-title>Recompensas con QR</ion-card-title>
+      <ion-card-title style="color: black;">Recompensas con QR</ion-card-title>
     </ion-card-header>
-    <ion-list *ngIf="recompensasConQR.length > 0">
-      <ion-item *ngFor="let item of recompensasConQR">
-        <ion-label>
+    <ion-list *ngIf="recompensasConQR.length > 0" style="background-color: white;">
+      <ion-item *ngFor="let item of recompensasConQR" style="--background: transparent;">
+        <ion-label style="color: black;">
           <h2>{{ item.recompensa.descripcion }}</h2>
           <p>Fecha de creación: {{ item.recompensa.fecha_creacion }}</p>
         </ion-label>
@@ -41,15 +35,13 @@
     </ion-card-content>
   </ion-card>
 
-  <ion-content>
-    <!-- Mensaje de Error -->
-    <ion-card *ngIf="errorMessage">
-      <ion-card-header>
-        <ion-card-title>Error</ion-card-title>
-      </ion-card-header>
-      <ion-card-content>
-        <p>{{ errorMessage }}</p>
-      </ion-card-content>
-    </ion-card>
+  <!-- Mensaje de Error -->
+  <ion-card *ngIf="errorMessage" class="event-card">
+    <ion-card-header>
+      <ion-card-title>Error</ion-card-title>
+    </ion-card-header>
+    <ion-card-content>
+      <p>{{ errorMessage }}</p>
+    </ion-card-content>
+  </ion-card>
 
-</ion-content>

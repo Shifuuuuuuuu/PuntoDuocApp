@@ -34,16 +34,14 @@
     </ion-item>
   </ion-list>
 
-  <div *ngIf="!isLoading && inscripciones.length === 0" class="no-events">
-    <p>No estás inscrito en ningún evento.</p>
-  </div>
+  <ion-footer collapse="fade" class="footer">
+    <p>Síguenos en nuestras redes sociales:</p>
+    <div class="social-icons">
+      <ion-icon name="logo-facebook" class="social-icon"></ion-icon>
+      <ion-icon name="logo-twitter" class="social-icon"></ion-icon>
+      <ion-icon name="logo-instagram" class="social-icon"></ion-icon>
+    </div>
+    <p>&copy; 2024 Punto Duoc. Todos los derechos reservados.</p>
+  </ion-footer>
 </ion-content>
-<ion-footer collapse="fade" class="footer">
-  <p>Síguenos en nuestras redes sociales:</p>
-  <div class="social-icons">
-    <ion-icon name="logo-facebook" class="social-icon"></ion-icon>
-    <ion-icon name="logo-twitter" class="social-icon"></ion-icon>
-    <ion-icon name="logo-instagram" class="social-icon"></ion-icon>
-  </div>
-  <p>&copy; 2024 Punto Duoc. Todos los derechos reservados.</p>
-</ion-footer>
+<app-tab-usuario></app-tab-usuario>

@@ -7,6 +7,7 @@ import { VerRecompensasPageRoutingModule } from './ver-recompensas-routing.modul
 import { VerRecompensasPage } from './ver-recompensas.page';
 import { TabBarModule } from '../tab-bar/tab-bar.module';
 import { VerRecompensasComponent } from '../ver-recompensas/ver-recompensas.component';
+import { TabUsuarioModule } from '../tab-usuario/tab-usuario.module';
 
 @NgModule({
   imports: [
@@ -14,7 +15,7 @@ import { VerRecompensasComponent } from '../ver-recompensas/ver-recompensas.comp
     FormsModule,
     IonicModule,
     VerRecompensasPageRoutingModule,
-    TabBarModule,
+    TabUsuarioModule
   ],
   declarations: [
     VerRecompensasPage,

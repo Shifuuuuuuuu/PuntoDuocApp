@@ -67,7 +67,7 @@ const routes: Routes = [
   },
   { path: 'subir-recompensa',
     loadChildren: () => import('./subir-recompensa/subir-recompensa.module').then(m => m.SubirRecompensaPageModule)
-  },   
+  },
   {
     path: 'ver-recompensas',
     loadChildren: () => import('./ver-recompensas/ver-recompensas.module').then( m => m.VerRecompensasPageModule)
@@ -80,8 +80,7 @@ const routes: Routes = [
     path: 'perfil-gestor',
     loadChildren: () => import('./perfil-gestor/perfil-gestor.module').then( m => m.PerfilGestorPageModule)
   },
-  // Ruta por defecto
-  { path: '', redirectTo: '/home', pathMatch: 'full' }
+
 
 ];
 

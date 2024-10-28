@@ -13,6 +13,7 @@ import { AngularFirestoreModule } from '@angular/fire/compat/firestore';
 import { TabBarModule } from './tab-bar/tab-bar.module';
 import { TabBarAdminModule } from './tab-bar-admin/tab-bar-admin.module';
 import { QRCodeModule } from 'angularx-qrcode';
+import { TabUsuarioModule } from './tab-usuario/tab-usuario.module';
 
 
 
@@ -21,7 +22,7 @@ import { QRCodeModule } from 'angularx-qrcode';
 @NgModule({
   declarations: [AppComponent, ],
   imports: [AngularFireModule.initializeApp(environment.firebaseConfig),
-    AngularFireAuthModule ,BrowserModule, IonicModule.forRoot(), AppRoutingModule,FormsModule,AngularFirestoreModule,TabBarModule,TabBarAdminModule ],
+    AngularFireAuthModule ,BrowserModule, IonicModule.forRoot(), AppRoutingModule,FormsModule,AngularFirestoreModule,TabBarModule,TabBarAdminModule,TabUsuarioModule ],
   providers: [{ provide: RouteReuseStrategy, useClass: IonicRouteStrategy },InvitadoService,QRCodeModule ],
   bootstrap: [AppComponent],
 })

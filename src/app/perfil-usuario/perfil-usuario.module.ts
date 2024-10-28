@@ -8,13 +8,16 @@ import { PerfilUsuarioPageRoutingModule } from './perfil-usuario-routing.module'
 
 import { PerfilUsuarioPage } from './perfil-usuario.page';
 import { QRCodeModule } from 'angularx-qrcode';
+import { TabUsuarioModule } from '../tab-usuario/tab-usuario.module';
 
 @NgModule({
   imports: [
     CommonModule,
     FormsModule,
     IonicModule,
-    PerfilUsuarioPageRoutingModule,QRCodeModule
+    PerfilUsuarioPageRoutingModule,
+    QRCodeModule,
+    TabUsuarioModule
   ],
   declarations: [PerfilUsuarioPage]
 })
