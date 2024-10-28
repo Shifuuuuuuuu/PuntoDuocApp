@@ -43,7 +43,7 @@ export class RecompensaService {
     }
   }
     // Método para obtener la recompensa por ID
-    getRecompensaById(id: string) {
+    getRecompensaById(id: string | undefined ) {
       return this.firestore.collection<Recompensa>('Recompensas').doc(id).get();
     }
   
@@ -57,6 +57,10 @@ export class RecompensaService {
         puntaje: nuevoPuntaje
       });
     }
-    
+    obtenerRecompensasPorEstudiante(id_estudiante: string): Observable<Recompensa[]> {
+      return this.firestore.collection<Recompensa>('Recompensas', ref =>
+        ref.where('estudiantesReclamaron', 'array-contains', { id_estudiante, reclamado: false })
+      ).valueChanges();
+    }
   }
 

@@ -3,32 +3,53 @@
     <ion-title>Ver Recompensas</ion-title>
   </ion-toolbar>
 </ion-header>
-
-<ion-content>
-  <ion-card *ngIf="errorMessage">
+  <!-- Lista de Recompensas para Reclamar -->
+  <ion-card>
     <ion-card-header>
-      <ion-card-title>Error</ion-card-title>
+      <ion-card-title>Recompensas Disponibles para Reclamar</ion-card-title>
     </ion-card-header>
-    <ion-card-content>
-      <p>{{ errorMessage }}</p>
+    <ion-list *ngIf="recompensas.length > 0">
+      <ion-item *ngFor="let recompensa of recompensas">
+        <ion-label>
+          <h2>{{ recompensa.descripcion }}</h2>
+          <p>Puntos requeridos: {{ recompensa.puntos_requeridos }}</p>
+        </ion-label>
+        <ion-button (click)="reclamarRecompensa(recompensa.id_recompensa)">Reclamar</ion-button>
+      </ion-item>
+    </ion-list>
+    <ion-card-content *ngIf="recompensas.length === 0">
+      No hay recompensas disponibles para reclamar.
     </ion-card-content>
   </ion-card>
 
-  <ion-list *ngIf="!errorMessage">
-    <ion-item *ngFor="let recompensa of recompensas">
-      <ion-label>
-        <h2>{{ recompensa.descripcion }}</h2>
-      </ion-label>
-      <ion-button slot="end" (click)="reclamar(recompensa)">Reclamar</ion-button>
-    </ion-item>
-  </ion-list>
-
-  <ion-card *ngIf="!errorMessage && recompensas.length === 0">
+  <!-- Lista de Recompensas con QR -->
+  <ion-card>
     <ion-card-header>
-      <ion-card-title>No hay Recompensas</ion-card-title>
+      <ion-card-title>Recompensas con QR</ion-card-title>
     </ion-card-header>
-    <ion-card-content>
-      <p>No hay recompensas disponibles.</p>
+    <ion-list *ngIf="recompensasConQR.length > 0">
+      <ion-item *ngFor="let item of recompensasConQR">
+        <ion-label>
+          <h2>{{ item.recompensa.descripcion }}</h2>
+          <p>Fecha de creación: {{ item.recompensa.fecha_creacion }}</p>
+        </ion-label>
+        <ion-button (click)="verQRConSweetAlert(item.qrCode)">Ver QR</ion-button>
+      </ion-item>
+    </ion-list>
+    <ion-card-content *ngIf="recompensasConQR.length === 0">
+      No hay recompensas disponibles con QR.
     </ion-card-content>
   </ion-card>
+
+  <ion-content>
+    <!-- Mensaje de Error -->
+    <ion-card *ngIf="errorMessage">
+      <ion-card-header>
+        <ion-card-title>Error</ion-card-title>
+      </ion-card-header>
+      <ion-card-content>
+        <p>{{ errorMessage }}</p>
+      </ion-card-content>
+    </ion-card>
+
 </ion-content>

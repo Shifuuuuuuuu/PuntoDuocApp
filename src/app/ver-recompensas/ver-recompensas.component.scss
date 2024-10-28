@@ -1,0 +1,39 @@
+/* ver-recompensas.component.scss */
+
+/* Espaciado general en el contenido */
+ion-content {
+    padding: 16px; /* Añade un padding general alrededor del contenido */
+  }
+  
+  /* Estilo para los cards de error y recompensas */
+  ion-card {
+    margin-bottom: 16px; /* Espacio entre los cards */
+  }
+  
+  /* Estilo para la lista de recompensas */
+  ion-list {
+    margin-top: 16px; /* Añade espacio entre el título y la lista */
+  }
+  
+  /* Espaciado en cada ítem de la lista */
+  ion-item {
+    margin-bottom: 8px; /* Espacio entre ítems */
+  }
+  
+  /* Estilo para el título del QR */
+  .qr-image-container {
+    text-align: center; /* Centrar el contenido */
+    margin-top: 16px; /* Espacio superior antes del QR */
+  }
+  
+  /* Estilo para la imagen del QR */
+  .qr-image {
+    max-width: 100%; /* Asegúrate de que la imagen no desborde su contenedor */
+    height: auto; /* Mantener la proporción de la imagen */
+  }
+  
+  /* Espaciado para el card de "No hay recompensas" */
+  ion-card * {
+    padding: 16px; /* Espacio dentro del card */
+  }
+  

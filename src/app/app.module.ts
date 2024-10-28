@@ -12,6 +12,7 @@ import { InvitadoService } from './services/invitado.service'; // Importa el nue
 import { AngularFirestoreModule } from '@angular/fire/compat/firestore';
 import { TabBarModule } from './tab-bar/tab-bar.module';
 import { TabBarAdminModule } from './tab-bar-admin/tab-bar-admin.module';
+import { QRCodeModule } from 'angularx-qrcode';
 
 
 
@@ -21,7 +22,7 @@ import { TabBarAdminModule } from './tab-bar-admin/tab-bar-admin.module';
   declarations: [AppComponent, ],
   imports: [AngularFireModule.initializeApp(environment.firebaseConfig),
     AngularFireAuthModule ,BrowserModule, IonicModule.forRoot(), AppRoutingModule,FormsModule,AngularFirestoreModule,TabBarModule,TabBarAdminModule ],
-  providers: [{ provide: RouteReuseStrategy, useClass: IonicRouteStrategy },InvitadoService, ],
+  providers: [{ provide: RouteReuseStrategy, useClass: IonicRouteStrategy },InvitadoService,QRCodeModule ],
   bootstrap: [AppComponent],
 })
 export class AppModule {
