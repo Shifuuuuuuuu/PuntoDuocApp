@@ -1,6 +1,6 @@
 /* Estilo del botón de filtro */
 .filter-button {
-  --background: #0A49A7; /* Fondo azul */
+  --background: white; /* Fondo azul */
   --color: white; /* Color del texto en blanco */
   border-radius: 12px; /* Bordes redondeados */
   box-shadow: 0 2px 8px #0A49A7;
@@ -95,6 +95,9 @@
   background-color: #ffffff; /* Fondo blanco */
   border-radius: 15px; /* Bordes redondeados */
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+.hidden-select {
+  display: none;
 }
 
 /* Imágenes de eventos */

@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ViewChild } from '@angular/core';
 import { AngularFirestore } from '@angular/fire/compat/firestore';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Observable, Subscription, firstValueFrom} from 'rxjs';
@@ -9,6 +9,8 @@ import { InvitadoService } from '../services/invitado.service';
 import { EstudianteService } from '../services/estudiante.service';
 import { AngularFireAuth } from '@angular/fire/compat/auth';
 import Swal from 'sweetalert2';
+import { IonSelect } from '@ionic/angular';
+
 
 @Component({
   selector: 'app-folder',
@@ -16,7 +18,8 @@ import Swal from 'sweetalert2';
   styleUrls: ['./folder.page.scss'],
 })
 export class FolderPage implements OnInit {
-  selectedSede: string = '';
+  @ViewChild('sedeSelect', { static: false }) sedeSelect!: IonSelect;
+  selectedSede: string = 'all';
   Eventos: Observable<Evento[]> = new Observable();
   allEvents: Evento[] = [];
   filteredEvents: Evento[] = [];
@@ -29,12 +32,7 @@ export class FolderPage implements OnInit {
   selectedCategory: string = 'all';
   private authSubscription!: Subscription;
   private invitadoSubscription!: Subscription;
-  slideOpts = {
-    initialSlide: 0,
-    speed: 400,
-    slidesPerView: 1.2, // Muestra 1.2 tarjetas, ajusta este valor según tus necesidades
-    spaceBetween: 10, // Espacio entre las tarjetas
-  };
+
   constructor(
     private firestore: AngularFirestore,
     private router: Router,
@@ -129,20 +127,40 @@ export class FolderPage implements OnInit {
     );
   }
 
+
+  customAlertOptions: any = {
+    header: 'Seleccionar Sede',
+    subHeader: 'Elige una sede para filtrar eventos',
+    translucent: true
+  };
+
+  openSedeSelect() {
+    if (this.sedeSelect) {
+      this.sedeSelect.open();
+    }
+  }
+
   filterEvents() {
+    console.log('Sede seleccionada:', this.selectedSede);
+    // Filtra eventos en base a la sede seleccionada
     this.filteredEvents = this.allEvents.filter((evento) => {
       const matchesSearchText = this.searchText
         ? evento.titulo.toLowerCase().includes(this.searchText.toLowerCase())
         : true;
       const matchesCategory = this.selectedCategory === 'all'
         ? true
-        : evento.categoria === this.selectedCategory;
+        : evento.categoria?.toLowerCase() === this.selectedCategory.toLowerCase();
       const matchesSede = this.selectedSede === 'all'
         ? true
-        : evento.sede === this.selectedSede;
+        : evento.sede?.toLowerCase() === this.selectedSede.toLowerCase();
       return matchesSearchText && matchesCategory && matchesSede;
     });
   }
+
+
+
+
+
 
   toggleFilters() {
     this.showFilters = !this.showFilters;
@@ -408,6 +426,15 @@ export class FolderPage implements OnInit {
   toggleDescription(event: Evento) {
     event.show = !event.show;
   }
+  // Convierte un timestamp a un objeto Date
+convertToDate(fecha: string | { seconds: number; nanoseconds: number }): Date {
+  if (typeof fecha === 'string') {
+    return new Date(fecha);
+  } else {
+    return new Date(fecha.seconds * 1000); // Multiplica seconds por 1000 para obtener milisegundos
+  }
+}
+
 }
 
 

@@ -6,7 +6,10 @@
 
 <ion-content [fullscreen]="true" class="content-center">
   <!-- Barra de búsqueda y botón de filtros -->
+
+
   <div class="search-container">
+    <!-- Barra de búsqueda -->
     <ion-searchbar
       style="--background: white; --color: #000000;"
       animated="true"
@@ -16,46 +19,33 @@
       class="custom-searchbar">
     </ion-searchbar>
 
-    <ion-button
-      id="popover-button"
-      aria-label="Filter"
-      class="filter-button"
-      style="--background: white; --color: #000000;">
-      <ion-icon name="options-outline"></ion-icon>
+    <!-- Botón de filtro con solo el icono -->
+    <ion-button class="filter-button"   (click)="openSedeSelect()" style="color: black; ">
+      <ion-icon  name="options-outline"></ion-icon>
     </ion-button>
 
-    <!-- Popover para los filtros -->
-    <ion-popover trigger="popover-button" [dismissOnSelect]="true">
-      <ng-template>
-        <ion-content>
-          <ion-list>
-            <ion-item>
-              <ion-label>Sede</ion-label>
-              <ion-select [(ngModel)]="selectedSede" (ionChange)="filterEvents()">
-                <ion-select-option value="all">Todas las sedes</ion-select-option>
-                <ion-select-option value="Duoc Alameda">Duoc Alameda</ion-select-option>
-                <ion-select-option value="Duoc Antonio Varas">Duoc Antonio Varas</ion-select-option>
-                <ion-select-option value="Duoc Maipú">Duoc Maipú</ion-select-option>
-                <ion-select-option value="Duoc Plaza Oeste">Duoc Plaza Oeste</ion-select-option>
-                <ion-select-option value="Duoc Puente Alto">Duoc Puente Alto</ion-select-option>
-                <ion-select-option value="Duoc San Bernardo">Duoc San Bernardo</ion-select-option>
-                <ion-select-option value="Duoc San Joaquín">Duoc San Joaquín</ion-select-option>
-                <ion-select-option value="Duoc Plaza Vespucio">Duoc Plaza Vespucio</ion-select-option>
-                <ion-select-option value="Duoc Viña del Mar">Duoc Viña del Mar</ion-select-option>
-                <ion-select-option value="Duoc Valparaíso">Duoc Valparaíso</ion-select-option>
-                <ion-select-option value="Duoc Melipilla">Duoc Melipilla</ion-select-option>
-                <ion-select-option value="Duoc Renca">Duoc Renca</ion-select-option>
-                <ion-select-option value="Duoc Padre Alonso de Ovalle">Duoc Padre Alonso de Ovalle</ion-select-option>
-                <ion-select-option value="Duoc Concepción">Duoc Concepción</ion-select-option>
-                <ion-select-option value="Duoc San Andrés de Concepción">Duoc San Andrés de Concepción</ion-select-option>
-                <ion-select-option value="Duoc Villarrica">Duoc Villarrica</ion-select-option>
-              </ion-select>
-            </ion-item>
-          </ion-list>
-        </ion-content>
-      </ng-template>
-    </ion-popover>
+    <!-- Ion-select oculto que se activa al hacer clic en el botón -->
+    <ion-select #sedeSelect class="hidden-select" [interfaceOptions]="customAlertOptions" interface="alert" placeholder="Seleccionar Sede" [(ngModel)]="selectedSede" (ionChange)="filterEvents()">
+      <ion-select-option value="all">Todas las sedes</ion-select-option>
+      <ion-select-option value="Duoc Alameda">Duoc Alameda</ion-select-option>
+      <ion-select-option value="Duoc Antonio Varas">Duoc Antonio Varas</ion-select-option>
+      <ion-select-option value="Duoc Maipú">Duoc Maipú</ion-select-option>
+      <ion-select-option value="Duoc Plaza Oeste">Duoc Plaza Oeste</ion-select-option>
+      <ion-select-option value="Duoc Puente Alto">Duoc Puente Alto</ion-select-option>
+      <ion-select-option value="Duoc San Bernardo">Duoc San Bernardo</ion-select-option>
+      <ion-select-option value="Duoc San Joaquín">Duoc San Joaquín</ion-select-option>
+      <ion-select-option value="Duoc Plaza Vespucio">Duoc Plaza Vespucio</ion-select-option>
+      <ion-select-option value="Duoc Viña del Mar">Duoc Viña del Mar</ion-select-option>
+      <ion-select-option value="Duoc Valparaíso">Duoc Valparaíso</ion-select-option>
+      <ion-select-option value="Duoc Melipilla">Duoc Melipilla</ion-select-option>
+      <ion-select-option value="Duoc Renca">Duoc Renca</ion-select-option>
+      <ion-select-option value="Duoc Padre Alonso de Ovalle">Duoc Padre Alonso de Ovalle</ion-select-option>
+      <ion-select-option value="Duoc Concepción">Duoc Concepción</ion-select-option>
+      <ion-select-option value="Duoc San Andrés de Concepción">Duoc San Andrés de Concepción</ion-select-option>
+      <ion-select-option value="Duoc Villarrica">Duoc Villarrica</ion-select-option>
+    </ion-select>
   </div>
+
 
   <!-- Cargando -->
   <div *ngIf="loading" class="ion-padding" style="text-align: center;">
