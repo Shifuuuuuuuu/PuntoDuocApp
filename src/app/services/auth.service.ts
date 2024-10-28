@@ -54,6 +54,7 @@ export class AuthService {
          const estudianteData = estudianteDoc.data() as Estudiante;
 
          estudianteData.id_estudiante = estudianteDoc.id;
+         localStorage.setItem('id', estudianteData.id_estudiante);
 
          // Establecer el correo electrónico en el BehaviorSubject y localStorage
          this.setCurrentUserEmail(email);

@@ -22,6 +22,7 @@ export class VerRecompensasComponent implements OnInit {
   recompensasConQR: { recompensa: Recompensa; qrCode: string }[] = [];
   qrSeleccionado: string | null = null;
   qrCodeImage: string;
+  userId: string;
 
   constructor(
     private authService: AuthService,
@@ -31,6 +32,7 @@ export class VerRecompensasComponent implements OnInit {
 
   async ngOnInit() {
     this.userEmail = localStorage.getItem('currentUserEmail') || '';
+    this.userId = localStorage.getItem('id') || '';
   
     if (this.userEmail) {
       this.tienePermisos = this.verificarUsuarioVentasOEventos(this.userEmail);
@@ -43,14 +45,14 @@ export class VerRecompensasComponent implements OnInit {
         // Filtrar las recompensas que tienen un QR ya generado para este usuario
         this.recompensasConQR = this.recompensas
           .filter(r => Array.isArray(r.estudiantesReclamaron) && 
-            r.estudiantesReclamaron.some(e => e.id_estudiante === this.userEmail && e.qrCode)
+            r.estudiantesReclamaron.some(e => e.id_estudiante === this.userId && e.qrCode),
           )
           .map(r => ({
             recompensa: r,
-            qrCode: r.estudiantesReclamaron?.find(e => e.id_estudiante === this.userEmail)?.qrCode || ''
+            qrCode: r.estudiantesReclamaron?.find(e => e.id_estudiante === this.userId)?.qrCode || ''
           }));
   
-        console.log("Todas las recompensas:", this.recompensas);
+        
         console.log("Recompensas con QR:", this.recompensasConQR);
   
       } else {
