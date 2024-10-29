@@ -20,6 +20,8 @@ export class DetallesEventoPage implements OnInit {
   usuariosVerificados: any[] = [];
   usuariosNoVerificados: any[] = [];
   listaEspera: any[] = [];
+  mostrarListas = false;
+  mostrarListaEspera = false;
   evento: Evento | undefined;
 
   constructor(
@@ -61,6 +63,18 @@ export class DetallesEventoPage implements OnInit {
       this.listaEspera = listaEspera;
     } catch (error) {
       console.error('Error al cargar las listas:', error);
+    }
+  }
+  toggleListas() {
+    this.mostrarListas = !this.mostrarListas; // Alterna la visibilidad de las listas
+    if (this.mostrarListas) {
+      this.cargarListas(); // Cargar las listas solo si se van a mostrar
+    }
+  }
+  toggleListaEspera() {
+    this.mostrarListaEspera = !this.mostrarListaEspera; // Alterna la visibilidad de la lista de espera
+    if (this.mostrarListaEspera && this.listaEspera.length === 0) {
+      this.cargarListas(); // Cargar la lista de espera solo si aún no ha sido cargada
     }
   }
 
@@ -158,5 +172,5 @@ export class DetallesEventoPage implements OnInit {
     }
   }
 
-  
+
 }

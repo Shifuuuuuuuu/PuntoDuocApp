@@ -82,3 +82,62 @@ ion-item {
   border-radius: 8px !important;
   padding: 10px 20px !important;
 }
+.custom-card {
+  background-color: #f2f2f2;
+  color: #007aff;
+  box-shadow: none;
+  margin: 10px 5px;
+  height: 15vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+.custom-card ion-thumbnail {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 10px;
+  width: 3rem;
+  height: 3rem;
+  margin-bottom: 1.3vh;
+}
+
+.custom-card ion-icon {
+  font-size: 2rem;
+  color: inherit; /* Usa el color de la tarjeta */
+}
+
+.custom-card ion-label {
+  font-size: 1rem;
+  font-weight: 500;
+  color: #007aff; /* Color azul para el texto */
+}
+.white-background-card {
+  background-color: white; /* Fondo blanco */
+  color: black; /* Texto negro */
+}
+
+.white-background-card ion-card-title,
+.white-background-card ion-label {
+  color: black; /* Asegurar que el título y las etiquetas sean negras */
+}
+.listas-paralelas {
+  margin-top: 1em;
+}
+
+.listas-paralelas ion-card {
+  background-color: white;
+}
+
+.listas-paralelas ion-label {
+  color: black;
+}
+
+.listas-paralelas ion-icon {
+  color: green;
+  font-size: 1.2em;
+}
+
