@@ -1,18 +1,21 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ViewChild, ElementRef } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { CapacitorBarcodeScanner } from '@capacitor/barcode-scanner';
-import { QRCodeData, QRCodeData2 } from '../interface/IQR'
 import { CartService } from '../services/cart.service';
-import { AlertController, MenuController } from '@ionic/angular';
+import { MenuController } from '@ionic/angular';
 import { Evento } from '../interface/IEventos';
 import Swal from 'sweetalert2';
-
+import { Chart, registerables } from 'chart.js';
+import ChartDataLabels from 'chartjs-plugin-datalabels';
+Chart.register(...registerables, ChartDataLabels);
 @Component({
   selector: 'app-detalles-evento',
   templateUrl: './detalles-evento.page.html',
   styleUrls: ['./detalles-evento.page.scss'],
 })
 export class DetallesEventoPage implements OnInit {
+  @ViewChild('pieChart') pieChart: ElementRef;
+  chart: any;
   eventoId: string = '';
   mensajePresencia: string = '';
   esVerificado: boolean = false;
@@ -22,6 +25,7 @@ export class DetallesEventoPage implements OnInit {
   listaEspera: any[] = [];
   mostrarListas = false;
   mostrarListaEspera = false;
+  mostrarDashboard = false;
   evento: Evento | undefined;
 
   constructor(
@@ -61,8 +65,17 @@ export class DetallesEventoPage implements OnInit {
       this.usuariosVerificados = inscripciones.filter(user => user.verificado);
       this.usuariosNoVerificados = inscripciones.filter(user => !user.verificado);
       this.listaEspera = listaEspera;
+      if (this.mostrarDashboard) {
+        this.createPieChart(); // Crear el gráfico solo si mostrarDashboard es true
+      }
     } catch (error) {
       console.error('Error al cargar las listas:', error);
+    }
+  }
+  toggleDashboard() {
+    this.mostrarDashboard = !this.mostrarDashboard;
+    if (this.mostrarDashboard) {
+      this.cargarListas(); // Cargar datos y mostrar el gráfico si mostrarDashboard es true
     }
   }
   toggleListas() {
@@ -115,6 +128,48 @@ export class DetallesEventoPage implements OnInit {
     } finally {
       this.escaneando = false;
     }
+  }
+  createPieChart() {
+    if (this.chart) {
+      this.chart.destroy(); // Destruir el gráfico anterior si existe para evitar superposición
+    }
+
+    const verificados = this.usuariosVerificados.length;
+    const noVerificados = this.usuariosNoVerificados.length;
+    const total = verificados + noVerificados;
+
+    this.chart = new Chart(this.pieChart.nativeElement, {
+      type: 'pie',
+      data: {
+        labels: ['Acreditados', 'No Acreditados'],
+        datasets: [
+          {
+            data: [verificados, noVerificados],
+            backgroundColor: ['#4CAF50', '#FF5252'], // Verde para verificados, rojo para no verificados
+            hoverBackgroundColor: ['#66BB6A', '#FF867C'],
+          },
+        ],
+      },
+      options: {
+        responsive: true,
+        plugins: {
+          legend: {
+            position: 'bottom',
+          },
+          datalabels: {
+            color: '#black', // Color del texto en el gráfico
+            formatter: (value, context) => {
+              const percentage = ((value / total) * 100).toFixed(1) + '%'; // Cálculo del porcentaje
+              return percentage; // Muestra el porcentaje en cada sección
+            },
+            font: {
+              weight: 'bold',
+            },
+          },
+        },
+      },
+      plugins: [ChartDataLabels], // Activar el plugin de etiquetas
+    });
   }
 
   async presentSweetAlertAcreditacion(nombreUsuario: string, nombreEvento: string, puntos: number, estado: 'yaAcreditado' | 'acreditado' | 'acreditadoInvitado' | 'noInscrito') {

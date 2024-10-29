@@ -32,7 +32,7 @@
     </ion-col>
 
     <!-- Botón de Lista de Espera -->
-    <ion-col size="12" class="ion-text-center">
+    <ion-col size="6" class="ion-text-center">
       <ion-card class="custom-card" (click)="toggleListaEspera()">
         <ion-thumbnail [style.background]="'rgba(255,204,0,0.2)'">
           <ion-icon name="time-outline" color="warning"></ion-icon>
@@ -40,7 +40,27 @@
         <ion-label>Lista de Espera</ion-label>
       </ion-card>
     </ion-col>
+
+    <!-- Botón de Dashboard para mostrar el gráfico de pastel -->
+    <ion-col size="6" class="ion-text-center">
+      <ion-card class="custom-card" (click)="toggleDashboard()">
+        <ion-thumbnail [style.background]="'rgba(76,175,80,0.2)'">
+          <ion-icon name="pie-chart-outline" color="success"></ion-icon>
+        </ion-thumbnail>
+        <ion-label>Graficos</ion-label>
+      </ion-card>
+    </ion-col>
   </ion-row>
+
+  <!-- Gráfico de pastel para verificación, visible solo si mostrarDashboard es true -->
+  <ion-card *ngIf="mostrarDashboard" style="background-color: white;">
+    <ion-card-header>
+      <ion-card-title class="ion-text-center" style="color: black;">Estado de Acreditados</ion-card-title>
+    </ion-card-header>
+    <ion-card-content>
+      <canvas #pieChart></canvas>
+    </ion-card-content>
+  </ion-card>
 
   <!-- Mostrar listas de usuarios verificados y no verificados en paralelo -->
   <ion-row *ngIf="mostrarListas" class="listas-paralelas">
@@ -70,7 +90,7 @@
           <ion-list style="background-color: white;">
             <ion-item *ngFor="let user of usuariosVerificados">
               <ion-label style="color: black;">{{ user.Nombre_completo }}</ion-label>
-              <ion-icon name="checkmark-circle" color="success" slot="end"></ion-icon> <!-- Ícono de ticket verde -->
+              <ion-icon name="checkmark-circle" color="success" slot="end"></ion-icon>
             </ion-item>
           </ion-list>
         </ion-card-content>
@@ -96,7 +116,6 @@
     </ion-col>
   </ion-row>
 </ion-content>
-
 
 
 <app-tab-bar-admin></app-tab-bar-admin>
