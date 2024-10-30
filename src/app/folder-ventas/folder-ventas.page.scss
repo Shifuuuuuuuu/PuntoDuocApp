@@ -1,5 +1,6 @@
-.user-info {
-  text-align: center;
+.user-info h2 {
+  color: #007aff;
+  font-weight: bold;
 }
 
 .user-photo {
@@ -8,8 +9,9 @@
   height: 100px;
 }
 
-.insights {
-  margin-top: 20px;
+
+.insights-grid {
+  width: 100%;
 }
 
 .insight-icon {
@@ -17,6 +19,113 @@
   color: var(--ion-color-primary);
 }
 
-ion-card {
+.custom-header {
+  position: relative;
+  z-index: 10; /* Asegura que el header esté siempre al frente */
+}
+
+.custom-toolbar {
+  height: 120px; /* Aumenta la altura del toolbar */
+  display: flex;
+  justify-content: center; /* Centra horizontalmente */
+  align-items: center; /* Centra verticalmente */
+  border-bottom-left-radius: 50px; /* Bordes redondeados */
+  border-bottom-right-radius: 50px;
+  background-color: black;
+  --background: transparent;
+}
+
+.custom-toolbar ion-title {
+  font-size: 24px;
+  font-weight: bold;
+  color: white; /* Texto en blanco */
   text-align: center;
+}
+
+/* Para crear una curva en el borde inferior */
+.custom-header::after {
+  position: absolute;
+  bottom: -30px; /* Ajusta la altura de la curva */
+  left: 0;
+  width: 100%;
+  height: 60px; /* Altura de la curva */
+  background-color: white;
+  border-top-left-radius: 50%;
+  border-top-right-radius: 50%;
+}
+
+
+/* Ajustes del contenido */
+.content-center {
+  --background: #ffffff;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  height: 100%; /* Asegura que ocupe toda la pantalla */
+}
+
+/* Estilo para los iconos de redes sociales */
+.social-icons {
+  display: flex;
+  justify-content: center;
+  gap: 15px;
+  margin: 10px 0;
+}
+
+.social-icon {
+  font-size: 24px;
+  color: #0A49A7;
+  transition: transform 0.3s ease;
+}
+
+.social-icon:hover {
+  transform: scale(1.2);
+}
+
+/* Pie de página */
+.footer {
+  text-align: center;
+  margin-top: 20px;
+  padding: 20px;
+  background-color: #f2f2f2;
+  border-radius: 15px; /* Bordes redondeados */
+  color: #0A49A7;
+}
+
+/* Texto de derechos reservados */
+.footer p {
+  margin: 5px 0;
+  font-size: 14px;
+}
+
+.custom-card {
+  background-color: #f2f2f2;
+  color: #007aff;
+  box-shadow: none;
+  margin: 10px 5px;
+  height: 15vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+.custom-card ion-thumbnail {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 10px;
+  width: 3rem;
+  height: 3rem;
+  margin-bottom: 1.3vh;
+}
+.custom-card ion-icon {
+  font-size: 2rem;
+  color: inherit; /* Usa el color de la tarjeta */
+}
+
+.custom-card ion-label {
+  font-size: 1rem;
+  font-weight: 500;
+  color: #007aff; /* Color azul para el texto */
 }

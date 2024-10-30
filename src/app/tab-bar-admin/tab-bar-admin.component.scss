@@ -1,6 +1,6 @@
 ion-tab-bar {
   --border: none;
-  --background: rgba(255, 255, 255, 0.5); /* Fondo semitransparente */
+  --background: white; /* Fondo semitransparente */
   margin: 16px 5vw; /* Márgenes dinámicos basados en el ancho de la pantalla */
   border-radius: 14px; /* Borde redondeado */
   box-shadow:
@@ -25,11 +25,7 @@ ion-tab-bar {
     font-size: 3.5vw; /* Tamaño de etiqueta adaptado */
   }
 
-  /* Estilo específico para el botón de cerrar sesión */
-  ion-tab-button:last-child {
-    --color: #ff4d4d;
-    --color-selected: #ff0000;
-  }
+
 
   /* Diseño adaptable para pantallas pequeñas */
   @media (max-width: 600px) {

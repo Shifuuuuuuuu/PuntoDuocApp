@@ -1,74 +1,60 @@
 <ion-header [translucent]="true" class="custom-header">
   <ion-toolbar class="custom-toolbar" style="background-color: black;">
-    <ion-buttons slot="start">
-      <ion-back-button defaultHref="/folder/Inicio" style="color: white;"></ion-back-button>
-    </ion-buttons>
-    <ion-buttons slot="end">
-      <ion-button size="large" (click)="logoutt()">
-        <ion-icon style="color: white" name="log-out"></ion-icon>
-      </ion-button>
-    </ion-buttons>
-    <ion-title style="color: white">PuntoDuoc</ion-title>
+    <ion-title style="color:  white">Punto Estudiantil</ion-title>
   </ion-toolbar>
 </ion-header>
 
 <ion-content [fullscreen]="true" class="content-center">
-  <div class="user-info">
+  <div style="text-align: center;" class="user-info">
     <h2>Bienvenido</h2>
     <p></p>
   </div>
 
-  <div class="insights">
-    <ion-grid>
-      <ion-row>
-        <ion-col size="6">
-          <ion-card (click)="startScan()">
-            <ion-card-content>
-              <ion-icon name="qr-code-outline" class="insight-icon"></ion-icon>
-              <p>Escanear y Validar QR</p>
-            </ion-card-content>
-          </ion-card>
-        </ion-col>
-        <ion-col size="6">
-          <ion-card (click)="subirRecompensa()">
-            <ion-card-content>
-              <ion-icon name="cloud-upload-outline" class="insight-icon"></ion-icon>
-              <p>Subir Recompensa</p>
-            </ion-card-content>
-          </ion-card>
-        </ion-col>
-      </ion-row>
-      <ion-row>
-        <ion-col size="6">
-          <ion-card (click)="verRecompensas()">
-            <ion-card-content>
-              <ion-icon name="list-outline" class="insight-icon"></ion-icon>
-              <p>Listar Recompensas</p>
-            </ion-card-content>
-          </ion-card>
-        </ion-col>
-        <ion-col size="6">
-          <ion-card (click)="verRecompensasReclamadas()">
-            <ion-card-content>
-              <ion-icon name="checkmark-done-outline" class="insight-icon"></ion-icon>
-              <p>Recompensas Reclamadas</p>
-            </ion-card-content>
-          </ion-card>
-        </ion-col>
-      </ion-row>
-      
-      <ion-row hidden>
-        <ion-col size="12">
-          <ion-card>
-            <ion-card-content>
-              <ion-icon name="stats-chart-outline" class="insight-icon"></ion-icon>
-              <p>Dashboard</p>
-            </ion-card-content>
-          </ion-card>
-        </ion-col>
-      </ion-row>
-    </ion-grid>
-  </div>
+  <ion-grid class="insights-grid">
+    <ion-row>
+      <!-- Escanear y Validar QR -->
+      <ion-col size="6" class="ion-text-center">
+        <ion-card class="custom-card" (click)="startScan()">
+          <ion-thumbnail [style.background]="'rgba(0,122,255,0.2)'">
+            <ion-icon name="qr-code-outline" color="primary"></ion-icon>
+          </ion-thumbnail>
+          <ion-label>Escanear Código QR</ion-label>
+        </ion-card>
+      </ion-col>
+
+      <!-- Subir Recompensa -->
+      <ion-col size="6" class="ion-text-center">
+        <ion-card class="custom-card" (click)="subirRecompensa()">
+          <ion-thumbnail [style.background]="'rgba(0,122,255,0.2)'">
+            <ion-icon name="cloud-upload-outline" color="tertiary"></ion-icon>
+          </ion-thumbnail>
+          <ion-label>Subir Recompensa</ion-label>
+        </ion-card>
+      </ion-col>
+    </ion-row>
+
+    <ion-row>
+      <!-- Listar Recompensas -->
+      <ion-col size="6" class="ion-text-center">
+        <ion-card class="custom-card" (click)="verRecompensas()">
+          <ion-thumbnail [style.background]="'rgba(255,204,0,0.2)'">
+            <ion-icon name="list-outline" color="warning"></ion-icon>
+          </ion-thumbnail>
+          <ion-label>Listar Recompensas</ion-label>
+        </ion-card>
+      </ion-col>
+
+      <!-- Recompensas Reclamadas -->
+      <ion-col size="6" class="ion-text-center">
+        <ion-card class="custom-card" (click)="verRecompensasReclamadas()">
+          <ion-thumbnail [style.background]="'rgba(76,175,80,0.2)'">
+            <ion-icon name="checkmark-done-outline" color="success"></ion-icon>
+          </ion-thumbnail>
+          <ion-label>Recompensas Reclamadas</ion-label>
+        </ion-card>
+      </ion-col>
+    </ion-row>
+  </ion-grid>
 </ion-content>
 
 <app-tab-bar></app-tab-bar>

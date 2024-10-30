@@ -1,17 +1,79 @@
 .custom-header {
-  --background: var(--ion-color-primary);
-  --color: white;
+  position: relative;
+  z-index: 10; /* Asegura que el header esté siempre al frente */
 }
 
-.ion-padding {
-  padding: 20px;
+.custom-toolbar {
+  height: 120px; /* Aumenta la altura del toolbar */
+  display: flex;
+  justify-content: center; /* Centra horizontalmente */
+  align-items: center; /* Centra verticalmente */
+  border-bottom-left-radius: 50px; /* Bordes redondeados */
+  border-bottom-right-radius: 50px;
+  background-color: black;
+  --background: transparent;
 }
 
-ion-card {
-  margin: 20px;
-}
-
-.submit-button {
-  margin-top: 20px;
+.custom-toolbar ion-title {
+  font-size: 24px;
   font-weight: bold;
+  color: white; /* Texto en blanco */
+  text-align: center;
 }
+
+/* Para crear una curva en el borde inferior */
+.custom-header::after {
+  position: absolute;
+  bottom: -30px; /* Ajusta la altura de la curva */
+  left: 0;
+  width: 100%;
+  height: 60px; /* Altura de la curva */
+  background-color: white;
+  border-top-left-radius: 50%;
+  border-top-right-radius: 50%;
+}
+
+
+/* Ajustes del contenido */
+.content-center {
+  --background: #ffffff;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  height: 100%; /* Asegura que ocupe toda la pantalla */
+}
+
+/* Estilo para los iconos de redes sociales */
+.social-icons {
+  display: flex;
+  justify-content: center;
+  gap: 15px;
+  margin: 10px 0;
+}
+
+.social-icon {
+  font-size: 24px;
+  color: #0A49A7;
+  transition: transform 0.3s ease;
+}
+
+.social-icon:hover {
+  transform: scale(1.2);
+}
+
+/* Pie de página */
+.footer {
+  text-align: center;
+  margin-top: 20px;
+  padding: 20px;
+  background-color: #f2f2f2;
+  border-radius: 15px; /* Bordes redondeados */
+  color: #0A49A7;
+}
+
+/* Texto de derechos reservados */
+.footer p {
+  margin: 5px 0;
+  font-size: 14px;
+}
+
