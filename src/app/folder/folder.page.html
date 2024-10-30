@@ -66,31 +66,26 @@
             <p *ngIf="event.show" style="color: #0A49A7;">{{ event.descripcion }}</p>
             <p style="color: #0A49A7;">Cupos disponibles: {{ event.Cupos }}</p>
 
+            <!-- Estado de inscripción en texto -->
             <p *ngIf="event.estaInscrito" class="inscrito-text" style="color: #0A49A7;">
               ¡Ya estás inscrito en este evento!
             </p>
             <p *ngIf="event.enListaEspera" class="en-lista-espera-text" style="color: #0A49A7;">
               ¡Ya estás en la lista de espera!
             </p>
-            <p *ngIf="event.Cupos === 0 && !event.enListaEspera" class="lleno-text" style="color: #0A49A7;">
-              Este evento está lleno. Puedes unirte a la lista de espera.
-            </p>
 
-            <!-- Botón de inscripción o cancelación -->
+            <!-- Botón de inscripción o cancelación según el estado -->
             <ion-button
-              [color]="event.estaInscrito ? 'danger' : event.Cupos === 0 ? 'primary' : 'primary'"
-              (click)="
-                event.estaInscrito
-                  ? handleEventButtonClick(event)
-                  : event.Cupos === 0 && !event.enListaEspera
-                  ? presentWaitListAlert(event)
-                  : presentAlert(event)"
+              [color]="event.estaInscrito ? 'danger' : event.enListaEspera ? 'primary' : 'primary'"
+              (click)="handleEventButtonClick(event)"
               expand="block"
               style="--background: #0A49A7; --color: white;">
               {{
                 event.estaInscrito
                   ? 'Cancelar inscripción'
-                  : event.Cupos === 0 && !event.enListaEspera
+                  : event.enListaEspera
+                  ? 'Salir de lista de espera'
+                  : event.Cupos === 0
                   ? 'Unirse a lista de espera'
                   : 'Inscribirse'
               }}

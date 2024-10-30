@@ -3,17 +3,29 @@ import { AngularFirestore } from '@angular/fire/compat/firestore';
 import { Estudiante, EstudianteSinPassword } from '../interface/IEstudiante'; // Asegúrate de tener la interfaz creada
 import { map } from 'rxjs/operators';
 import firebase from 'firebase/compat/app';
-import { firstValueFrom, Observable } from 'rxjs';
+import { firstValueFrom, Observable, of } from 'rxjs';
 import { AngularFireAuth } from '@angular/fire/compat/auth';
 @Injectable({
   providedIn: 'root'
 })
 export class EstudianteService {
-  actualizarPuntaje(id_estudiante: string | undefined, arg1: number) {
-    throw new Error('Method not implemented.');
-  }
-  constructor(private firestore: AngularFirestore, private afAuth: AngularFireAuth) { }
 
+  constructor(private firestore: AngularFirestore, private afAuth: AngularFireAuth) { }
+  obtenerHistorialPuntajeDesdeFirestore(estudianteId: string): Observable<any[]> {
+    return this.firestore
+      .collection('Estudiantes')
+      .doc(estudianteId)
+      .collection('historialPuntaje', ref => ref.orderBy('fecha', 'asc'))
+      .valueChanges()
+      .pipe(
+        map((historial: any[]) =>
+          historial.map((data: any) => ({
+            puntaje: data.puntaje,
+            fecha: data.fecha?.toDate().toLocaleDateString('es-ES') || 'Fecha desconocida',
+          }))
+        )
+      );
+  }
   // Registrar estudiante y enviar correo de verificación
   async registrarEstudiante(estudiante: Estudiante): Promise<Omit<Estudiante, 'password'>> {
     // Registrar usuario en Firebase Authentication usando email y password
@@ -53,6 +65,11 @@ export class EstudianteService {
       console.error("Error al restablecer la contraseña:", error);
       throw error;
     }
+  }
+  getUserId(): Observable<string | null> {
+    return this.afAuth.authState.pipe(
+      map(user => user ? user.uid : null)
+    );
   }
 
   getUserById(userId: string): Observable<any> {
@@ -109,5 +126,15 @@ export class EstudianteService {
   }
   updateEstudiantePuntaje(id_estudiante: string, puntaje: number) {
     return this.firestore.collection('Estudiantes').doc(id_estudiante).update({ puntaje });
+  }
+  async actualizarPuntajeConFecha(estudianteId: string, puntos: number): Promise<void> {
+    const puntajeDoc = {
+      puntaje: puntos,
+      fecha: firebase.firestore.FieldValue.serverTimestamp() // Fecha actual del servidor
+    };
+
+    await this.firestore.collection('Estudiantes').doc(estudianteId).update({
+      historialPuntaje: firebase.firestore.FieldValue.arrayUnion(puntajeDoc)
+    });
   }
 }
