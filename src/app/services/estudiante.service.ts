@@ -78,7 +78,16 @@ export class EstudianteService {
     await this.firestore.collection('Estudiantes').doc(estudiante.id_estudiante).update(estudiante);
   }
 
-
+  async actualizarPuntajeEstudiante(id_estudiante: string, nuevoPuntaje: number): Promise<void> {
+    try {
+      await this.firestore.collection('Estudiantes').doc(id_estudiante).update({
+        puntaje: nuevoPuntaje
+      });
+    } catch (error) {
+      console.error('Error al actualizar el puntaje del estudiante:', error);
+      throw error;
+    }
+  }
   async agregarEventoAEstudiante(estudianteId: string, eventoId: string): Promise<void> {
     const estudianteDocRef = this.firestore.collection('Estudiantes').doc(estudianteId);
     await estudianteDocRef.update({

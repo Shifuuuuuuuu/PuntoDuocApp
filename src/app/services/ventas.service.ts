@@ -117,7 +117,15 @@ export class VentasAuthService {
         const estudianteIndex = recompensa.estudiantesReclamaron.findIndex(e => e.id_estudiante === id_estudiante);
   
         if (estudianteIndex >= 0) {
+          // Cambiar a reclamado
           recompensa.estudiantesReclamaron[estudianteIndex].reclamado = true;
+  
+          // Mover el estudiante a la última posición
+          const estudianteReclamado = recompensa.estudiantesReclamaron[estudianteIndex];
+          recompensa.estudiantesReclamaron.splice(estudianteIndex, 1); // Eliminar de su posición actual
+          recompensa.estudiantesReclamaron.push(estudianteReclamado); // Agregar al final
+  
+          // Actualizar la colección
           await this.firestore.collection('Recompensas').doc(id_recompensa).update(recompensa);
   
           Swal.fire({
@@ -152,6 +160,7 @@ export class VentasAuthService {
       });
     }
   }
+  
 
 
 }

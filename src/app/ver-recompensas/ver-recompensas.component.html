@@ -1,51 +1,52 @@
+<!-- ver-recompensas.component.html -->
+<ion-card class="event-card">
+  <ion-card-header>
+    <ion-card-title style="color: black;">Recompensas Disponibles para Reclamar</ion-card-title>
+  </ion-card-header>
+  <ion-list *ngIf="recompensas.length > 0" style="background-color: white;">
+    <ion-item *ngFor="let recompensa of recompensas" style="--background: transparent;">
+      <ion-label style="color: black;">
+        <h2>{{ recompensa.descripcion }}</h2>
+        <p>Puntos requeridos: {{ recompensa.puntos_requeridos }}</p>
+        <p>Cantidad disponible: {{ recompensa.cantidad }}</p>
+      </ion-label>
+      <ion-button style="background-color: white;" (click)="reclamarRecompensa(recompensa.id_recompensa)">Reclamar</ion-button>
+    </ion-item>
+  </ion-list>
+  <ion-card-content *ngIf="recompensas.length === 0">
+    No hay recompensas disponibles para reclamar.
+  </ion-card-content>
+</ion-card>
 
-  <ion-card class="event-card">
-    <ion-card-header>
-      <ion-card-title style="color: black;">Recompensas Disponibles para Reclamar</ion-card-title>
-    </ion-card-header>
-    <ion-list *ngIf="recompensas.length > 0" style="background-color: white;">
-      <ion-item *ngFor="let recompensa of recompensas" style="--background: transparent;">
-        <ion-label style="color: black;">
-          <h2>{{ recompensa.descripcion }}</h2>
-          <p>Puntos requeridos: {{ recompensa.puntos_requeridos }}</p>
-        </ion-label>
-        <ion-button style="background-color: white;" (click)="reclamarRecompensa(recompensa.id_recompensa)">Reclamar</ion-button>
-      </ion-item>
-    </ion-list>
-    <ion-card-content *ngIf="recompensas.length === 0">
-      No hay recompensas disponibles para reclamar.
-    </ion-card-content>
-  </ion-card>
+<!-- Recompensas con QR -->
+<ion-card class="event-card">
+  <ion-card-header>
+    <ion-card-title style="color: black;">Recompensas con QR</ion-card-title>
+  </ion-card-header>
+  <ion-list *ngIf="recompensasConQR.length > 0" style="background-color: white;">
+    <ion-item *ngFor="let item of recompensasConQR" style="--background: transparent;">
+      <ion-label style="color: black;">
+        <h2>{{ item.recompensa.descripcion }}</h2>
+        <p>Fecha de creación: {{ item.recompensa.fecha_creacion }}</p>
+      </ion-label>
+      <ion-button (click)="verQRConSweetAlert(item.qrCode)">Ver QR</ion-button>
+    </ion-item>
+  </ion-list>
+  <ion-card-content *ngIf="recompensasConQR.length === 0">
+    No hay recompensas disponibles con QR.
+  </ion-card-content>
+</ion-card>
 
-  <!-- Recompensas con QR -->
-  <ion-card class="event-card">
-    <ion-card-header>
-      <ion-card-title style="color: black;">Recompensas con QR</ion-card-title>
-    </ion-card-header>
-    <ion-list *ngIf="recompensasConQR.length > 0" style="background-color: white;">
-      <ion-item *ngFor="let item of recompensasConQR" style="--background: transparent;">
-        <ion-label style="color: black;">
-          <h2>{{ item.recompensa.descripcion }}</h2>
-          <p>Fecha de creación: {{ item.recompensa.fecha_creacion }}</p>
-        </ion-label>
-        <ion-button (click)="verQRConSweetAlert(item.qrCode)">Ver QR</ion-button>
-      </ion-item>
-    </ion-list>
-    <ion-card-content *ngIf="recompensasConQR.length === 0">
-      No hay recompensas disponibles con QR.
-    </ion-card-content>
-  </ion-card>
+<!-- Mensaje de Error -->
+<ion-card *ngIf="errorMessage" class="event-card">
+  <ion-card-header>
+    <ion-card-title>Error</ion-card-title>
+  </ion-card-header>
+  <ion-card-content>
+    <p>{{ errorMessage }}</p>
+  </ion-card-content>
+</ion-card>
 
-  <!-- Mensaje de Error -->
-  <ion-card *ngIf="errorMessage" class="event-card">
-    <ion-card-header>
-      <ion-card-title>Error</ion-card-title>
-    </ion-card-header>
-    <ion-card-content>
-      <p>{{ errorMessage }}</p>
-    </ion-card-content>
-  </ion-card>
-
-  <div *ngIf="esEstudiante()">
-    <app-tab-usuario></app-tab-usuario>
-  </div>
+<div *ngIf="esEstudiante()">
+  <app-tab-usuario></app-tab-usuario>
+</div>

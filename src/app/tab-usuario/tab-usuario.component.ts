@@ -11,7 +11,7 @@ export class TabUsuarioComponent  implements OnInit {
     { title: 'Inicio', url: '/folder/Inicio', icon: 'home' },
     { title: 'Perfil', url: '/perfil-usuario', icon: 'person-circle' },
     { title: 'Recompensa', url: '/ver-recompensas', icon: 'cash' },
-    { title: 'Estadistica', url: '/estadistica-usuario', icon: 'bar-chart' }
+
   ];
 
   constructor(private router: Router) {}
