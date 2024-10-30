@@ -163,7 +163,7 @@ export class FolderPage implements OnInit {
   }
   async handleEventButtonClick(event: Evento) {
     if (event.estado === 'en_curso') {
-      // Si el evento ya comenzó, mostramos la alerta de acreditación obligatoria
+      // Si el evento ya ha comenzado, mostrar la alerta de acreditación obligatoria
       Swal.fire({
         icon: 'info',
         title: 'Acreditación requerida',
@@ -171,11 +171,17 @@ export class FolderPage implements OnInit {
         confirmButtonText: 'Entendido'
       });
     } else if (event.estaInscrito) {
-      // Si el usuario está inscrito y el evento no ha comenzado, cancelar la inscripción
+      // Si está inscrito, cancelar la inscripción
       this.cancelarInscripcion(event.id_evento);
+    } else if (event.enListaEspera) {
+      // Si está en lista de espera, salir de la lista de espera
+      this.salirDeListaEspera(event.id_evento);
+    } else if (event.Cupos === 0) {
+      // Si el evento está lleno, unirse a la lista de espera
+      this.presentWaitListAlert(event);
     } else {
-      // Inscribir al usuario en el evento
-      this.presentAlert(event);
+      // Si hay cupos disponibles, inscribir al usuario
+      this.inscribirUsuario(event.id_evento);
     }
   }
 
@@ -330,7 +336,6 @@ export class FolderPage implements OnInit {
     }
   }
 
-  // Función para cancelar inscripción con SweetAlert
   async cancelarInscripcion(eventoId: string) {
     const result = await Swal.fire({
       title: '¿Estás seguro?',
@@ -343,14 +348,39 @@ export class FolderPage implements OnInit {
 
     if (result.isConfirmed) {
       try {
-        // Lógica para cancelar inscripción según el tipo de usuario
+        // Verificar si el usuario está inscrito antes de proceder con la cancelación
+        const estaInscrito = this.isInvitado
+          ? await this.eventosService.isUserRegisteredInvitado(eventoId, this.userId)
+          : await this.eventosService.isUserRegisteredEstudiante(eventoId, this.userId);
+
+        if (!estaInscrito) {
+          Swal.fire({
+            icon: 'info',
+            title: 'No estás inscrito en este evento.',
+            timer: 2000,
+            showConfirmButton: false,
+          });
+          return;
+        }
+
+        // Proceder a cancelar la inscripción en la base de datos
         if (this.isInvitado) {
           await this.eventosService.cancelarInscripcionInvitado(eventoId, this.userId);
         } else {
           await this.eventosService.cancelarInscripcionEstudiante(eventoId, this.userId);
         }
 
+        // Actualizar el estado del perfil del usuario
+        await this.eventosService.eliminarUsuarioDeInscripciones(eventoId, this.userId);
         await this.actualizarPerfilUsuario(eventoId, 'eliminar');
+
+        // Actualizar el estado local del evento para reflejar la cancelación
+        const evento = this.filteredEvents.find((event) => event.id_evento === eventoId);
+        if (evento) {
+          evento.estaInscrito = false;
+        }
+
+        // Mostrar mensaje de confirmación
         Swal.fire({
           icon: 'success',
           title: 'Inscripción cancelada',
@@ -358,8 +388,12 @@ export class FolderPage implements OnInit {
           timer: 2000,
           showConfirmButton: false
         });
-        this.loadEvents(); // Recargar los eventos
+
+        // Recargar eventos para actualizar la interfaz
+        this.loadEvents();
+
       } catch (error) {
+        console.error('Error al cancelar la inscripción:', error);
         Swal.fire({
           icon: 'error',
           title: 'Error',
@@ -368,6 +402,7 @@ export class FolderPage implements OnInit {
       }
     }
   }
+
 
 
   async salirDeListaEspera(eventoId: string) {

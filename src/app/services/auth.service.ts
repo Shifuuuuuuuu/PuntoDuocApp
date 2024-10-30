@@ -17,6 +17,7 @@ export class AuthService {
 
    constructor(private firestore: AngularFirestore) {}
 
+
    // Método privado para obtener el correo electrónico almacenado en localStorage
    private getStoredUserEmail(): string | undefined {
      return localStorage.getItem('currentUserEmail') || undefined;

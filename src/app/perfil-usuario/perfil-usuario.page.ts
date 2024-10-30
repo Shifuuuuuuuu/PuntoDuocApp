@@ -26,7 +26,7 @@ export class PerfilUsuarioPage implements OnInit {
   tempEmail: string = '';
   tempRut: string = '';
   tempTelefono: string = '';
-  puntajeCargado: number = 0;
+  puntajeCargado: number = 200;
   haSidoVerificado: boolean = false;
   escaneoCompletado: boolean = false;
   eventoVerificadoId: string | null = null;  // ID del último evento verificado
@@ -104,10 +104,14 @@ export class PerfilUsuarioPage implements OnInit {
           this.eventoVerificadoId = this.eventoId; // Guardar ID del evento verificado
           this.puntajeCargado = inscripcion.puntaje || 0; // Asignar puntaje si está disponible
 
+          // Obtener el título del evento desde Firestore
+          const eventoData = await this.cartService.getEvento(this.eventoId);
+          const tituloEvento = eventoData?.titulo || "Evento";
+
           // Mensaje diferente para invitados y estudiantes
           const mensaje = this.isInvitado
-            ? `Ya estás acreditado para el evento ${this.eventoId}.`
-            : `Ya estás acreditado para el evento ${this.eventoId}. Puntaje actual: ${this.puntajeCargado} puntos.`;
+            ? `Ya estás acreditado para el evento ${tituloEvento}.`
+            : `Ya estás acreditado para el evento ${tituloEvento}`;
 
           this.presentSweetAlert('Acreditación Exitosa', mensaje, 'success');
         }
@@ -127,6 +131,7 @@ export class PerfilUsuarioPage implements OnInit {
       confirmButtonText: 'OK'
     });
   }
+
 
   // Funciones de edición de perfil
   editProfile() {

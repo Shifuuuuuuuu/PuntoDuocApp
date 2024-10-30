@@ -3,11 +3,23 @@
     <ion-buttons slot="start">
       <ion-back-button defaultHref="/" style="color: white;"></ion-back-button>
     </ion-buttons>
-    <ion-title style="color:  white">Tu estadisticas</ion-title>
+    <ion-title style="color:  white">Tu estadística</ion-title>
   </ion-toolbar>
 </ion-header>
 
 <ion-content [fullscreen]="true" class="content-center">
+
+
+  <ion-card style="background-color: white;">
+    <ion-card-header>
+      <ion-card-title style="color: black;">Puntaje Acumulado</ion-card-title>
+    </ion-card-header>
+    <ion-card-content>
+      <canvas #puntajeChart></canvas>
+    </ion-card-content>
+  </ion-card>
+
+  <!-- Footer -->
   <ion-footer collapse="fade" class="footer">
     <p>Síguenos en nuestras redes sociales:</p>
     <div class="social-icons">

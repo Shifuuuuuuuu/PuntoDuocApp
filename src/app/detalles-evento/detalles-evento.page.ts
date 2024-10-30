@@ -7,6 +7,7 @@ import { Evento } from '../interface/IEventos';
 import Swal from 'sweetalert2';
 import { Chart, registerables } from 'chart.js';
 import ChartDataLabels from 'chartjs-plugin-datalabels';
+import { EstudianteService } from '../services/estudiante.service';
 Chart.register(...registerables, ChartDataLabels);
 @Component({
   selector: 'app-detalles-evento',
@@ -31,7 +32,8 @@ export class DetallesEventoPage implements OnInit {
   constructor(
     private route: ActivatedRoute,
     private cartService: CartService,
-    private menu: MenuController
+    private menu: MenuController,
+    private estudianteService: EstudianteService
   ) {}
 
   ionViewWillEnter() {
@@ -116,10 +118,6 @@ export class DetallesEventoPage implements OnInit {
         this.mensajePresencia = this.esVerificado ? 'Inscripción verificada con éxito.' : 'No se encontró inscripción.';
         await this.presentSweetAlertAcreditacion(qrData.Nombre_completo, this.evento?.titulo || 'Evento', result.puntaje || 200, estado);
 
-        // Recargar la página para aplicar los cambios
-        if (this.esVerificado) {
-          this.cargarListas(); // Actualiza las listas después de la acreditación
-        }
       }
     } catch (error) {
       this.mensajePresencia = 'Error al verificar inscripción. Intenta de nuevo.';
