@@ -1,3 +1,78 @@
+
+.custom-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 12px;
+  min-width: 80px; /* Ajuste de tamaño mínimo */
+  height: 35px;
+  padding: 0 8px; /* Compacta el espacio interno */
+  font-size: 13px;
+  font-weight: 500;
+  --ripple-color: #ffffff;
+}
+.custom-button ion-icon {
+  margin-right: 4px; /* Reduce el espacio entre icono y texto */
+  font-size: 18px;
+}
+
+.custom-button ion-label {
+  font-size: 13px;
+  font-weight: 500;
+  color: white;
+}
+
+ion-button[color="success"].custom-button {
+  --background: #28a745;
+}
+
+ion-button[color="danger"].custom-button {
+  --background: #dc3545;
+}
+
+
+.details-button {
+  --background: #007bff;
+  color: white;
+}
+
+/* Ajustes de los ítems de la lista */
+.event-item {
+  --background: white;
+  color: black;
+  margin: 10px 0;
+  padding: 15px;
+  border-radius: 15px;
+  box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  justify-content: space-between;
+  flex-wrap: wrap;
+}
+
+.event-item ion-label {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  max-width: 100%;
+  flex-grow: 1;
+}
+
+.event-image {
+  width: 50px;
+  height: 50px;
+  border-radius: 10px;
+  object-fit: cover;
+}
+
+.button-container {
+  display: flex;
+  gap: 4px; /* Reduce el espacio entre botones aún más */
+  justify-content: flex-start; /* Alinea los botones al principio */
+  align-items: center;
+  margin-top: 8px; /* Reduce el espacio superior entre el texto y los botones */
+}
 .custom-header {
   position: relative;
   z-index: 10; /* Asegura que el header esté siempre al frente */
@@ -33,141 +108,12 @@
   border-top-right-radius: 50%;
 }
 
-ion-content {
-  --background: white;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  height: 100vh;
-}
 
-/* Estilo de los ítems de la lista */
-.event-item {
-  --background: white;
-  color: black;
-  margin: 10px 0;
-  padding: 15px;
-  border-radius: 15px;
-  box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  justify-content: space-between;
-  flex-wrap: wrap;
-}
-
-.event-item ion-label {
-  display: flex;
-  flex-direction: column;
-  gap: 5px;
-  max-width: 100%;
-  flex-grow: 1;
-}
-
-.event-item h2 {
-  font-size: 18px;
-  margin: 0 0 5px 0;
-  line-height: 1.2;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.event-item p {
-  margin: 0 0 5px 0;
-  font-size: 14px;
-  line-height: 1.5;
-}
-
-.event-image {
-  width: 50px;
-  height: 50px;
-  border-radius: 10px;
-  object-fit: cover;
-}
-
-/* Contenedor de botones */
-.button-container {
-  display: flex;
-  gap: 5px;
-  width: 100%; /* Ocupa todo el ancho del contenedor */
-  justify-content: space-between; /* Alinea los botones uno en cada extremo */
-}
-
-.details-button {
-  --background: #007bff;
-  color: white;
-  padding: 5px 10px;
-  font-size: 14px;
-  flex-grow: 1; /* Hace que el botón crezca para ocupar más espacio */
-  text-align: center;
-  margin-right: 5px;
-}
-
-ion-button[color="danger"] {
-  padding: 5px 10px;
-  font-size: 14px;
-  flex-grow: 1; /* Hace que el botón crezca para ocupar más espacio */
-  text-align: center;
-}
-
-/* Pantallas pequeñas: Hacer que los botones se apilen */
-@media (max-width: 600px) {
-  .button-container {
-    flex-direction: column;
-    align-items: stretch;
-  }
-
-  .details-button,
-  ion-button[color="danger"] {
-    width: 100%;
-    margin: 5px 0;
-  }
-}
-
-/* Pie de página */
-.footer {
-  text-align: center;
-  padding: 20px;
-  background-color: #f2f2f2;
-  border-radius: 15px;
-  color: #0A49A7;
-  margin-top: auto;
-}
-
-.footer p {
-  margin: 5px 0;
-  font-size: 14px;
-}
-
-/* Redes sociales */
-.social-icons {
-  display: flex;
-  justify-content: center;
-  gap: 15px;
-  margin: 10px 0;
-}
-
-.social-icon {
-  font-size: 24px;
-  color: #0A49A7;
-  transition: transform 0.3s ease;
-}
-
-.social-icon:hover {
-  transform: scale(1.2);
-}
+/* Ajustes del contenido */
 .content-center {
-  padding-bottom: 60px; /* Añadimos un padding-bottom para que no quede nada debajo de la barra */
-}
-
-.custom-tab-bar {
-  position: absolute;  /* Cambiamos a absolute */
-  bottom: 0;
-  width: 100%;
-  z-index: 5; /* Asegura que no se superponga sobre el contenido */
-}
-
-ion-content {
-  --padding-bottom: 70px; /* Aumentamos el padding-bottom para que el contenido se ajuste mejor */
+  --background: #ffffff;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  height: 100%; /* Asegura que ocupe toda la pantalla */
 }

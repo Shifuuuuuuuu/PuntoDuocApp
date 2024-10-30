@@ -1,11 +1,9 @@
 <ion-header [translucent]="true" class="custom-header">
   <ion-toolbar class="custom-toolbar" style="background-color: black;">
-    <ion-title style="color: white;">Acreditador</ion-title>
+    <ion-title style="color:  white">Acreditador</ion-title>
   </ion-toolbar>
 </ion-header>
-
 <ion-content [fullscreen]="true" class="content-center">
-  <!-- Lista de eventos -->
   <ion-list style="background-color: white;">
     <ion-item *ngFor="let evento of eventos$ | async" class="event-item" lines="none">
       <ion-thumbnail slot="start" class="event-thumbnail">
@@ -13,28 +11,26 @@
       </ion-thumbnail>
       <ion-label>
         <h2>{{ evento.titulo }}</h2>
-        <p>{{ evento.fechaInicio | date: 'dd/MM/yyyy, HH:mm' }}</p> <!-- Mostrar fecha de inicio con formato -->
+        <p>{{ evento.fechaInicio | date: 'dd/MM/yyyy, HH:mm' }}</p>
         <p><ion-icon name="location-outline"></ion-icon> {{ evento.lugar }}</p>
 
-        <!-- Botones debajo del texto -->
         <div class="button-container">
-          <!-- Botón Comenzar Evento, visible solo si el evento aún no ha comenzado y es la fecha de inicio -->
-          <ion-button color="success" (click)="comenzarEvento(evento.id_evento)"
+          <ion-button color="success" class="custom-button" (click)="comenzarEvento(evento.id_evento)"
                       *ngIf="puedeMostrarComenzarEvento(evento.fechaInicio, evento.estado)">
-            Comenzar Evento
+            <ion-icon name="play-circle-outline"></ion-icon>
+
           </ion-button>
 
-          <!-- Botón Ver Detalles, habilitado solo cuando el evento está en curso -->
-          <ion-button (click)="verDetalles(evento)"
-                      class="details-button"
+          <ion-button class="custom-button details-button" (click)="verDetalles(evento)"
                       [disabled]="!eventoEnCurso(evento)">
-            Ver detalles
+            <ion-icon name="eye-outline"></ion-icon>
+
           </ion-button>
 
-          <!-- Botón Cancelar, solo visible si el evento no está en curso ni cancelado -->
-          <ion-button color="danger" (click)="cancelarEvento(evento.id_evento)"
+          <ion-button color="danger" class="custom-button" (click)="cancelarEvento(evento.id_evento)"
                       *ngIf="evento.estado !== 'en_curso' && evento.estado !== 'cancelado'">
-            Cancelar
+            <ion-icon name="close-circle-outline"></ion-icon>
+
           </ion-button>
         </div>
       </ion-label>
