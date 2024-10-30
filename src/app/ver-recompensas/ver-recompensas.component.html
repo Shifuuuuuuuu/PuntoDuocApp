@@ -1,3 +1,4 @@
+
   <ion-card class="event-card">
     <ion-card-header>
       <ion-card-title style="color: black;">Recompensas Disponibles para Reclamar</ion-card-title>
@@ -45,3 +46,6 @@
     </ion-card-content>
   </ion-card>
 
+  <div *ngIf="esEstudiante()">
+    <app-tab-usuario></app-tab-usuario>
+  </div>

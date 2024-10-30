@@ -1,44 +1,17 @@
 .custom-header {
-  position: relative;
-  z-index: 10; /* Asegura que el header esté siempre al frente */
+  --background: var(--ion-color-primary);
+  --color: white;
 }
 
-.custom-toolbar {
-  height: 120px; /* Aumenta la altura del toolbar */
-  display: flex;
-  justify-content: center; /* Centra horizontalmente */
-  align-items: center; /* Centra verticalmente */
-  border-bottom-left-radius: 50px; /* Bordes redondeados */
-  border-bottom-right-radius: 50px;
-  background-color: black;
-  --background: transparent;
+.ion-padding {
+  padding: 20px;
 }
 
-.custom-toolbar ion-title {
-  font-size: 24px;
+ion-card {
+  margin: 20px;
+}
+
+.submit-button {
+  margin-top: 20px;
   font-weight: bold;
-  color: white; /* Texto en blanco */
-  text-align: center;
-}
-
-/* Para crear una curva en el borde inferior */
-.custom-header::after {
-  position: absolute;
-  bottom: -30px; /* Ajusta la altura de la curva */
-  left: 0;
-  width: 100%;
-  height: 60px; /* Altura de la curva */
-  background-color: white;
-  border-top-left-radius: 50%;
-  border-top-right-radius: 50%;
-}
-
-
-/* Ajustes del contenido */
-.content-center {
-  --background: #ffffff;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  height: 100%; /* Asegura que ocupe toda la pantalla */
 }

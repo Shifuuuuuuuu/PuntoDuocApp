@@ -14,17 +14,23 @@ import { TabBarModule } from './tab-bar/tab-bar.module';
 import { TabBarAdminModule } from './tab-bar-admin/tab-bar-admin.module';
 import { QRCodeModule } from 'angularx-qrcode';
 import { TabUsuarioModule } from './tab-usuario/tab-usuario.module';
+import { RecompensasModalComponent } from './recompensas-modal-component/recompensas-modal-component.component';
+import { RecompensasReclamadasModalComponent } from './recompensas-reclamadas-modal-component/recompensas-reclamadas-modal-component.component';
+
 
 
 
 
 
 @NgModule({
-  declarations: [AppComponent, ],
+  declarations: [AppComponent, RecompensasModalComponent,
+    RecompensasReclamadasModalComponent],
   imports: [AngularFireModule.initializeApp(environment.firebaseConfig),
     AngularFireAuthModule ,BrowserModule, IonicModule.forRoot(), AppRoutingModule,FormsModule,AngularFirestoreModule,TabBarModule,TabBarAdminModule,TabUsuarioModule ],
   providers: [{ provide: RouteReuseStrategy, useClass: IonicRouteStrategy },InvitadoService,QRCodeModule ],
   bootstrap: [AppComponent],
+ 
+  
 })
 export class AppModule {
   static forChild(): any[] | import("@angular/core").Type<any> | import("@angular/core").ModuleWithProviders<{}> {

@@ -3,35 +3,41 @@
     <ion-buttons slot="start">
       <ion-back-button defaultHref="/folder-ventas" style="color: white;"></ion-back-button>
     </ion-buttons>
-    <ion-title style="color:  white">Subir recompensas</ion-title>
+    <ion-title style="color: white;">Subir Recompensas</ion-title>
   </ion-toolbar>
 </ion-header>
-<ion-content [fullscreen]="true" class="content-center">
 
-  <form [formGroup]="recompensaForm" (ngSubmit)="onSubmit()" >
-    <ion-item>
-      <ion-label>Descripción</ion-label>
-      <ion-input formControlName="descripcion"></ion-input>
-    </ion-item>
+<ion-content [fullscreen]="true" class="ion-padding content-center">
+  <form [formGroup]="recompensaForm" (ngSubmit)="onSubmit()">
+    <ion-card>
+      <ion-card-header>
+        <ion-card-title>Información de la Recompensa</ion-card-title>
+      </ion-card-header>
+      <ion-card-content>
+        <ion-item>
+          <ion-label position="floating">Descripción</ion-label>
+          <ion-input formControlName="descripcion"></ion-input>
+        </ion-item>
 
-    <ion-item>
-      <ion-label>Fecha Creación</ion-label>
-      <ion-input type="date" formControlName="fecha_creacion"></ion-input>
-    </ion-item>
+        <ion-item hidden>
+          <ion-label position="floating">Fecha Creación</ion-label>
+          <ion-datetime formControlName="fecha_creacion"></ion-datetime>
+        </ion-item>
+        
 
-    <ion-item>
-      <ion-label>Cantidad</ion-label>
-      <ion-input type="number" formControlName="cantidad"></ion-input>
-    </ion-item>
+        <ion-item>
+          <ion-label position="floating">Cantidad</ion-label>
+          <ion-input type="number" formControlName="cantidad"></ion-input>
+        </ion-item>
 
-    <ion-item>
-      <ion-label>Puntos Requeridos</ion-label>
-      <ion-input type="number" formControlName="puntos_requeridos"></ion-input>
-    </ion-item>
+        <ion-item>
+          <ion-label position="floating">Puntos Requeridos</ion-label>
+          <ion-input type="number" formControlName="puntos_requeridos"></ion-input>
+        </ion-item>
 
-
-    <ion-button expand="full" type="submit">Subir Recompensa</ion-button>
+        <ion-button expand="full" type="submit" color="primary" class="submit-button">Subir Recompensa</ion-button>
+      </ion-card-content>
+    </ion-card>
   </form>
-
 </ion-content>
-<app-tab-bar></app-tab-bar>
+

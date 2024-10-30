@@ -66,6 +66,7 @@ export class IniciarSesionPage implements OnInit {
         if (studentData) {
           console.log('Inicio de sesión como estudiante exitoso:', studentData);
           this.authService.setCurrentUserEmail(this.user.email);
+          localStorage.setItem('tipousuario', 'estudiante');
           this.router.navigate(['/folder/Inicio']);
         } else {
           this.errorMessage = 'No se pudo encontrar un estudiante con este correo.';

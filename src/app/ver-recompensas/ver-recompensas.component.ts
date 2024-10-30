@@ -23,6 +23,7 @@ export class VerRecompensasComponent implements OnInit {
   qrSeleccionado: string | null = null;
   qrCodeImage: string;
   userId: string;
+  tipoUsuario: string | null;
 
   constructor(
     private authService: AuthService,
@@ -31,6 +32,7 @@ export class VerRecompensasComponent implements OnInit {
   ) {}
 
   async ngOnInit() {
+    this.tipoUsuario = localStorage.getItem('tipousuario');
     this.userEmail = localStorage.getItem('currentUserEmail') || '';
     this.userId = localStorage.getItem('id') || '';
   
@@ -63,7 +65,9 @@ export class VerRecompensasComponent implements OnInit {
     }
   }
   
-  
+  esEstudiante(): boolean {
+    return this.tipoUsuario === 'estudiante';
+  }
 
   verificarUsuarioVentasOEventos(email: string): boolean {
     return email.endsWith('@duocuc.cl');
@@ -90,50 +94,90 @@ export class VerRecompensasComponent implements OnInit {
 
   async reclamarRecompensa(id_recompensa: string | undefined) {
     if (!this.userEmail || !this.estudiante) {
-      alert('Por favor, inicia sesión.');
+      Swal.fire({
+        title: 'Error',
+        text: 'Por favor, inicia sesión.',
+        icon: 'error',
+        confirmButtonText: 'OK'
+      });
       return;
     }
-   
-    
+  
     try {
       const recompensaDoc = await firstValueFrom(this.recompensaService.getRecompensaById(id_recompensa));
       if (recompensaDoc) {
-          const recompensa = recompensaDoc.data() as Recompensa;
+        const recompensa = { ...recompensaDoc.data() } as Recompensa; // Clonación del objeto
   
-          await this.generarQR(recompensa);
+        await this.generarQR(recompensa);
   
-          let nuevaCantidad: number; // Declare it here
+        let nuevaCantidad: number;
   
-          if (this.estudiante.id_estudiante) {
-              const estudianteReclamado = {
-                  id_estudiante: this.estudiante.id_estudiante, // Now guaranteed to be a string
-                  reclamado: false,
-                  qrCode: this.qrCodeImage // Make sure this is a string or provide a fallback
-              };
+        if (this.estudiante.id_estudiante) {
+          const estudianteReclamado = {
+            id_estudiante: this.estudiante.id_estudiante,
+            reclamado: false,
+            qrCode: this.qrCodeImage
+          };
   
-              nuevaCantidad = recompensa.cantidad - 1; // Assign value here
-              recompensa.estudiantesReclamaron?.push(estudianteReclamado);
-          } else {
-              console.error('ID del estudiante es undefined');
-              return; // Exit early if id_estudiante is undefined
+          nuevaCantidad = recompensa.cantidad - 1; // Asignación de la nueva cantidad
+  
+          if (!recompensa.estudiantesReclamaron) {
+            recompensa.estudiantesReclamaron = []; // Inicializa como arreglo vacío si no existe
+          }
+          if (!recompensa.id_recompensa) {
+            recompensa.id_recompensa = id_recompensa; // Inicializa como arreglo vacío si no existe
           }
   
-          if (recompensa.id_recompensa) {
-              await this.recompensaService.actualizarRecompensa(recompensa.id_recompensa, {
-                  cantidad: nuevaCantidad,
-                  estudiantesReclamaron: recompensa.estudiantesReclamaron
-              });
-              alert('Recompensa reclamada con éxito.');
-              this.loadUserData();  // Recargar datos
+          recompensa.estudiantesReclamaron.push(estudianteReclamado);
+  
+        } else {
+          console.error('ID del estudiante es undefined');
+          return;
+        }
+  
+        if (recompensa.id_recompensa) {
+          try {
+            await this.recompensaService.actualizarRecompensa(recompensa.id_recompensa, {
+              cantidad: nuevaCantidad,
+              estudiantesReclamaron: recompensa.estudiantesReclamaron
+            });
+            Swal.fire({
+              title: 'Recompensa reclamada',
+              text: 'Recompensa reclamada con éxito.',
+              icon: 'success',
+              confirmButtonText: 'OK'
+            });
+            this.loadUserData(); // Recargar datos
+          } catch (error) {
+            console.log(error);
+            Swal.fire({
+              title: 'Error',
+              text: 'Hubo un error al actualizar la recompensa. Por favor, inténtalo de nuevo.',
+              icon: 'error',
+              confirmButtonText: 'OK'
+            });
           }
+        }
       } else {
-          alert('No se encontró la recompensa.');
+        Swal.fire({
+          title: 'Error',
+          text: 'No se encontró la recompensa.',
+          icon: 'error',
+          confirmButtonText: 'OK'
+        });
       }
-  } catch (error) {
+    } catch (error) {
       console.error('Error al reclamar la recompensa:', error);
-      alert('Hubo un error al reclamar la recompensa.');
+      Swal.fire({
+        title: 'Error',
+        text: 'Hubo un error al reclamar la recompensa. Por favor, inténtalo de nuevo.',
+        icon: 'error',
+        confirmButtonText: 'OK'
+      });
+    }
   }
-}
+  
+  
 async generarQR(recompensa: Recompensa) {
   if (!this.estudiante) return;
   const qrDataObject = {
@@ -167,6 +211,7 @@ async generarQR(recompensa: Recompensa) {
 
   async reclamar(recompensa: Recompensa) {
     if (this.estudiante) {
+      
       await this.reclamarRecompensa(recompensa.id_recompensa!);
       this.recompensas = await this.recompensaService.getRecompensas();
     }

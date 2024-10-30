@@ -2,8 +2,14 @@ import { Component } from '@angular/core';
 import { Router } from '@angular/router';
 import {VentasAuthService} from '../services/ventas.service'
 import { CapacitorBarcodeScanner } from '@capacitor/barcode-scanner';
+import { OnInit } from '@angular/core';
+import { ModalController } from '@ionic/angular';
+import { RecompensaService } from '../services/recompensa-service.service';
+import { RecompensasModalComponent } from '../recompensas-modal-component/recompensas-modal-component.component';
+import { RecompensasReclamadasModalComponent } from '../recompensas-reclamadas-modal-component/recompensas-reclamadas-modal-component.component';
 
 
+RecompensasModalComponent
 @Component({
   selector: 'app-folder-ventas',
   templateUrl: './folder-ventas.page.html',
@@ -11,16 +17,44 @@ import { CapacitorBarcodeScanner } from '@capacitor/barcode-scanner';
 })
 export class FolderVentasPage {
   errorMessage: string | undefined;
+  recompensas: any[] = [];
+  recompensasReclamadas: any[] = [];
 
 
-  constructor(private router: Router, private ventasAuthService: VentasAuthService) {}
+  constructor(private router: Router, private ventasAuthService: VentasAuthService,private modalController: ModalController, private recompensaService: RecompensaService) {}
+
+  async ngOnInit() {
+    this.recompensas = await this.recompensaService.getRecompensas();
+    this.recompensasReclamadas = this.recompensas
+      .filter(r => Array.isArray(r.estudiantesReclamaron))
+      .map(r => ({
+        ...r,
+        estudiantesReclamaron: r.estudiantesReclamaron.filter((e: { reclamado: boolean; }) => e.reclamado === true)
+      }))
+      .filter(r => r.estudiantesReclamaron.length > 0);
+  }
 
   subirRecompensa() {
     this.router.navigate(['/subir-recompensa']);
   }
 
-  verRecompensas() {
-    this.router.navigate(['/ver-recompensas']);
+  async verRecompensas() {
+    const modal = await this.modalController.create({
+      component: RecompensasModalComponent,
+      componentProps: {
+        recompensas: this.recompensas
+      }
+    });
+    return await modal.present();
+  }
+  async verRecompensasReclamadas() {
+    const modal = await this.modalController.create({
+      component: RecompensasReclamadasModalComponent,
+      componentProps: {
+        recompensasReclamadas: this.recompensasReclamadas
+      }
+    });
+    return await modal.present();
   }
 
   logoutt() {
@@ -51,6 +85,7 @@ export class FolderVentasPage {
         console.error('Error al escanear el código:', e);
         throw e;
     }
+    
 }
 
 }

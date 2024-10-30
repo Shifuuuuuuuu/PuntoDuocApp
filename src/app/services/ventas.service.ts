@@ -4,6 +4,7 @@ import { BehaviorSubject, Observable } from 'rxjs';
 import { UsuarioVentas } from '../interface/IUVentas'; // Asegúrate de colocar la interfaz en la carpeta correcta
 import { Recompensa } from '../interface/IRecompensa';
 import { CapacitorBarcodeScanner } from '@capacitor/barcode-scanner';
+import Swal from 'sweetalert2';
 
 
 @Injectable({
@@ -26,6 +27,8 @@ export class VentasAuthService {
     console.log('VentasAuthService: Estableciendo currentUserEmail a', email);
     this.currentUserEmailSubject.next(email);
     localStorage.setItem('currentUserEmail', email);
+    localStorage.setItem('tipousuario', 'ventas');
+
   }
 
   // Método para obtener el correo electrónico actual de forma síncrona (si está disponible)
@@ -68,12 +71,10 @@ export class VentasAuthService {
   // Método para cerrar sesión
   async logout(): Promise<void> {
     try {
-      console.log("aaaaaaaaaaaaaaaaaa");
       // Limpiar el correo electrónico
       this.currentUserEmailSubject.next(undefined);
       localStorage.removeItem('currentUserEmail');
     } catch (error) {
-      console.log("aaaaaaaaaaaaaaaaaa");
       console.error('Error en VentasAuthService.logout:', error);
       throw error;
     }
@@ -101,27 +102,54 @@ export class VentasAuthService {
     try {
       const recompensaDoc = await this.firestore.collection('Recompensas').doc(id_recompensa).get().toPromise();
       if (!recompensaDoc || !recompensaDoc.exists) {
-        throw new Error('No se encontró la recompensa.');
+        Swal.fire({
+          title: 'Error',
+          text: 'No se encontró la recompensa.',
+          icon: 'error',
+          confirmButtonText: 'OK'
+        });
+        return;
       }
-
+  
       const recompensa = recompensaDoc.data() as Recompensa;
-
+  
       if (recompensa.estudiantesReclamaron) {
         const estudianteIndex = recompensa.estudiantesReclamaron.findIndex(e => e.id_estudiante === id_estudiante);
-
+  
         if (estudianteIndex >= 0) {
           recompensa.estudiantesReclamaron[estudianteIndex].reclamado = true;
           await this.firestore.collection('Recompensas').doc(id_recompensa).update(recompensa);
-          console.log(`Reclamación de la recompensa ${id_recompensa} confirmada para el estudiante ${id_estudiante}.`);
+  
+          Swal.fire({
+            title: 'Éxito',
+            text: `Reclamación de la recompensa "${recompensa.descripcion}" confirmada para el estudiante.`,
+            icon: 'success',
+            confirmButtonText: 'OK'
+          });
         } else {
-          throw new Error('El estudiante no ha reclamado esta recompensa.');
+          Swal.fire({
+            title: 'Error',
+            text: `El estudiante no ha reclamado la recompensa "${recompensa.descripcion}".`,
+            icon: 'error',
+            confirmButtonText: 'OK'
+          });
         }
       } else {
-        throw new Error('No se encontraron estudiantes que hayan reclamado esta recompensa.');
+        Swal.fire({
+          title: 'Error',
+          text: `No se encontraron estudiantes que hayan reclamado la recompensa "${recompensa.descripcion}".`,
+          icon: 'error',
+          confirmButtonText: 'OK'
+        });
       }
     } catch (error) {
       console.error('Error al confirmar la reclamación de la recompensa:', error);
-      throw error;
+      Swal.fire({
+        title: 'Error',
+        text: 'Hubo un error al confirmar la reclamación de la recompensa. Por favor, inténtalo de nuevo.',
+        icon: 'error',
+        confirmButtonText: 'OK'
+      });
     }
   }
 
