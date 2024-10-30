@@ -330,57 +330,42 @@ export class FolderPage implements OnInit {
     }
   }
 
+  // Función para cancelar inscripción con SweetAlert
   async cancelarInscripcion(eventoId: string) {
-    if (!this.userId) {
-      Swal.fire({
-        icon: 'error',
-        title: 'Error',
-        text: 'No se pudo encontrar el usuario autenticado.',
-      });
-      return;
-    }
+    const result = await Swal.fire({
+      title: '¿Estás seguro?',
+      text: '¿Deseas cancelar tu inscripción en este evento?',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonText: 'Sí, cancelar',
+      cancelButtonText: 'No, mantener inscripción'
+    });
 
-    this.loading = true;
-    try {
-      const estaInscrito = this.isInvitado
-        ? await this.eventosService.isUserRegisteredInvitado(eventoId, this.userId)
-        : await this.eventosService.isUserRegisteredEstudiante(eventoId, this.userId);
+    if (result.isConfirmed) {
+      try {
+        // Lógica para cancelar inscripción según el tipo de usuario
+        if (this.isInvitado) {
+          await this.eventosService.cancelarInscripcionInvitado(eventoId, this.userId);
+        } else {
+          await this.eventosService.cancelarInscripcionEstudiante(eventoId, this.userId);
+        }
 
-      if (!estaInscrito) {
+        await this.actualizarPerfilUsuario(eventoId, 'eliminar');
         Swal.fire({
-          icon: 'info',
-          title: 'No estás inscrito en este evento.',
+          icon: 'success',
+          title: 'Inscripción cancelada',
+          text: 'Has cancelado tu inscripción correctamente.',
           timer: 2000,
-          showConfirmButton: false,
+          showConfirmButton: false
         });
-        return;
+        this.loadEvents(); // Recargar los eventos
+      } catch (error) {
+        Swal.fire({
+          icon: 'error',
+          title: 'Error',
+          text: 'No se pudo cancelar la inscripción. Inténtalo más tarde.',
+        });
       }
-
-      if (this.isInvitado) {
-        await this.eventosService.cancelarInscripcionInvitado(eventoId, this.userId);
-      } else {
-        await this.eventosService.cancelarInscripcionEstudiante(eventoId, this.userId);
-      }
-
-      await this.eventosService.eliminarUsuarioDeInscripciones(eventoId, this.userId);
-      await this.actualizarPerfilUsuario(eventoId, 'eliminar');
-
-      Swal.fire({
-        icon: 'success',
-        title: 'Has cancelado tu inscripción correctamente.',
-        timer: 2000,
-        showConfirmButton: false,
-      });
-
-      this.loadEvents();
-    } catch (error) {
-      Swal.fire({
-        icon: 'error',
-        title: 'Error',
-        text: 'No se pudo cancelar la inscripción.',
-      });
-    } finally {
-      this.loading = false;
     }
   }
 

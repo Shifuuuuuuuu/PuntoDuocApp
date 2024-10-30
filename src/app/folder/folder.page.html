@@ -6,8 +6,6 @@
 
 <ion-content [fullscreen]="true" class="content-center">
   <!-- Barra de búsqueda y botón de filtros -->
-
-
   <div class="search-container">
     <!-- Barra de búsqueda -->
     <ion-searchbar
@@ -20,8 +18,8 @@
     </ion-searchbar>
 
     <!-- Botón de filtro con solo el icono -->
-    <ion-button class="filter-button"   (click)="openSedeSelect()" style="color: black; ">
-      <ion-icon  name="options-outline"></ion-icon>
+    <ion-button class="filter-button" (click)="openSedeSelect()" style="color: black;">
+      <ion-icon name="options-outline"></ion-icon>
     </ion-button>
 
     <!-- Ion-select oculto que se activa al hacer clic en el botón -->
@@ -45,7 +43,6 @@
       <ion-select-option value="Duoc Villarrica">Duoc Villarrica</ion-select-option>
     </ion-select>
   </div>
-
 
   <!-- Cargando -->
   <div *ngIf="loading" class="ion-padding" style="text-align: center;">
@@ -72,15 +69,30 @@
             <p *ngIf="event.estaInscrito" class="inscrito-text" style="color: #0A49A7;">
               ¡Ya estás inscrito en este evento!
             </p>
+            <p *ngIf="event.enListaEspera" class="en-lista-espera-text" style="color: #0A49A7;">
+              ¡Ya estás en la lista de espera!
+            </p>
+            <p *ngIf="event.Cupos === 0 && !event.enListaEspera" class="lleno-text" style="color: #0A49A7;">
+              Este evento está lleno. Puedes unirte a la lista de espera.
+            </p>
 
-            <!-- Botón de inscripción o cancelación con lógica de alerta -->
+            <!-- Botón de inscripción o cancelación -->
             <ion-button
-              [color]="event.estaInscrito ? 'danger' : 'primary'"
-              (click)="handleEventButtonClick(event)"
+              [color]="event.estaInscrito ? 'danger' : event.Cupos === 0 ? 'primary' : 'primary'"
+              (click)="
+                event.estaInscrito
+                  ? handleEventButtonClick(event)
+                  : event.Cupos === 0 && !event.enListaEspera
+                  ? presentWaitListAlert(event)
+                  : presentAlert(event)"
               expand="block"
               style="--background: #0A49A7; --color: white;">
               {{
-                event.estaInscrito ? 'Cancelar inscripción' : 'Inscribirse'
+                event.estaInscrito
+                  ? 'Cancelar inscripción'
+                  : event.Cupos === 0 && !event.enListaEspera
+                  ? 'Unirse a lista de espera'
+                  : 'Inscribirse'
               }}
             </ion-button>
           </ion-card-content>
@@ -88,6 +100,7 @@
       </ion-col>
     </ion-row>
   </ion-grid>
+
   <ion-footer collapse="fade" class="footer">
     <p>Síguenos en nuestras redes sociales:</p>
     <div class="social-icons">
@@ -98,6 +111,5 @@
     <p>&copy; 2024 Punto Duoc. Todos los derechos reservados.</p>
   </ion-footer>
 </ion-content>
+
 <app-tab-usuario></app-tab-usuario>
-
-
