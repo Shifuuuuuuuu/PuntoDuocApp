@@ -4,6 +4,7 @@ import { map, Observable } from 'rxjs';
 import { Router } from '@angular/router';
 import { Evento } from '../interface/IEventos';
 import { MenuController } from '@ionic/angular';
+import Swal from 'sweetalert2';
 
 
 @Component({
@@ -15,10 +16,16 @@ export class FolderGestorEventosPage implements OnInit {
 
   eventos$: Observable<Evento[]> = new Observable<Evento[]>();
 
-  constructor(private eventosService: EventosGestorService, private router: Router,private menu: MenuController) {}
+  constructor(
+    private eventosService: EventosGestorService,
+    private router: Router,
+    private menu: MenuController
+  ) {}
+
   ionViewWillEnter() {
-    this.menu.enable(false);  // Deshabilita el menú en esta página
+    this.menu.enable(false);
   }
+
   ngOnInit() {
     this.cargarEventos();
   }
@@ -27,33 +34,63 @@ export class FolderGestorEventosPage implements OnInit {
   cargarEventos() {
     this.eventos$ = this.eventosService.getEventos().pipe(
       map((eventos: Evento[]) => eventos.map((evento: Evento) => {
-        evento.fecha = this.transformarFecha(evento.fecha); // Transformar la fecha antes de asignarla
+        evento.fechaInicio = this.transformarFecha(evento.fecha);
+        evento.fechaFin = this.transformarFecha(evento.fecha_termino);
         return evento;
       }))
     );
   }
 
-  // Función que transforma la fecha
-  transformarFecha(fecha: any): string {
-    // Si fecha es un timestamp de Firestore, convertirla a formato legible
-    if (fecha && typeof fecha !== 'string' && fecha.seconds) {
-      const date = new Date(fecha.seconds * 1000); // Convertir seconds a milisegundos
-      return date.toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric' });
+  transformarFecha(fecha: any): Date | null {
+    if (fecha && fecha.seconds) {
+      return new Date(fecha.seconds * 1000); // Convertimos de Firestore timestamp a Date
     }
+    return null;
+  }
 
-    // Si ya es una cadena, devolverla tal cual
-    return fecha;
+  // Verificar si el botón "Comenzar Evento" debe mostrarse
+  puedeMostrarComenzarEvento(fechaInicio: Date | null, estado: string): boolean {
+    const ahora = new Date();
+    return fechaInicio ? ahora >= fechaInicio && estado !== 'en_curso' && estado !== 'cancelado' : false;
+  }
+
+  // Comenzar evento y mostrar alerta
+  comenzarEvento(eventoId: string) {
+    this.eventosService.actualizarEvento(eventoId, { estado: 'en_curso' }).then(() => {
+      console.log('Evento comenzado.');
+      Swal.fire({
+        icon: 'success',
+        title: 'Evento iniciado',
+        text: 'El evento ha comenzado. Ahora puedes ver el detalle del evento.',
+        confirmButtonText: 'OK'
+      });
+      this.cargarEventos(); // Recargar la lista de eventos para reflejar el cambio de estado
+    });
+  }
+
+  // Verificar si el evento está en curso
+  eventoEnCurso(evento: Evento): boolean {
+    return evento.estado === 'en_curso';
   }
 
   // Ir a los detalles del evento
-  verDetalles(eventoId: string) {
-    this.router.navigate(['/detalles-evento', eventoId]);
+  verDetalles(evento: Evento) {
+    if (this.eventoEnCurso(evento)) {
+      this.router.navigate(['/detalles-evento', evento.id_evento]);
+    }
   }
 
-  // Cancelar evento
+  // Cancelar evento y mostrar alerta
   cancelarEvento(eventoId: string) {
     this.eventosService.actualizarEvento(eventoId, { estado: 'cancelado' }).then(() => {
       console.log('Evento cancelado.');
+      Swal.fire({
+        icon: 'error',
+        title: 'Evento cancelado',
+        text: 'El evento ha sido cancelado exitosamente.',
+        confirmButtonText: 'OK'
+      });
+      this.cargarEventos(); // Recargar la lista de eventos para reflejar el cambio de estado
     });
   }
 }

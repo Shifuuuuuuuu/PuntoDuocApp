@@ -8,18 +8,32 @@
   <!-- Lista de eventos -->
   <ion-list style="background-color: white;">
     <ion-item *ngFor="let evento of eventos$ | async" class="event-item" lines="none">
-      <ion-thumbnail slot="start">
+      <ion-thumbnail slot="start" class="event-thumbnail">
         <img [src]="evento.imagen" alt="{{ evento.titulo }}" class="event-image">
       </ion-thumbnail>
       <ion-label>
         <h2>{{ evento.titulo }}</h2>
-        <p>{{ evento.fecha }}</p>
+        <p>{{ evento.fechaInicio | date: 'dd/MM/yyyy, HH:mm' }}</p> <!-- Mostrar fecha de inicio con formato -->
         <p><ion-icon name="location-outline"></ion-icon> {{ evento.lugar }}</p>
 
-        <!-- Contenedor para los botones debajo del texto -->
+        <!-- Botones debajo del texto -->
         <div class="button-container">
-          <ion-button (click)="verDetalles(evento.id_evento)" class="details-button">Ver detalles</ion-button>
-          <ion-button color="danger" (click)="cancelarEvento(evento.id_evento)" *ngIf="evento.estado !== 'cancelado'">
+          <!-- Botón Comenzar Evento, visible solo si el evento aún no ha comenzado y es la fecha de inicio -->
+          <ion-button color="success" (click)="comenzarEvento(evento.id_evento)"
+                      *ngIf="puedeMostrarComenzarEvento(evento.fechaInicio, evento.estado)">
+            Comenzar Evento
+          </ion-button>
+
+          <!-- Botón Ver Detalles, habilitado solo cuando el evento está en curso -->
+          <ion-button (click)="verDetalles(evento)"
+                      class="details-button"
+                      [disabled]="!eventoEnCurso(evento)">
+            Ver detalles
+          </ion-button>
+
+          <!-- Botón Cancelar, solo visible si el evento no está en curso ni cancelado -->
+          <ion-button color="danger" (click)="cancelarEvento(evento.id_evento)"
+                      *ngIf="evento.estado !== 'en_curso' && evento.estado !== 'cancelado'">
             Cancelar
           </ion-button>
         </div>
@@ -29,4 +43,3 @@
 </ion-content>
 
 <app-tab-bar-admin></app-tab-bar-admin>
-

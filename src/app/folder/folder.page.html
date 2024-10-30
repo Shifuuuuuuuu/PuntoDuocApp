@@ -72,40 +72,15 @@
             <p *ngIf="event.estaInscrito" class="inscrito-text" style="color: #0A49A7;">
               ¡Ya estás inscrito en este evento!
             </p>
-            <p *ngIf="event.enListaEspera" class="en-lista-espera-text" style="color: #0A49A7;">
-              ¡Ya estás en la lista de espera!
-            </p>
-            <p *ngIf="event.Cupos === 0 && !event.enListaEspera" class="lleno-text" style="color: #0A49A7;">
-              Este evento está lleno. Puedes unirte a la lista de espera.
-            </p>
 
+            <!-- Botón de inscripción o cancelación con lógica de alerta -->
             <ion-button
-              [color]="
-                event.estaInscrito
-                  ? 'danger'
-                  : event.Cupos === 0
-                  ? event.enListaEspera
-                    ? 'primary'
-                    : 'primary'
-                  : 'primary'
-              "
-              (click)="
-                event.estaInscrito
-                  ? cancelarInscripcion(event.id_evento)
-                  : event.enListaEspera
-                  ? salirDeListaEspera(event.id_evento)
-                  : presentAlert(event)
-              "
+              [color]="event.estaInscrito ? 'danger' : 'primary'"
+              (click)="handleEventButtonClick(event)"
               expand="block"
               style="--background: #0A49A7; --color: white;">
               {{
-                event.estaInscrito
-                  ? 'Cancelar inscripción'
-                  : event.Cupos === 0
-                  ? event.enListaEspera
-                    ? 'Salir de lista de espera'
-                    : 'Unirse a lista de espera'
-                  : 'Inscribirse'
+                event.estaInscrito ? 'Cancelar inscripción' : 'Inscribirse'
               }}
             </ion-button>
           </ion-card-content>

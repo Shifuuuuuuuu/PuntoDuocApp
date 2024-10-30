@@ -158,12 +158,25 @@ export class FolderPage implements OnInit {
   }
 
 
-
-
-
-
   toggleFilters() {
     this.showFilters = !this.showFilters;
+  }
+  async handleEventButtonClick(event: Evento) {
+    if (event.estado === 'en_curso') {
+      // Si el evento ya comenzó, mostramos la alerta de acreditación obligatoria
+      Swal.fire({
+        icon: 'info',
+        title: 'Acreditación requerida',
+        text: 'El evento ya comenzó. Debes acreditarte o se te restarán 200 puntos.',
+        confirmButtonText: 'Entendido'
+      });
+    } else if (event.estaInscrito) {
+      // Si el usuario está inscrito y el evento no ha comenzado, cancelar la inscripción
+      this.cancelarInscripcion(event.id_evento);
+    } else {
+      // Inscribir al usuario en el evento
+      this.presentAlert(event);
+    }
   }
 
   async presentAlert(event: Evento) {
@@ -370,6 +383,7 @@ export class FolderPage implements OnInit {
       this.loading = false;
     }
   }
+
 
   async salirDeListaEspera(eventoId: string) {
     if (!this.userId) {
