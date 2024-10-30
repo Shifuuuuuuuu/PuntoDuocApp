@@ -111,6 +111,7 @@ export class VerRecompensasComponent implements OnInit {
         await this.generarQR(recompensa);
   
         let nuevaCantidad: number;
+        let nuevoPuntaje: number;
   
         if (this.estudiante.id_estudiante) {
           const estudianteReclamado = {
