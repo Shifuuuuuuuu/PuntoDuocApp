@@ -44,16 +44,105 @@
     </ion-select>
   </div>
 
-  <!-- Cargando -->
+  <div class="categories-header">
+    <ion-text color="dark">
+      <h2 style="color: black;">Explorar eventos de las escuelas</h2>
+    </ion-text>
+  </div>
+
+  <!-- Carrusel de categorías (Swiper) -->
+  <swiper-container
+    [slidesPerView]="3"
+    [spaceBetween]="10"
+    [freeMode]="true"
+    class="category-swiper"
+  >
+    <swiper-slide *ngFor="let category of categories" (click)="goToCategoryEvents(category.name)">
+      <ion-card style="--background: transparent;" class="category-card">
+        <ion-avatar class="category-avatar">
+          <img [src]="category.image" alt="{{ category.name }}">
+        </ion-avatar>
+        <ion-text class="category-label">{{ category.name }}</ion-text>
+      </ion-card>
+    </swiper-slide>
+  </swiper-container>
+  <!-- Segmento de selección de fecha -->
+  <swiper-container
+  [slidesPerView]="3"
+  [spaceBetween]="5"
+  [freeMode]="true"
+  class="segment-swiper"
+>
+  <swiper-slide *ngFor="let segment of segments" (click)="onSegmentChange(segment.value)">
+    <ion-segment-button [value]="segment.value" [checked]="selectedSegment === segment.value">
+      <ion-label [ngStyle]="{'color': selectedSegment === segment.value ? '#0A49A7' : 'gray'}">
+        {{ segment.label }}
+      </ion-label>
+    </ion-segment-button>
+  </swiper-slide>
+</swiper-container>
+
+
+  <!-- Carrusel de eventos filtrados en Swiper -->
+  <swiper-container
+    [slidesPerView]="1.35"
+    [spaceBetween]="10"
+    [centeredSlides]="true"
+    *ngIf="!loading && segmentFilteredEvents.length > 0"
+    class="swiper-container"
+  >
+    <swiper-slide *ngFor="let event of segmentFilteredEvents">
+      <ion-card class="event-card">
+        <img alt="Imagen del evento" [src]="event.imagen" class="event-image" />
+        <ion-card-header>
+          <ion-card-title (click)="toggleDescription(event)" class="centered-text" style="color: #0A49A7;">
+            {{ event.titulo }}
+          </ion-card-title>
+        </ion-card-header>
+
+        <ion-card-content class="centered-content">
+          <p *ngIf="event.show" style="color: #0A49A7;">{{ event.descripcion }}</p>
+          <p style="color: #0A49A7;">Fecha: {{ transformarFecha(event.fecha) | date: 'dd/MM/yyyy' }}</p>
+          <p style="color: #0A49A7;">Cupos disponibles: {{ event.Cupos }}</p>
+
+          <p *ngIf="event.estaInscrito && event.verificado" class="verificado-text" style="color: #0A49A7;">
+            ¡Estás verificado en este evento!
+          </p>
+          <p *ngIf="event.estaInscrito && !event.verificado" class="inscrito-text" style="color: #0A49A7;">
+            ¡Ya estás inscrito en este evento!
+          </p>
+          <p *ngIf="event.enListaEspera" class="en-lista-espera-text" style="color: #0A49A7;">
+            ¡Ya estás en la lista de espera!
+          </p>
+
+          <ion-button
+            [color]="event.estaInscrito ? 'danger' : event.enListaEspera ? 'primary' : 'primary'"
+            (click)="handleEventButtonClick(event)"
+            expand="block"
+            style="--background: #0A49A7; --color: white;"
+          >
+            {{
+              event.estaInscrito
+                ? 'Cancelar inscripción'
+                : event.enListaEspera
+                ? 'Salir de lista de espera'
+                : event.Cupos === 0
+                ? 'Unirse a lista de espera'
+                : 'Inscribirse'
+            }}
+          </ion-button>
+        </ion-card-content>
+      </ion-card>
+    </swiper-slide>
+  </swiper-container>
   <div *ngIf="loading" class="ion-padding" style="text-align: center;">
     <ion-spinner name="crescent" style="color: #0A49A7;"></ion-spinner>
     <p style="color: #0A49A7;">Cargando...</p>
   </div>
-
-  <!-- Listado de eventos filtrados -->
-  <ion-grid *ngIf="!loading && filteredEvents.length > 0">
+  <!-- Listado de eventos filtrados solo por sede -->
+  <ion-grid *ngIf="!loading && sedeFilteredEvents.length > 0">
     <ion-row>
-      <ion-col size="12" size-md="6" *ngFor="let event of filteredEvents">
+      <ion-col size="12" size-md="6" *ngFor="let event of sedeFilteredEvents">
         <ion-card class="event-card">
           <img alt="Imagen del evento" [src]="event.imagen" class="event-image" />
           <ion-card-header>
@@ -80,7 +169,6 @@
               ¡Ya estás en la lista de espera!
             </p>
 
-            <!-- Botón de inscripción o cancelación según el estado -->
             <ion-button
               [color]="event.estaInscrito ? 'danger' : event.enListaEspera ? 'primary' : 'primary'"
               (click)="handleEventButtonClick(event)"

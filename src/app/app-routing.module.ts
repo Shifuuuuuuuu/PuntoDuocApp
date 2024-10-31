@@ -80,6 +80,15 @@ const routes: Routes = [
     path: 'perfil-gestor',
     loadChildren: () => import('./perfil-gestor/perfil-gestor.module').then( m => m.PerfilGestorPageModule)
   },
+  {
+    path: 'events-category/:category',
+    loadChildren: () => import('./events-category/events-category.module').then( m => m.EventsCategoryPageModule)
+  },
+  {
+    path: 'event-details/:id_evento',
+    loadChildren: () => import('./event-details/event-details.module').then( m => m.EventDetailsPageModule)
+  },
+
 
 
 ];

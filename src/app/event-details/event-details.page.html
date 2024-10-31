@@ -1,0 +1,35 @@
+<ion-header [translucent]="true" class="custom-header">
+  <ion-toolbar class="custom-toolbar" style="background-color: black;">
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/events-category/:category" style="color: white;"></ion-back-button>
+    </ion-buttons>
+    <ion-title style="color:  white">Detalle del evento</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content *ngIf="event" [fullscreen]="true" class="content-center">
+  <ion-card style="background-color:  white;">
+    <img [src]="event.imagen" alt="Imagen del evento" />
+    <ion-card-header>
+      <ion-card-title style="color: black;">{{ event.titulo }}</ion-card-title>
+      <p style="color: black;">Lugar: {{ event.lugar }}</p>
+      <p style="color: black;">Fecha: {{ transformarFecha(event.fecha) | date: 'dd/MM/yyyy' }}</p>
+    </ion-card-header>
+
+    <ion-card-content>
+      <p style="color: black;">{{ event.descripcion }}</p>
+      <p style="color: black;">Cupos disponibles: {{ event.Cupos }}</p>
+
+      <!-- Estado de inscripción y verificación -->
+      <p *ngIf="event.estaInscrito && event.verificado" style="color: black;">¡Estás verificado en este evento!</p>
+      <p *ngIf="event.estaInscrito && !event.verificado" style="color: black;">¡Ya estás inscrito en este evento!</p>
+      <p *ngIf="event.enListaEspera" style="color: black">¡Ya estás en la lista de espera!</p>
+
+      <!-- Botón de inscripción y cancelación -->
+      <ion-button [color]="event.estaInscrito ? 'danger' : 'primary'" expand="block" (click)="handleEventButtonClick(event)">
+        {{ event.estaInscrito ? 'Cancelar inscripción' : 'Inscribirse' }}
+      </ion-button>
+    </ion-card-content>
+  </ion-card>
+</ion-content>
+<app-tab-usuario></app-tab-usuario>
