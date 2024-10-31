@@ -83,11 +83,18 @@ export class FolderPage implements OnInit {
     this.Eventos.subscribe(
       async (data: Evento[]) => {
         this.loading = false;
-        this.allEvents = data;
-        this.filteredEvents = [...this.allEvents];
+
+        // Crear una copia de eventos y agregar la propiedad `verificado` solo temporalmente en `loadEvents`
+        const eventosConVerificado = data.map(evento => {
+          const eventoConVerificado = { ...evento, verificado: false }; // Añadir `verificado` por defecto en false
+          return eventoConVerificado;
+        });
+
+        this.allEvents = eventosConVerificado;
+        this.filteredEvents = [...eventosConVerificado];
 
         if (data.length > 0) {
-          this.filteredEvents = data.filter((evento: Evento) => {
+          this.filteredEvents = eventosConVerificado.filter((evento) => {
             const matchesSearchText = this.searchText
               ? evento.titulo.toLowerCase().includes(this.searchText.toLowerCase())
               : true;
@@ -99,14 +106,14 @@ export class FolderPage implements OnInit {
             event.show = false;
 
             if (this.userId && event.id_evento) {
-              try {
-                event.estaInscrito = this.isInvitado
-                  ? await this.eventosService.isUserRegisteredInvitado(event.id_evento, this.userId)
-                  : await this.eventosService.isUserRegisteredEstudiante(event.id_evento, this.userId);
-              } catch (error) {
-                console.error('Error al verificar inscripción:', error);
-                event.estaInscrito = false;
-              }
+              const usuarioId = this.isInvitado ? 'id_invitado' : 'id_estudiante';
+
+              // Buscar en Inscripciones si el usuario está inscrito y verificado
+              const usuarioInscripcion = event.Inscripciones?.find(
+                (inscripcion) => inscripcion[usuarioId] === this.userId
+              );
+              event.estaInscrito = !!usuarioInscripcion;
+              event.verificado = usuarioInscripcion?.verificado === true;
 
               try {
                 event.enListaEspera = await this.eventosService.isUserInWaitList(event.id_evento, this.userId);
@@ -127,6 +134,12 @@ export class FolderPage implements OnInit {
     );
   }
 
+  transformarFecha(fecha: any): Date | null {
+    if (fecha && fecha.seconds) {
+      return new Date(fecha.seconds * 1000); // Convertimos de Firestore timestamp a Date
+    }
+    return null;
+  }
 
   customAlertOptions: any = {
     header: 'Seleccionar Sede',
@@ -142,7 +155,6 @@ export class FolderPage implements OnInit {
 
   filterEvents() {
     console.log('Sede seleccionada:', this.selectedSede);
-    // Filtra eventos en base a la sede seleccionada
     this.filteredEvents = this.allEvents.filter((evento) => {
       const matchesSearchText = this.searchText
         ? evento.titulo.toLowerCase().includes(this.searchText.toLowerCase())
@@ -157,40 +169,58 @@ export class FolderPage implements OnInit {
     });
   }
 
-
   toggleFilters() {
     this.showFilters = !this.showFilters;
   }
+
   async handleEventButtonClick(event: Evento) {
-    if (event.estado === 'en_curso') {
-      // Si el evento ya ha comenzado, mostrar la alerta de acreditación obligatoria
+    // Determinar el ID del usuario dependiendo de si es invitado o estudiante
+    const usuarioId = this.isInvitado ? 'id_invitado' : 'id_estudiante';
+
+    // Buscar en el array Inscripciones si el usuario está inscrito y si está verificado
+    const usuarioInscripcion = event.Inscripciones?.find((inscripcion) => inscripcion[usuarioId] === this.userId);
+    const estaInscrito = !!usuarioInscripcion; // Verificar si el usuario está inscrito
+    const estaVerificado = usuarioInscripcion?.verificado === true; // Verificar si está verificado
+
+    // Caso 1: Evento en curso y usuario verificado
+    if (event.estado === 'en_curso' && estaInscrito && estaVerificado) {
       Swal.fire({
-        icon: 'info',
-        title: 'Acreditación requerida',
-        text: 'El evento ya comenzó. Debes acreditarte o se te restarán 200 puntos.',
+        icon: 'success',
+        title: 'Verificado',
+        text: 'Ya estás verificado para este evento. No puedes cancelar tu inscripción.',
+        showConfirmButton: false,
+        timer: 2000
+      });
+      return;
+    }
+
+    // Caso 2: Evento en curso y usuario no verificado
+    if (event.estado === 'en_curso' && estaInscrito && !estaVerificado) {
+      Swal.fire({
+        icon: 'warning',
+        title: 'No puedes cancelar',
+        text: 'El evento ya ha comenzado. Debes acreditarte o se te restarán 200 puntos.',
         confirmButtonText: 'Entendido'
       });
-    } else if (event.estaInscrito) {
-      // Si está inscrito, cancelar la inscripción
+      return;
+    }
+
+    // Si el usuario está inscrito y el evento no está en curso, permitir cancelación
+    if (estaInscrito) {
       this.cancelarInscripcion(event.id_evento);
-    } else if (event.enListaEspera) {
-      // Si está en lista de espera, salir de la lista de espera
-      this.salirDeListaEspera(event.id_evento);
-    } else if (event.Cupos === 0) {
-      // Si el evento está lleno, unirse a la lista de espera
-      this.presentWaitListAlert(event);
     } else {
-      // Si hay cupos disponibles, inscribir al usuario
-      this.inscribirUsuario(event.id_evento);
+      // Si el usuario no está inscrito, presentar alerta de inscripción
+      this.presentAlert(event);
     }
   }
+
 
   async presentAlert(event: Evento) {
     const result = await Swal.fire({
       title: '¿Quieres inscribirte al evento?',
       showCancelButton: true,
       confirmButtonText: 'Sí',
-      cancelButtonText: 'No',
+      cancelButtonText: 'No'
     });
 
     if (result.isConfirmed) {
@@ -247,36 +277,8 @@ export class FolderPage implements OnInit {
   }
 
   async inscribirUsuario(eventoId: string) {
-    if (!this.userId) {
-      const currentUser = await this.afAuth.currentUser;
-      this.userId = currentUser?.uid || '';
-
-      if (!this.userId) {
-        Swal.fire({
-          icon: 'error',
-          title: 'Error',
-          text: 'No se pudo encontrar el usuario autenticado.',
-        });
-        return;
-      }
-    }
-
     this.loading = true;
     try {
-      const estaInscrito = this.isInvitado
-        ? await this.eventosService.isUserRegisteredInvitado(eventoId, this.userId)
-        : await this.eventosService.isUserRegisteredEstudiante(eventoId, this.userId);
-
-      if (estaInscrito) {
-        Swal.fire({
-          icon: 'info',
-          title: 'Ya estás inscrito en este evento.',
-          timer: 2000,
-          showConfirmButton: false,
-        });
-        return;
-      }
-
       let userName = '';
       let rut = '';
       if (this.isInvitado) {
@@ -297,18 +299,16 @@ export class FolderPage implements OnInit {
         icon: 'success',
         title: 'Te has inscrito al evento correctamente.',
         timer: 2000,
-        showConfirmButton: false,
+        showConfirmButton: false
       });
     } catch (error) {
       Swal.fire({
         icon: 'error',
         title: 'Error',
-        text: 'No se pudo inscribir en el evento.',
+        text: 'No se pudo inscribir en el evento.'
       });
     } finally {
-      setTimeout(() => {
-        this.loading = false;
-      }, 3000);
+      this.loading = false;
     }
   }
 
@@ -331,7 +331,7 @@ export class FolderPage implements OnInit {
       Swal.fire({
         icon: 'error',
         title: 'Error',
-        text: 'No se pudo actualizar tu perfil. Inténtalo más tarde.',
+        text: 'No se pudo actualizar tu perfil. Inténtalo más tarde.'
       });
     }
   }
@@ -348,7 +348,6 @@ export class FolderPage implements OnInit {
 
     if (result.isConfirmed) {
       try {
-        // Verificar si el usuario está inscrito antes de proceder con la cancelación
         const estaInscrito = this.isInvitado
           ? await this.eventosService.isUserRegisteredInvitado(eventoId, this.userId)
           : await this.eventosService.isUserRegisteredEstudiante(eventoId, this.userId);
@@ -358,29 +357,20 @@ export class FolderPage implements OnInit {
             icon: 'info',
             title: 'No estás inscrito en este evento.',
             timer: 2000,
-            showConfirmButton: false,
+            showConfirmButton: false
           });
           return;
         }
 
-        // Proceder a cancelar la inscripción en la base de datos
         if (this.isInvitado) {
           await this.eventosService.cancelarInscripcionInvitado(eventoId, this.userId);
         } else {
           await this.eventosService.cancelarInscripcionEstudiante(eventoId, this.userId);
         }
 
-        // Actualizar el estado del perfil del usuario
         await this.eventosService.eliminarUsuarioDeInscripciones(eventoId, this.userId);
         await this.actualizarPerfilUsuario(eventoId, 'eliminar');
 
-        // Actualizar el estado local del evento para reflejar la cancelación
-        const evento = this.filteredEvents.find((event) => event.id_evento === eventoId);
-        if (evento) {
-          evento.estaInscrito = false;
-        }
-
-        // Mostrar mensaje de confirmación
         Swal.fire({
           icon: 'success',
           title: 'Inscripción cancelada',
@@ -389,7 +379,6 @@ export class FolderPage implements OnInit {
           showConfirmButton: false
         });
 
-        // Recargar eventos para actualizar la interfaz
         this.loadEvents();
 
       } catch (error) {
@@ -397,7 +386,7 @@ export class FolderPage implements OnInit {
         Swal.fire({
           icon: 'error',
           title: 'Error',
-          text: 'No se pudo cancelar la inscripción. Inténtalo más tarde.',
+          text: 'No se pudo cancelar la inscripción. Inténtalo más tarde.'
         });
       }
     }

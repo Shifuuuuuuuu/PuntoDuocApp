@@ -64,10 +64,16 @@
 
           <ion-card-content class="centered-content">
             <p *ngIf="event.show" style="color: #0A49A7;">{{ event.descripcion }}</p>
+            <!-- Mostrar fecha del evento -->
+            <p style="color: #0A49A7;">Fecha: {{ transformarFecha(event.fecha) | date: 'dd/MM/yyyy' }}</p>
+
             <p style="color: #0A49A7;">Cupos disponibles: {{ event.Cupos }}</p>
 
-            <!-- Estado de inscripción en texto -->
-            <p *ngIf="event.estaInscrito" class="inscrito-text" style="color: #0A49A7;">
+            <!-- Estado de inscripción y verificación en texto -->
+            <p *ngIf="event.estaInscrito && event.verificado" class="verificado-text" style="color: #0A49A7;">
+              ¡Estás verificado en este evento!
+            </p>
+            <p *ngIf="event.estaInscrito && !event.verificado" class="inscrito-text" style="color: #0A49A7;">
               ¡Ya estás inscrito en este evento!
             </p>
             <p *ngIf="event.enListaEspera" class="en-lista-espera-text" style="color: #0A49A7;">

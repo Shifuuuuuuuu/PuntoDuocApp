@@ -23,6 +23,7 @@ export interface Evento {
   timestamp: any;
   categoria: string;
   Inscripciones?: Inscripcion[];
+  verificado?: boolean;
 }
 
 
