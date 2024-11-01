@@ -48,7 +48,7 @@ export class SubirRecompensaPage {
           icon: 'success',
           confirmButtonText: 'OK'
         }).then(() => {
-          this.router.navigate(['/ver-recompensas']);
+          this.router.navigate(['./folder-ventas']);
         });
       } catch (error) {
         console.error('Error al guardar la recompensa:', error);

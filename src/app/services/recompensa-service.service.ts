@@ -33,14 +33,25 @@ export class RecompensaService {
   constructor(private firestore: AngularFirestore) { }
 
   // Agregar una nueva recompensa
-  async agregarRecompensa(recompensa: Recompensa): Promise<void> {
-    try {
-      await this.firestore.collection<Recompensa>('Recompensas').add(recompensa);
-      console.log('Recompensa agregada con éxito');
-    } catch (error) {
-      console.error('Error al agregar la recompensa:', error);
-      throw error;
-    }
+async agregarRecompensa(recompensa: Recompensa): Promise<void> {
+  try {
+    // 1. Agregar la recompensa y obtener el documento
+    const docRef = await this.firestore.collection<Recompensa>('Recompensas').add(recompensa);
+    
+    // 2. Obtener el ID del documento creado
+    const id_recompensa = docRef.id;
+    
+    // 3. Actualizar el documento con el id_recompensa
+    await this.firestore.collection<Recompensa>('Recompensas').doc(id_recompensa).update({
+      id_recompensa: id_recompensa
+    });
+
+    console.log('Recompensa agregada con éxito');
+  } catch (error) {
+    console.error('Error al agregar la recompensa:', error);
+    throw error;
+  }
+
   }
     // Método para obtener la recompensa por ID
     getRecompensaById(id: string | undefined ) {

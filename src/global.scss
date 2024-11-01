@@ -50,3 +50,14 @@ $color2: #666666; // Color final
 .highlight {
   color: $color-yellow;
 }
+
+.custom-modal {
+  --width: 100%; /* Cambiar a auto para que el ancho se ajuste al contenido */
+  --max-width: 100%; /* Máximo ancho del modal */
+  --max-height: 10%;
+  --min-height: 50%; /* Establecer una altura mínima para el modal */
+  --border-radius: 16px; 
+  --background: white; 
+  padding: 16px; /* Añadir padding para el contenido del modal */
+  margin: auto; /* Centrar el modal */
+}

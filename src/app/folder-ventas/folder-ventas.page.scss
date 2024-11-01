@@ -129,3 +129,15 @@
   font-weight: 500;
   color: #007aff; /* Color azul para el texto */
 }
+.custom-modal .modal-wrapper {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  overflow: hidden;
+}
+
+.custom-modal .modal-content {
+  overflow: auto;
+  max-height: 80vh; /* Limitar la altura máxima del contenido */
+  padding: 16px;
+}
