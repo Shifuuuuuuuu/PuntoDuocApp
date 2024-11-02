@@ -7,7 +7,6 @@
 <ion-content [fullscreen]="true" class="content-center">
   <!-- Barra de búsqueda y botón de filtros -->
   <div class="search-container">
-    <!-- Barra de búsqueda -->
     <ion-searchbar
       style="--background: white; --color: #000000;"
       animated="true"
@@ -16,31 +15,12 @@
       (ionInput)="filterEvents()"
       class="custom-searchbar">
     </ion-searchbar>
-
-    <!-- Botón de filtro con solo el icono -->
     <ion-button class="filter-button" (click)="openSedeSelect()" style="color: black;">
       <ion-icon name="options-outline"></ion-icon>
     </ion-button>
-
-    <!-- Ion-select oculto que se activa al hacer clic en el botón -->
     <ion-select #sedeSelect class="hidden-select" [interfaceOptions]="customAlertOptions" interface="alert" placeholder="Seleccionar Sede" [(ngModel)]="selectedSede" (ionChange)="filterEvents()">
       <ion-select-option value="all">Todas las sedes</ion-select-option>
-      <ion-select-option value="Duoc Alameda">Duoc Alameda</ion-select-option>
-      <ion-select-option value="Duoc Antonio Varas">Duoc Antonio Varas</ion-select-option>
-      <ion-select-option value="Duoc Maipú">Duoc Maipú</ion-select-option>
-      <ion-select-option value="Duoc Plaza Oeste">Duoc Plaza Oeste</ion-select-option>
-      <ion-select-option value="Duoc Puente Alto">Duoc Puente Alto</ion-select-option>
-      <ion-select-option value="Duoc San Bernardo">Duoc San Bernardo</ion-select-option>
-      <ion-select-option value="Duoc San Joaquín">Duoc San Joaquín</ion-select-option>
-      <ion-select-option value="Duoc Plaza Vespucio">Duoc Plaza Vespucio</ion-select-option>
-      <ion-select-option value="Duoc Viña del Mar">Duoc Viña del Mar</ion-select-option>
-      <ion-select-option value="Duoc Valparaíso">Duoc Valparaíso</ion-select-option>
-      <ion-select-option value="Duoc Melipilla">Duoc Melipilla</ion-select-option>
-      <ion-select-option value="Duoc Renca">Duoc Renca</ion-select-option>
-      <ion-select-option value="Duoc Padre Alonso de Ovalle">Duoc Padre Alonso de Ovalle</ion-select-option>
-      <ion-select-option value="Duoc Concepción">Duoc Concepción</ion-select-option>
-      <ion-select-option value="Duoc San Andrés de Concepción">Duoc San Andrés de Concepción</ion-select-option>
-      <ion-select-option value="Duoc Villarrica">Duoc Villarrica</ion-select-option>
+      <!-- Opciones de sede aquí... -->
     </ion-select>
   </div>
 
@@ -66,129 +46,108 @@
       </ion-card>
     </swiper-slide>
   </swiper-container>
+
   <!-- Segmento de selección de fecha -->
   <swiper-container
-  [slidesPerView]="3"
-  [spaceBetween]="5"
-  [freeMode]="true"
-  class="segment-swiper"
->
-  <swiper-slide *ngFor="let segment of segments" (click)="onSegmentChange(segment.value)">
-    <ion-segment-button [value]="segment.value" [checked]="selectedSegment === segment.value">
-      <ion-label [ngStyle]="{'color': selectedSegment === segment.value ? '#0A49A7' : 'gray'}">
-        {{ segment.label }}
-      </ion-label>
-    </ion-segment-button>
-  </swiper-slide>
-</swiper-container>
-
+    [slidesPerView]="3"
+    [spaceBetween]="5"
+    [freeMode]="true"
+    class="segment-swiper"
+  >
+    <swiper-slide *ngFor="let segment of segments" (click)="onSegmentChange(segment.value)">
+      <ion-segment-button [value]="segment.value" [checked]="selectedSegment === segment.value">
+        <ion-label [ngStyle]="{'color': selectedSegment === segment.value ? '#0A49A7' : 'gray'}">
+          {{ segment.label }}
+        </ion-label>
+      </ion-segment-button>
+    </swiper-slide>
+  </swiper-container>
 
   <!-- Carrusel de eventos filtrados en Swiper -->
   <swiper-container
-    [slidesPerView]="1.35"
-    [spaceBetween]="10"
-    [centeredSlides]="true"
-    *ngIf="!loading && segmentFilteredEvents.length > 0"
-    class="swiper-container"
-  >
-    <swiper-slide *ngFor="let event of segmentFilteredEvents">
-      <ion-card class="event-card">
-        <img alt="Imagen del evento" [src]="event.imagen" class="event-image" />
-        <ion-card-header>
-          <ion-card-title (click)="toggleDescription(event)" class="centered-text" style="color: #0A49A7;">
-            {{ event.titulo }}
-          </ion-card-title>
-        </ion-card-header>
+  [slidesPerView]="1.35"
+  [spaceBetween]="10"
+  [centeredSlides]="true"
+  *ngIf="!loading && segmentFilteredEvents.length > 0"
+  class="swiper-container"
+>
+  <swiper-slide *ngFor="let event of segmentFilteredEvents" (click)="goToEventDetails(event)">
+    <ion-card class="event-card">
+      <img alt="Imagen del evento" [src]="event.imagen" class="event-image" />
+      <p style="color: black; font-weight: bold; padding: 0 16px;">
+        {{ transformarFecha(event.fecha) | date: 'EEEE, d \'de\' MMMM \'de\' yyyy, HH:mm' }}
+      </p>
+      <ion-icon
+        name="star"
+        (click)="toggleFavorite(event); $event.stopPropagation()"
+        [style.color]="event.isFavorite ? '#FFD700' : 'gray'"
+        style="position: absolute; top: 10px; right: 10px; font-size: 24px; cursor: pointer;"
+      ></ion-icon>
+      <ion-card-header>
+        <ion-card-title class="centered-text" style="color: black;">
+          {{ event.titulo }}
+        </ion-card-title>
+      </ion-card-header>
+      <ion-card-content class="centered-content">
+        <p *ngIf="event.show" style="color: black;">{{ event.descripcion }}</p>
+        <p style="color: black;">Cupos disponibles: {{ event.Cupos }}</p>
+        <p *ngIf="event.estaInscrito && event.verificado" class="verificado-text" style="color: black;">
+          ¡Estás verificado en este evento!
+        </p>
+        <p *ngIf="event.estaInscrito && !event.verificado" class="inscrito-text" style="color: black;">
+          ¡Ya estás inscrito en este evento!
+        </p>
+        <p *ngIf="event.enListaEspera" class="en-lista-espera-text" style="color: black;">
+          ¡Ya estás en la lista de espera!
+        </p>
+      </ion-card-content>
+    </ion-card>
+  </swiper-slide>
+</swiper-container>
 
-        <ion-card-content class="centered-content">
-          <p *ngIf="event.show" style="color: #0A49A7;">{{ event.descripcion }}</p>
-          <p style="color: #0A49A7;">Fecha: {{ transformarFecha(event.fecha) | date: 'dd/MM/yyyy' }}</p>
-          <p style="color: #0A49A7;">Cupos disponibles: {{ event.Cupos }}</p>
-
-          <p *ngIf="event.estaInscrito && event.verificado" class="verificado-text" style="color: #0A49A7;">
-            ¡Estás verificado en este evento!
-          </p>
-          <p *ngIf="event.estaInscrito && !event.verificado" class="inscrito-text" style="color: #0A49A7;">
-            ¡Ya estás inscrito en este evento!
-          </p>
-          <p *ngIf="event.enListaEspera" class="en-lista-espera-text" style="color: #0A49A7;">
-            ¡Ya estás en la lista de espera!
-          </p>
-
-          <ion-button
-            [color]="event.estaInscrito ? 'danger' : event.enListaEspera ? 'primary' : 'primary'"
-            (click)="handleEventButtonClick(event)"
-            expand="block"
-            style="--background: #0A49A7; --color: white;"
-          >
-            {{
-              event.estaInscrito
-                ? 'Cancelar inscripción'
-                : event.enListaEspera
-                ? 'Salir de lista de espera'
-                : event.Cupos === 0
-                ? 'Unirse a lista de espera'
-                : 'Inscribirse'
-            }}
-          </ion-button>
-        </ion-card-content>
-      </ion-card>
-    </swiper-slide>
-  </swiper-container>
   <div *ngIf="loading" class="ion-padding" style="text-align: center;">
-    <ion-spinner name="crescent" style="color: #0A49A7;"></ion-spinner>
-    <p style="color: #0A49A7;">Cargando...</p>
+    <ion-spinner name="crescent" style="color: black"></ion-spinner>
+    <p style="color: black">Cargando...</p>
   </div>
+
   <!-- Listado de eventos filtrados solo por sede -->
   <ion-grid *ngIf="!loading && sedeFilteredEvents.length > 0">
     <ion-row>
-      <ion-col size="12" size-md="6" *ngFor="let event of sedeFilteredEvents">
+      <ion-col size="12" size-md="6" *ngFor="let event of sedeFilteredEvents" (click)="goToEventDetails(event)">
         <ion-card class="event-card">
           <img alt="Imagen del evento" [src]="event.imagen" class="event-image" />
+          <p style="color: black; font-weight: bold; padding: 0 16px;">
+            {{ transformarFecha(event.fecha) | date: 'EEEE, d \'de\' MMMM \'de\' yyyy, HH:mm' }}
+          </p>
+          <ion-icon
+            name="star"
+            (click)="toggleFavorite(event); $event.stopPropagation()"
+            [style.color]="event.isFavorite ? '#FFD700' : 'gray'"
+            style="position: absolute; top: 10px; right: 10px; font-size: 24px; cursor: pointer;"
+          ></ion-icon>
           <ion-card-header>
-            <ion-card-title (click)="toggleDescription(event)" class="centered-text" style="color: #0A49A7;">
+            <ion-card-title class="centered-text" style="color: black;">
               {{ event.titulo }}
             </ion-card-title>
           </ion-card-header>
-
           <ion-card-content class="centered-content">
-            <p *ngIf="event.show" style="color: #0A49A7;">{{ event.descripcion }}</p>
-            <!-- Mostrar fecha del evento -->
-            <p style="color: #0A49A7;">Fecha: {{ transformarFecha(event.fecha) | date: 'dd/MM/yyyy' }}</p>
-
-            <p style="color: #0A49A7;">Cupos disponibles: {{ event.Cupos }}</p>
-
-            <!-- Estado de inscripción y verificación en texto -->
-            <p *ngIf="event.estaInscrito && event.verificado" class="verificado-text" style="color: #0A49A7;">
+            <p *ngIf="event.show" style="color: black;">{{ event.descripcion }}</p>
+            <p style="color: black;">Cupos disponibles: {{ event.Cupos }}</p>
+            <p *ngIf="event.estaInscrito && event.verificado" class="verificado-text" style="color: black;">
               ¡Estás verificado en este evento!
             </p>
-            <p *ngIf="event.estaInscrito && !event.verificado" class="inscrito-text" style="color: #0A49A7;">
+            <p *ngIf="event.estaInscrito && !event.verificado" class="inscrito-text" style="color: black;">
               ¡Ya estás inscrito en este evento!
             </p>
-            <p *ngIf="event.enListaEspera" class="en-lista-espera-text" style="color: #0A49A7;">
+            <p *ngIf="event.enListaEspera" class="en-lista-espera-text" style="color: black;">
               ¡Ya estás en la lista de espera!
             </p>
-
-            <ion-button
-              [color]="event.estaInscrito ? 'danger' : event.enListaEspera ? 'primary' : 'primary'"
-              (click)="handleEventButtonClick(event)"
-              expand="block"
-              style="--background: #0A49A7; --color: white;">
-              {{
-                event.estaInscrito
-                  ? 'Cancelar inscripción'
-                  : event.enListaEspera
-                  ? 'Salir de lista de espera'
-                  : event.Cupos === 0
-                  ? 'Unirse a lista de espera'
-                  : 'Inscribirse'
-              }}
-            </ion-button>
           </ion-card-content>
         </ion-card>
       </ion-col>
     </ion-row>
   </ion-grid>
+
 
   <ion-footer collapse="fade" class="footer">
     <p>Síguenos en nuestras redes sociales:</p>

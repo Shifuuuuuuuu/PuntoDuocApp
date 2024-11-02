@@ -24,6 +24,7 @@ export interface Evento {
   categoria: string;
   Inscripciones?: Inscripcion[];
   verificado?: boolean;
+  isFavorite?: boolean;
 }
 
 

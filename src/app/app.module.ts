@@ -1,4 +1,4 @@
-import { NgModule } from '@angular/core';
+import { LOCALE_ID, NgModule } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
 import { RouteReuseStrategy } from '@angular/router';
 import { IonicModule, IonicRouteStrategy } from '@ionic/angular';
@@ -16,10 +16,11 @@ import { QRCodeModule } from 'angularx-qrcode';
 import { TabUsuarioModule } from './tab-usuario/tab-usuario.module';
 import { RecompensasModalComponent } from './recompensas-modal-component/recompensas-modal-component.component';
 import { RecompensasReclamadasModalComponent } from './recompensas-reclamadas-modal-component/recompensas-reclamadas-modal-component.component';
+import { registerLocaleData } from '@angular/common';
+import localeEs from '@angular/common/locales/es';
 
 
-
-
+registerLocaleData(localeEs);
 
 
 @NgModule({
@@ -27,10 +28,10 @@ import { RecompensasReclamadasModalComponent } from './recompensas-reclamadas-mo
     RecompensasReclamadasModalComponent],
   imports: [AngularFireModule.initializeApp(environment.firebaseConfig),
     AngularFireAuthModule ,BrowserModule, IonicModule.forRoot(), AppRoutingModule,FormsModule,AngularFirestoreModule,TabBarModule,TabBarAdminModule,TabUsuarioModule ],
-  providers: [{ provide: RouteReuseStrategy, useClass: IonicRouteStrategy },InvitadoService,QRCodeModule ],
+  providers: [{ provide: RouteReuseStrategy, useClass: IonicRouteStrategy },{ provide: LOCALE_ID, useValue: 'es' },InvitadoService,QRCodeModule ],
   bootstrap: [AppComponent],
- 
-  
+
+
 })
 export class AppModule {
   static forChild(): any[] | import("@angular/core").Type<any> | import("@angular/core").ModuleWithProviders<{}> {
