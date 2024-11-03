@@ -20,7 +20,22 @@
     </ion-button>
     <ion-select #sedeSelect class="hidden-select" [interfaceOptions]="customAlertOptions" interface="alert" placeholder="Seleccionar Sede" [(ngModel)]="selectedSede" (ionChange)="filterEvents()">
       <ion-select-option value="all">Todas las sedes</ion-select-option>
-      <!-- Opciones de sede aquí... -->
+      <ion-select-option value="Duoc Alameda">Duoc Alameda</ion-select-option>
+      <ion-select-option value="Duoc Antonio Varas">Duoc Antonio Varas</ion-select-option>
+      <ion-select-option value="Duoc Maipú">Duoc Maipú</ion-select-option>
+      <ion-select-option value="Duoc Plaza Oeste">Duoc Plaza Oeste</ion-select-option>
+      <ion-select-option value="Duoc Puente Alto">Duoc Puente Alto</ion-select-option>
+      <ion-select-option value="Duoc San Bernardo">Duoc San Bernardo</ion-select-option>
+      <ion-select-option value="Duoc San Joaquín">Duoc San Joaquín</ion-select-option>
+      <ion-select-option value="Duoc Plaza Vespucio">Duoc Plaza Vespucio</ion-select-option>
+      <ion-select-option value="Duoc Viña del Mar">Duoc Viña del Mar</ion-select-option>
+      <ion-select-option value="Duoc Valparaíso">Duoc Valparaíso</ion-select-option>
+      <ion-select-option value="Duoc Melipilla">Duoc Melipilla</ion-select-option>
+      <ion-select-option value="Duoc Renca">Duoc Renca</ion-select-option>
+      <ion-select-option value="Duoc Padre Alonso de Ovalle">Duoc Padre Alonso de Ovalle</ion-select-option>
+      <ion-select-option value="Duoc Concepción">Duoc Concepción</ion-select-option>
+      <ion-select-option value="Duoc San Andrés de Concepción">Duoc San Andrés de Concepción</ion-select-option>
+      <ion-select-option value="Duoc Villarrica">Duoc Villarrica</ion-select-option>
     </ion-select>
   </div>
 
@@ -105,48 +120,94 @@
   </swiper-slide>
 </swiper-container>
 
-  <div *ngIf="loading" class="ion-padding" style="text-align: center;">
-    <ion-spinner name="crescent" style="color: black"></ion-spinner>
-    <p style="color: black">Cargando...</p>
-  </div>
+<div *ngIf="loading" class="ion-padding" style="text-align: center;">
+  <ion-spinner name="crescent" style="color: black"></ion-spinner>
+  <p style="color: black">Cargando...</p>
+</div>
+  <ion-text color="dark">
+    <h2 style="color: black;">Eventos Recientes</h2>
+  </ion-text>
 
-  <!-- Listado de eventos filtrados solo por sede -->
-  <ion-grid *ngIf="!loading && sedeFilteredEvents.length > 0">
+  <ion-grid *ngIf="recentEvents.length > 0">
     <ion-row>
-      <ion-col size="12" size-md="6" *ngFor="let event of sedeFilteredEvents" (click)="goToEventDetails(event)">
+      <ion-col size="12" size-md="6" *ngFor="let event of recentEvents" (click)="goToEventDetails(event)">
         <ion-card class="event-card">
           <img alt="Imagen del evento" [src]="event.imagen" class="event-image" />
           <p style="color: black; font-weight: bold; padding: 0 16px;">
-            {{ transformarFecha(event.fecha) | date: 'EEEE, d \'de\' MMMM \'de\' yyyy, HH:mm' }}
+            {{ transformarFecha(event.fecha_creacion) | date: 'EEEE, d \'de\' MMMM \'de\' yyyy, HH:mm' }}
           </p>
-          <ion-icon
-            name="star"
-            (click)="toggleFavorite(event); $event.stopPropagation()"
-            [style.color]="event.isFavorite ? '#FFD700' : 'gray'"
-            style="position: absolute; top: 10px; right: 10px; font-size: 24px; cursor: pointer;"
-          ></ion-icon>
           <ion-card-header>
             <ion-card-title class="centered-text" style="color: black;">
               {{ event.titulo }}
             </ion-card-title>
           </ion-card-header>
           <ion-card-content class="centered-content">
-            <p *ngIf="event.show" style="color: black;">{{ event.descripcion }}</p>
             <p style="color: black;">Cupos disponibles: {{ event.Cupos }}</p>
-            <p *ngIf="event.estaInscrito && event.verificado" class="verificado-text" style="color: black;">
-              ¡Estás verificado en este evento!
-            </p>
-            <p *ngIf="event.estaInscrito && !event.verificado" class="inscrito-text" style="color: black;">
-              ¡Ya estás inscrito en este evento!
-            </p>
-            <p *ngIf="event.enListaEspera" class="en-lista-espera-text" style="color: black;">
-              ¡Ya estás en la lista de espera!
-            </p>
           </ion-card-content>
         </ion-card>
       </ion-col>
     </ion-row>
   </ion-grid>
+  <ion-text *ngIf="recentEvents.length === 0" style="color: black;">
+    No hay eventos recientes.
+  </ion-text>
+  <div class="popular-events-header">
+    <ion-text color="dark">
+      <h2 style="color: black;">Eventos más populares</h2>
+    </ion-text>
+  </div>
+
+  <!-- Carrusel de eventos populares -->
+  <swiper-container
+    [slidesPerView]="1.35"
+    [spaceBetween]="10"
+    [centeredSlides]="true"
+    *ngIf="popularEvents.length > 0"
+    class="swiper-container"
+  >
+    <swiper-slide *ngFor="let event of popularEvents" (click)="goToEventDetails(event)">
+      <ion-card class="event-card">
+        <img alt="Imagen del evento" [src]="event.imagen" class="event-image" />
+
+        <!-- Fecha del evento en español -->
+        <p style="color: #0A49A7; font-weight: bold; padding: 0 16px;">
+          {{ transformarFecha(event.fecha) | date: 'EEEE, d \'de\' MMMM \'de\' yyyy, HH:mm' }}
+        </p>
+
+        <!-- Icono de estrella para marcar como favorito -->
+        <ion-icon
+          name="star"
+          (click)="toggleFavorite(event); $event.stopPropagation()"
+          [style.color]="event.isFavorite ? '#FFD700' : 'gray'"
+          style="position: absolute; top: 10px; right: 10px; font-size: 24px; cursor: pointer;"
+        ></ion-icon>
+
+        <ion-card-header>
+          <ion-card-title class="centered-text" style="color: #0A49A7;">
+            {{ event.titulo }}
+          </ion-card-title>
+        </ion-card-header>
+
+        <ion-card-content class="centered-content">
+          <p *ngIf="event.show" style="color: #0A49A7;">{{ event.descripcion }}</p>
+          <p style="color: #0A49A7;">Cupos disponibles: {{ event.Cupos }}</p>
+          <p style="color: #0A49A7;">Inscritos: {{ event.inscritos }}</p>
+          <p *ngIf="event.estaInscrito && event.verificado" class="verificado-text" style="color: #0A49A7;">
+            ¡Estás verificado en este evento!
+          </p>
+          <p *ngIf="event.estaInscrito && !event.verificado" class="inscrito-text" style="color: #0A49A7;">
+            ¡Ya estás inscrito en este evento!
+          </p>
+          <p *ngIf="event.enListaEspera" class="en-lista-espera-text" style="color: #0A49A7;">
+            ¡Ya estás en la lista de espera!
+          </p>
+        </ion-card-content>
+      </ion-card>
+    </swiper-slide>
+  </swiper-container>
+  <div *ngIf="popularEvents.length === 0" class="ion-padding" style="text-align: center;">
+    <p style="color: black;">No hay eventos populares disponibles.</p>
+  </div>
 
 
   <ion-footer collapse="fade" class="footer">

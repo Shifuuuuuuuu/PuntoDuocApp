@@ -1,67 +1,45 @@
-ion-tab-bar {
+.custom-tab-bar {
   --border: none;
-  --background: white; /* Fondo semitransparente */
-  margin: 16px 5vw; /* Márgenes dinámicos basados en el ancho de la pantalla */
-  border-radius: 14px; /* Borde redondeado */
-  box-shadow:
-    0px 3px 6px 0px rgba(0, 0, 0, 0.04), /* Sombra suave */
-    0px 1px 3px 0px rgba(0, 0, 0, 0.02); /* Sombra más pequeña */
-  max-width: 95vw; /* Para limitar el ancho en pantallas grandes */
-  padding: 10px;
+  --background: white;
+  margin: 8px 4vw;
+  border-radius: 14px;
+  box-shadow: 0px 3px 6px rgba(0, 0, 0, 0.1);
+  max-width: 95vw;
+  padding: 12px;
 
   ion-tab-button {
     --color-selected: #007bff; /* Color del botón seleccionado */
-    --color: #606060; /* Color del texto y iconos no seleccionados */
+    --color: #606060; /* Color de los íconos no seleccionados */
     --background: transparent;
-    font-size: 4vw; /* Tamaño de fuente relativo al ancho de la pantalla */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 6px;
   }
 
   ion-tab-button ion-icon {
-    font-size: 6vw; /* Tamaño de los íconos ajustado a la pantalla */
+    font-size: 7vw; /* Tamaño de los íconos */
   }
 
-  ion-tab-button ion-label {
-    margin-top: 2px;
-    font-size: 3.5vw; /* Tamaño de etiqueta adaptado */
-  }
-
-
-
-  /* Diseño adaptable para pantallas pequeñas */
+  /* Pantallas pequeñas */
   @media (max-width: 600px) {
-    margin: 8px 2vw; /* Márgenes reducidos en pantallas más pequeñas */
-    border-radius: 10px; /* Radio más pequeño en pantallas pequeñas */
-    padding: 8px;
-
-    ion-tab-button {
-      font-size: 5vw; /* Aumentar ligeramente el tamaño en pantallas pequeñas */
-    }
+    margin: 8px 2vw;
+    border-radius: 10px;
+    padding: 10px;
 
     ion-tab-button ion-icon {
-      font-size: 7vw; /* Íconos más grandes en pantallas pequeñas */
-    }
-
-    ion-tab-button ion-label {
-      font-size: 3.5vw; /* Ajuste del tamaño de la etiqueta */
+      font-size: 8vw; /* Tamaño de íconos en pantallas pequeñas */
     }
   }
 
-  /* Diseño adaptable para pantallas grandes */
+  /* Pantallas grandes */
   @media (min-width: 1200px) {
     margin: 20px auto;
     padding: 15px;
-    max-width: 60vw; /* Limitar el tamaño del tab bar en pantallas muy grandes */
-
-    ion-tab-button {
-      font-size: 2vw; /* Fuente más pequeña en pantallas grandes */
-    }
+    max-width: 60vw;
 
     ion-tab-button ion-icon {
-      font-size: 2.5vw; /* Tamaño del ícono en pantallas grandes */
-    }
-
-    ion-tab-button ion-label {
-      font-size: 1.8vw; /* Ajuste para pantallas grandes */
+      font-size: 4vw; /* Tamaño de íconos en pantallas grandes */
     }
   }
 }

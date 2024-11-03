@@ -8,6 +8,7 @@ import { AuthService } from '../services/auth.service';
 import { InvitadoService } from '../services/invitado.service';
 import { EstudianteService } from '../services/estudiante.service';
 import { Evento } from '../interface/IEventos';
+import { firstValueFrom } from 'rxjs';
 
 @Component({
   selector: 'app-event-details',
@@ -32,26 +33,33 @@ export class EventDetailsPage implements OnInit {
   async ngOnInit() {
     const eventId = this.route.snapshot.paramMap.get('id_evento');
     if (eventId) {
+      await this.identificarUsuario();
       await this.loadEventDetails(eventId);
     }
+  }
 
-    const emailEstudiante = await this.authService.getCurrentUserEmail().toPromise();
-    if (emailEstudiante) {
-      const estudiante = await this.authService.getEstudianteByEmail(emailEstudiante);
-      if (estudiante) {
-        this.userId = estudiante.id_estudiante!;
-        this.isInvitado = false;
-        return;
+  async identificarUsuario() {
+    try {
+      const emailInvitado = await firstValueFrom(this.invitadoService.getCurrentUserEmail());
+      if (emailInvitado) {
+        const invitado = await this.invitadoService.getInvitadoByEmail(emailInvitado);
+        if (invitado) {
+          this.userId = invitado.id_Invitado!;
+          this.isInvitado = true;
+          return;
+        }
       }
-    }
 
-    const emailInvitado = await this.invitadoService.getCurrentUserEmail().toPromise();
-    if (emailInvitado) {
-      const invitado = await this.invitadoService.obtenerInvitadoPorEmail(emailInvitado).toPromise();
-      if (invitado) {
-        this.userId = invitado.id_Invitado!;
-        this.isInvitado = true;
+      const emailEstudiante = await firstValueFrom(this.authService.getCurrentUserEmail());
+      if (emailEstudiante) {
+        const estudiante = await this.estudianteService.getEstudianteByEmail(emailEstudiante);
+        if (estudiante) {
+          this.userId = estudiante.id_estudiante!;
+          this.isInvitado = false;
+        }
       }
+    } catch (error) {
+      console.error('Error al identificar al usuario:', error);
     }
   }
 
@@ -59,25 +67,32 @@ export class EventDetailsPage implements OnInit {
     this.loading = true;
     this.firestore.collection<Evento>('Eventos').doc(eventId).valueChanges().subscribe(async (event) => {
       if (event) {
-        this.event = { ...event, verificado: false }; // Añadir `verificado` por defecto en false
+        this.event = { ...event, verificado: false };
 
         if (this.userId && this.event.id_evento) {
-          const usuarioId = this.isInvitado ? 'id_invitado' : 'id_estudiante';
-          const usuarioInscripcion = this.event.Inscripciones?.find(inscripcion => inscripcion[usuarioId] === this.userId);
-          this.event.estaInscrito = !!usuarioInscripcion;
-          this.event.verificado = usuarioInscripcion?.verificado === true;
-
-          try {
-            this.event.enListaEspera = await this.eventosService.isUserInWaitList(this.event.id_evento, this.userId);
-          } catch (error) {
-            console.error('Error al verificar lista de espera:', error);
-            this.event.enListaEspera = false;
-          }
+          await this.actualizarEstadoInscripcion();
         }
       }
       this.loading = false;
     });
   }
+  async actualizarEstadoInscripcion() {
+    if (!this.event) return;
+
+    const usuarioId = this.isInvitado ? 'id_invitado' : 'id_estudiante';
+    const usuarioInscripcion = this.event.Inscripciones?.find(inscripcion => inscripcion[usuarioId] === this.userId);
+
+    this.event.estaInscrito = !!usuarioInscripcion;
+    this.event.verificado = usuarioInscripcion?.verificado === true;
+
+    try {
+      this.event.enListaEspera = await this.eventosService.isUserInWaitList(this.event.id_evento, this.userId);
+    } catch (error) {
+      console.error('Error al verificar lista de espera:', error);
+      this.event.enListaEspera = false;
+    }
+  }
+
 
   async handleEventButtonClick(event: Evento) {
     const usuarioId = this.isInvitado ? 'id_invitado' : 'id_estudiante';
@@ -149,10 +164,16 @@ export class EventDetailsPage implements OnInit {
   }
 
   async inscribirUsuario(eventoId: string) {
+    if (!this.userId) {
+      Swal.fire('Error', 'No se pudo identificar al usuario. Inténtalo más tarde.', 'error');
+      return;
+    }
+
     this.loading = true;
     try {
       let userName = '';
       let rut = '';
+
       if (this.isInvitado) {
         const invitado = await this.invitadoService.obtenerInvitadoPorId(this.userId);
         userName = invitado?.Nombre_completo || 'Invitado';
@@ -164,7 +185,11 @@ export class EventDetailsPage implements OnInit {
         rut = estudiante?.Rut || '';
         await this.eventosService.inscribirEstudiante(eventoId, this.userId, userName, rut);
       }
+
       Swal.fire('Éxito', 'Te has inscrito al evento correctamente.', 'success');
+
+      // Actualizar estado de inscripción
+      await this.loadEventDetails(eventoId);
     } catch (error) {
       Swal.fire('Error', 'No se pudo inscribir en el evento.', 'error');
     } finally {
@@ -195,15 +220,9 @@ export class EventDetailsPage implements OnInit {
             await this.eventosService.cancelarInscripcionEstudiante(eventoId, this.userId);
           }
 
-          // Eliminar la inscripción del array 'Inscripciones' en la colección de 'Eventos'
           await this.eventosService.eliminarUsuarioDeInscripciones(eventoId, this.userId);
 
-          // Actualizar el perfil del usuario para reflejar el cambio de inscripción
-          await this.actualizarPerfilUsuario(eventoId, 'eliminar');
-
           Swal.fire('Cancelado', 'Has cancelado tu inscripción correctamente.', 'success');
-
-          // Recargar los detalles del evento para reflejar el cambio
           await this.loadEventDetails(eventoId);
         } else {
           Swal.fire('No inscrito', 'No estás inscrito en este evento.', 'info');

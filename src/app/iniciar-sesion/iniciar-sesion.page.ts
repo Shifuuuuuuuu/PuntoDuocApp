@@ -63,14 +63,15 @@ export class IniciarSesionPage implements OnInit {
     // Intentar iniciar sesión como estudiante
     this.authService.login(this.user.email, this.user.password)
       .then(async (studentData) => {
-        if (studentData) {
+        if (studentData && studentData.id_estudiante) {  // Verifica que studentData y id_estudiante no sean undefined
           console.log('Inicio de sesión como estudiante exitoso:', studentData);
           this.authService.setCurrentUserEmail(this.user.email);
-          localStorage.setItem('tipousuario', 'estudiante');
+          localStorage.setItem('userType', 'estudiante'); // Almacenar tipo de usuario
+          localStorage.setItem('id', studentData.id_estudiante); // Guardar el ID del estudiante
           this.router.navigate(['/folder/Inicio']);
         } else {
           this.errorMessage = 'No se pudo encontrar un estudiante con este correo.';
-          await this.iniciarSesionComoInvitado();
+          await this.iniciarSesionComoInvitado(); // Intentar iniciar sesión como invitado si no es estudiante
         }
       })
       .catch(async (error) => {
@@ -78,6 +79,7 @@ export class IniciarSesionPage implements OnInit {
         await this.iniciarSesionComoInvitado();
       });
   }
+
 
   // Método para manejar la sesión como invitado
   iniciarSesionComoInvitado() {
@@ -90,6 +92,8 @@ export class IniciarSesionPage implements OnInit {
           if (authUserEmail) {
             console.log('Inicio de sesión como invitado exitoso:', userCredential);
             this.invitadoService.setCurrentUserEmail(authUserEmail);
+            localStorage.setItem('userType', 'invitado'); // Almacenar tipo de usuario como invitado
+            localStorage.setItem('id', userCredential.user.uid); // Guardar el ID del invitado
             this.router.navigate(['/folder/Inicio']);
           } else {
             this.errorMessage = 'No se pudo autenticar al invitado. El correo es nulo.';

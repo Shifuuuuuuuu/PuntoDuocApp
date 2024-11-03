@@ -3,37 +3,22 @@
     <ion-buttons slot="start">
       <ion-back-button defaultHref="/folder/Inicio" style="color: white;"></ion-back-button>
     </ion-buttons>
-    <ion-buttons slot="end">
-      <ion-button size="large" [routerLink]="['/perfil-usuario']">
-        <ion-icon style="color: white" name="person-circle-outline"></ion-icon>
-      </ion-button>
-      <ion-menu-button size="medium"></ion-menu-button>
-    </ion-buttons>
-    <ion-title style="color: white">PuntoDuoc</ion-title>
+    <ion-title style="color: white">Historial de Eventos</ion-title>
   </ion-toolbar>
 </ion-header>
 
 <ion-content [fullscreen]="true" class="content-center">
-  <ion-refresher slot="fixed" (ionRefresh)="doRefresh($event)">
-    <ion-refresher-content></ion-refresher-content>
-  </ion-refresher>
-
-  <div *ngIf="isLoading" class="loading-indicator">
-    <ion-spinner></ion-spinner>
-    <p>Cargando eventos...</p>
-  </div>
-
-  <ion-list *ngIf="!isLoading && inscripciones.length > 0">
-    <ion-item *ngFor="let inscripcion of inscripciones">
-      <ion-label (click)="verDetalles(inscripcion.eventoId)">
-        <h2>{{ inscripcion.titulo }}</h2>
-        <p>{{ inscripcion.descripcion }}</p>
-        <p><strong>Fecha:</strong> {{ inscripcion.fecha }}</p>
+ <ion-list style="background-color: white;" *ngIf="eventosVerificados.length > 0">
+    <ion-item class="event-item" *ngFor="let evento of eventosVerificados">
+      <ion-thumbnail slot="start" class="event-thumbnail">
+        <img [src]="evento.imagen" alt="Imagen del evento" class="event-image">
+      </ion-thumbnail>
+      <ion-label>
+        <h2>{{ evento.titulo }}</h2>
+        <p>Estado: Verificado</p>
       </ion-label>
-      <ion-button slot="end" (click)="cancelarInscripcion(inscripcion.eventoId)">Cancelar</ion-button>
     </ion-item>
   </ion-list>
-
   <ion-footer collapse="fade" class="footer">
     <p>Síguenos en nuestras redes sociales:</p>
     <div class="social-icons">

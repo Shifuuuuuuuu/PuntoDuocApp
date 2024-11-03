@@ -47,16 +47,20 @@ export class AuthService {
 
   async login(email: string, password: string): Promise<Estudiante | null> {
     try {
-      const userCredential = await firebase.auth().signInWithEmailAndPassword(email, password);
+      // Iniciar sesión sin almacenar 'userCredential'
+      await firebase.auth().signInWithEmailAndPassword(email, password);
+
       const estudianteSnapshot = await this.firestore.collection<Estudiante>('Estudiantes', ref => ref.where('email', '==', email)).get().toPromise();
 
       if (estudianteSnapshot && !estudianteSnapshot.empty) {
         const estudianteDoc = estudianteSnapshot.docs[0];
         const estudianteData = estudianteDoc.data() as Estudiante;
         estudianteData.id_estudiante = estudianteDoc.id;
+
+        // Almacenar el tipo de usuario en localStorage
+        localStorage.setItem('userType', 'estudiante');
         localStorage.setItem('id', estudianteData.id_estudiante);
 
-        this.setCurrentUserEmail(email); // Guardar email y actualizar el BehaviorSubject
         return estudianteData;
       } else {
         return null;
@@ -66,6 +70,22 @@ export class AuthService {
       throw error;
     }
   }
+
+
+
+  isEstudiante(): boolean {
+    return localStorage.getItem('userType') === 'estudiante';
+  }
+
+  isInvitado(): boolean {
+    return localStorage.getItem('userType') === 'invitado';
+  }
+
+  // Método para establecer el tipo de usuario en el almacenamiento local
+  setUserType(userType: 'estudiante' | 'invitado'): void {
+    localStorage.setItem('userType', userType);
+  }
+
 
   async logout(): Promise<void> {
     try {

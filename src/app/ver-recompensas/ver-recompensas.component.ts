@@ -34,18 +34,18 @@ export class VerRecompensasComponent implements OnInit {
     this.tipoUsuario = localStorage.getItem('tipousuario');
     this.userEmail = localStorage.getItem('currentUserEmail') || '';
     this.userId = localStorage.getItem('id') || '';
-  
+
     if (this.userEmail) {
       this.tienePermisos = this.verificarUsuarioVentasOEventos(this.userEmail);
       await this.loadUserData();
-  
+
       if (this.tienePermisos) {
         // Obtener todas las recompensas sin filtros
         const todasLasRecompensas = await this.recompensaService.getRecompensas();
-  
+
         // Filtrar las recompensas que tienen cantidad mayor a 0 para la vista general
         this.recompensas = todasLasRecompensas.filter(r => r.cantidad > 0);
-  
+
         // Filtrar las recompensas que tienen un QR ya generado para este usuario y que no están reclamadas
         this.recompensasConQR = todasLasRecompensas
           .filter(r => Array.isArray(r.estudiantesReclamaron) &&
@@ -55,10 +55,10 @@ export class VerRecompensasComponent implements OnInit {
             recompensa: r,
             qrCode: r.estudiantesReclamaron?.find(e => e.id_estudiante === this.userId && !e.reclamado)?.qrCode || ''
         }));
-        
-  
+
+
         console.log("Recompensas con QR:", this.recompensasConQR);
-  
+
       } else {
         this.errorMessage = 'No tienes permisos para ver las recompensas.';
       }
@@ -66,10 +66,10 @@ export class VerRecompensasComponent implements OnInit {
       this.errorMessage = 'No se pudo obtener el correo del usuario.';
     }
   }
-  
-  
-  
-  
+
+
+
+
   esEstudiante(): boolean {
     return this.tipoUsuario === 'estudiante';
   }
@@ -81,12 +81,18 @@ export class VerRecompensasComponent implements OnInit {
   async loadUserData() {
     try {
       this.recompensas = await this.recompensaService.getRecompensas();
-      const estudiantes = await this.estudianteService.getEstudianteByEmail(this.userEmail);
-      this.estudiante = estudiantes[0];
+      const estudiante = await this.estudianteService.getEstudianteByEmail(this.userEmail);
+      if (estudiante) {
+        this.estudiante = estudiante;
+      } else {
+        this.errorMessage = 'No se encontró el estudiante con el correo especificado.';
+      }
     } catch (error) {
+      console.error('Error al cargar datos del usuario:', error);
       this.errorMessage = 'Error al cargar datos del usuario.';
     }
   }
+
 
   filtrarRecompensasConQR() {
     this.recompensasConQR = this.recompensas
@@ -106,7 +112,7 @@ export class VerRecompensasComponent implements OnInit {
       confirmButtonText: 'Sí, reclamar',
       cancelButtonText: 'Cancelar'
     });
-  
+
     if (confirmResult.isConfirmed) {
       if (!this.userEmail || !this.estudiante) {
         Swal.fire({
@@ -117,40 +123,40 @@ export class VerRecompensasComponent implements OnInit {
         });
         return;
       }
-  
+
       try {
         const recompensaDoc = await firstValueFrom(this.recompensaService.getRecompensaById(id_recompensa));
         if (recompensaDoc) {
           const recompensa = { ...recompensaDoc.data() } as Recompensa; // Clonación del objeto
-  
+
           await this.generarQR(recompensa);
-  
+
           let nuevaCantidad: number;
           let nuevoPuntaje: number;
-  
+
           if (this.estudiante.id_estudiante) {
             const estudianteReclamado = {
               id_estudiante: this.estudiante.id_estudiante,
               reclamado: false,
               qrCode: this.qrCodeImage
             };
-  
+
             nuevaCantidad = recompensa.cantidad - 1; // Asignación de la nueva cantidad
-  
+
             if (!recompensa.estudiantesReclamaron) {
               recompensa.estudiantesReclamaron = []; // Inicializa como arreglo vacío si no existe
             }
             if (!recompensa.id_recompensa) {
               recompensa.id_recompensa = id_recompensa; // Inicializa como arreglo vacío si no existe
             }
-  
+
             recompensa.estudiantesReclamaron.push(estudianteReclamado);
-  
+
           } else {
             console.error('ID del estudiante es undefined');
             return;
           }
-  
+
           if (recompensa.id_recompensa) {
             try {
               await this.recompensaService.actualizarRecompensa(recompensa.id_recompensa, {
@@ -193,8 +199,8 @@ export class VerRecompensasComponent implements OnInit {
       }
     }
   }
-  
-  
+
+
   async generarQR(recompensa: Recompensa) {
     if (!this.estudiante) return;
     const qrDataObject = {
@@ -231,7 +237,7 @@ export class VerRecompensasComponent implements OnInit {
 
   async reclamar(recompensa: Recompensa) {
     if (this.estudiante) {
-      
+
       await this.reclamarRecompensa(recompensa.id_recompensa!);
       this.recompensas = await this.recompensaService.getRecompensas();
     }
@@ -240,17 +246,17 @@ export class VerRecompensasComponent implements OnInit {
     this.tipoUsuario = localStorage.getItem('tipousuario');
     this.userEmail = localStorage.getItem('currentUserEmail') || '';
     this.userId = localStorage.getItem('id') || '';
-  
+
     if (this.userEmail) {
       this.tienePermisos = this.verificarUsuarioVentasOEventos(this.userEmail);
-      
+
       if (this.tienePermisos) {
         // Obtener todas las recompensas sin filtros
         this.recompensas = await this.recompensaService.getRecompensas();
-  
+
         // Filtrar las recompensas que tienen cantidad > 0
         this.recompensas = this.recompensas.filter(r => r.cantidad > 0);
-  
+
         // Filtrar las recompensas que tienen un QR ya generado para este usuario
         this.recompensasConQR = this.recompensas
           .filter(r => Array.isArray(r.estudiantesReclamaron) &&
@@ -260,7 +266,7 @@ export class VerRecompensasComponent implements OnInit {
             recompensa: r,
             qrCode: r.estudiantesReclamaron?.find(e => e.id_estudiante === this.userId)?.qrCode || ''
           }));
-  
+
         console.log("Recompensas con QR:", this.recompensasConQR);
       } else {
         this.errorMessage = 'No tienes permisos para ver las recompensas.';
@@ -269,5 +275,5 @@ export class VerRecompensasComponent implements OnInit {
       this.errorMessage = 'No se pudo obtener el correo del usuario.';
     }
   }
-  
+
 }

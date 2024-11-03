@@ -1,7 +1,7 @@
 import { Component, OnInit, ViewChild } from '@angular/core';
 import { AngularFirestore } from '@angular/fire/compat/firestore';
 import { ActivatedRoute, Router } from '@angular/router';
-import { Observable, Subscription } from 'rxjs';
+import { lastValueFrom, Observable, Subscription } from 'rxjs';
 import { Evento } from '../interface/IEventos';
 import { EventosService } from '../services/eventos.service';
 import { AuthService } from '../services/auth.service';
@@ -34,8 +34,10 @@ export class FolderPage implements OnInit {
   private invitadoSubscription!: Subscription;
   selectedSegment = 'today';
   events: Evento[] = [];
+  popularEvents: Evento[] = [];
   segmentFilteredEvents: Evento[] = []; // Eventos filtrados por segmento
   sedeFilteredEvents: Evento[] = [];
+  recentEvents: Evento[] = [];
   categories = [
     { name: 'Administración y Negocios', image: 'assets/img/Administracion.png' },
     { name: 'Comunicación', image: 'assets/img/Comunicacion.png' },
@@ -45,45 +47,77 @@ export class FolderPage implements OnInit {
     { name: 'Salud', image: 'assets/img/Salud.png' },
     { name: 'Gastronomía', image: 'assets/img/Gastronomia.png' },
     { name: 'Diseño', image: 'assets/img/Diseno.png' },
-    { name: 'Construcción', image: 'assets/img/Construccion.png' }
+    { name: 'Construcción', image: 'assets/img/Construccion.png' },
+    { name: 'Deportes', image: 'assets/img/Deportes.png' },
+    { name: 'Alumnos', image: 'assets/img/Alumnos.png' },
+    { name: 'Biblioteca', image: 'assets/img/Biblioteca.png' },
+    { name: 'Centro de Estudios', image: 'assets/img/CentroEstudio.png' },
+    { name: 'Ciclo Talleres', image: 'assets/img/CicloTalleres.png' },
+    { name: 'Comunidad', image: 'assets/img/Comunidad.png' },
+    { name: 'Docentes', image: 'assets/img/Docentes.png' },
+    { name: 'Duoc Laboral', image: 'assets/img/DuocLaboral.png' },
+    { name: 'Empresas', image: 'assets/img/Empresas.png' },
+    { name: 'Pastoral', image: 'assets/img/Pastoral.png' },
+    { name: 'Teatro', image: 'assets/img/Teatro.png' },
+    { name: 'Vida Estudiantil', image: 'assets/img/VidaEstudiantil.png' },
+    { name: 'Titulados', image: 'assets/img/Titulados.png' },
+    { name: 'Vive Duoc', image: 'assets/img/ViveDuoc.png' },
+
   ];
 
   constructor(
     private firestore: AngularFirestore,
     private router: Router,
     private activatedRoute: ActivatedRoute,
-    private eventosService: EventosService,
     private authService: AuthService,
     private invitadoService: InvitadoService,
   ) {}
+  getPopularEvents() {
+    // Filtrar eventos con más de 20 inscritos y ordenar de mayor a menor cantidad de inscritos
+    this.popularEvents = this.events
+      .filter(event => {
+        return event.inscritos > 30;
+      })
+      .sort((a, b) => b.inscritos - a.inscritos)
+      .slice(0, 5); // Obtener los primeros 5 eventos más populares
+  }
+
 
   ngOnInit() {
     this.folder = this.activatedRoute.snapshot.paramMap.get('id') as string;
+    this.determinarTipoUsuarioYObtenerId();
+  }
 
-    this.authSubscription = this.authService.getCurrentUserEmail().subscribe(async (emailEstudiante) => {
+  determinarTipoUsuarioYObtenerId() {
+    this.authService.getCurrentUserEmail().subscribe(async emailEstudiante => {
       if (emailEstudiante) {
         const estudiante = await this.authService.getEstudianteByEmail(emailEstudiante);
         if (estudiante) {
           this.userId = estudiante.id_estudiante!;
           this.isInvitado = false;
-          this.loadEvents();
+          this.loadEvents(); // Cargar eventos para el estudiante
           return;
         }
       }
 
-      const emailInvitado = await this.invitadoService.getCurrentUserEmail().toPromise();
-      if (emailInvitado) {
-        const invitado = await this.invitadoService.obtenerInvitadoPorEmail(emailInvitado).toPromise();
-        if (invitado) {
-          this.userId = invitado.id_Invitado!;
-          this.isInvitado = true;
-          this.loadEvents();
-          return;
+      // Si no es estudiante, verificar si es invitado
+      this.invitadoService.getCurrentUserEmail().subscribe(async emailInvitado => {
+        if (emailInvitado) {
+          const invitado = await this.invitadoService.getInvitadoByEmail(emailInvitado);
+          if (invitado) {
+            this.userId = invitado.id_Invitado!;
+            this.isInvitado = true;
+            this.loadEvents(); // Cargar eventos para el invitado
+            return;
+          }
+        } else {
+          this.router.navigate(['/iniciar-sesion']);
         }
-      }
-      this.router.navigate(['/iniciar-sesion']);
+      });
     });
   }
+
+
 
   ngOnDestroy() {
     this.authSubscription?.unsubscribe();
@@ -98,53 +132,27 @@ export class FolderPage implements OnInit {
     this.loading = true;
     this.Eventos = this.firestore.collection<Evento>('Eventos').valueChanges();
     this.Eventos.subscribe(
-      async (data: Evento[]) => {
+      (data: Evento[]) => {
         this.loading = false;
 
-        const eventosConVerificado = data.map(evento => {
-          const eventoConVerificado = { ...evento, verificado: false };
-          return eventoConVerificado;
-        });
-
-        this.allEvents = eventosConVerificado;
-        this.filteredEvents = [...eventosConVerificado];
-        this.events = [...eventosConVerificado];
-
-        if (data.length > 0) {
-          this.filteredEvents = eventosConVerificado.filter((evento) => {
-            const matchesSearchText = this.searchText
-              ? evento.titulo.toLowerCase().includes(this.searchText.toLowerCase())
-              : true;
-            const matchesCategory = this.selectedCategory === 'all' || evento.categoria === this.selectedCategory;
-            return matchesSearchText && matchesCategory;
-          });
-
-          for (let event of this.filteredEvents) {
-            event.show = false;
-
-            if (this.userId && event.id_evento) {
-              const usuarioId = this.isInvitado ? 'id_invitado' : 'id_estudiante';
-
-              const usuarioInscripcion = event.Inscripciones?.find(
-                (inscripcion) => inscripcion[usuarioId] === this.userId
-              );
-              event.estaInscrito = !!usuarioInscripcion;
-              event.verificado = usuarioInscripcion?.verificado === true;
-
-              try {
-                event.enListaEspera = await this.eventosService.isUserInWaitList(event.id_evento, this.userId);
-              } catch (error) {
-                console.error('Error al verificar lista de espera:', error);
-                event.enListaEspera = false;
-              }
-            }
-          }
-
-          this.filterEvents();
-          this.filterEventsByDate();
-        } else {
+        if (data.length === 0) {
           console.log('No se encontraron eventos en la colección.');
         }
+
+        this.allEvents = data.map(evento => ({
+          ...evento,
+          verificado: false,
+          show: false,
+          estaInscrito: false,
+          enListaEspera: false
+        }));
+
+        this.filteredEvents = [...this.allEvents];
+        this.events = [...this.allEvents];
+        this.filterEvents();
+        this.filterEventsByDate();
+        this.getPopularEvents();
+        this.getRecentEvents();
       },
       (error) => {
         this.loading = false;
@@ -152,6 +160,18 @@ export class FolderPage implements OnInit {
       }
     );
   }
+
+
+  getRecentEvents() {
+    const oneWeekAgo = new Date();
+    oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
+
+    this.recentEvents = this.events.filter(event => {
+      const eventCreationDate = this.convertToDate(event.fecha_creacion);
+      return eventCreationDate >= oneWeekAgo;
+    });
+  }
+
   toggleFavorite(event: Evento) {
     event.isFavorite = !event.isFavorite;
   }
@@ -264,15 +284,12 @@ export class FolderPage implements OnInit {
     this.showFilters = !this.showFilters;
   }
 
-  toggleDescription(event: Evento) {
-    event.show = !event.show;
+
+  convertToDate(fecha: any): Date {
+    if (!fecha) return new Date();
+    if (typeof fecha === 'string') return new Date(fecha);
+    if (fecha.seconds) return new Date(fecha.seconds * 1000);
+    return new Date();
   }
 
-  convertToDate(fecha: string | { seconds: number; nanoseconds: number }): Date {
-    if (typeof fecha === 'string') {
-      return new Date(fecha);
-    } else {
-      return new Date(fecha.seconds * 1000);
-    }
-  }
 }

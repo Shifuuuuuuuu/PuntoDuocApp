@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { AngularFirestore } from '@angular/fire/compat/firestore';
 import { Estudiante, EstudianteSinPassword } from '../interface/IEstudiante'; // Asegúrate de tener la interfaz creada
-import { map } from 'rxjs/operators';
+import { defaultIfEmpty, map } from 'rxjs/operators';
 import firebase from 'firebase/compat/app';
 import { firstValueFrom, Observable, of } from 'rxjs';
 import { AngularFireAuth } from '@angular/fire/compat/auth';
@@ -66,17 +66,31 @@ export class EstudianteService {
       throw error;
     }
   }
+  // estudiante.service.ts e invitado.service.ts
   getUserId(): Observable<string | null> {
     return this.afAuth.authState.pipe(
-      map(user => user ? user.uid : null)
+      map(user => {
+        console.log('Estado de autenticación del usuario:', user); // Verifica si el usuario está autenticado
+        return user ? user.uid : null;
+      })
     );
   }
+
 
   getUserById(userId: string): Observable<any> {
     return this.firestore.collection('Estudiantes').doc(userId).valueChanges();
   }
-  getEstudianteByEmail(email: string): Promise<EstudianteSinPassword[]> {
-    return firstValueFrom(this.firestore.collection<EstudianteSinPassword>('Estudiantes', ref => ref.where('email', '==', email)).valueChanges({ idField: 'id_estudiante' }));
+  getEstudianteByEmail(email: string): Promise<Estudiante | null> {
+    return this.firestore.collection<Estudiante>('Estudiantes', ref => ref.where('email', '==', email))
+      .get()
+      .toPromise()
+      .then(snapshot => {
+        if (snapshot && !snapshot.empty) {
+          return snapshot.docs[0].data() as Estudiante;
+        } else {
+          return null;
+        }
+      });
   }
 
   verificarEstudiantePorCorreo(correo: string): Observable<boolean> {
@@ -120,6 +134,11 @@ export class EstudianteService {
   }
 
   async obtenerEstudiantePorId(id: string): Promise<Estudiante | null> {
+    if (!id) {
+      console.error('ID vacío proporcionado al obtener estudiante por ID');
+      return null;
+    }
+
     try {
       const estudianteDoc = await this.firestore.collection('Estudiantes').doc(id).get().toPromise();
       if (estudianteDoc && estudianteDoc.exists) {

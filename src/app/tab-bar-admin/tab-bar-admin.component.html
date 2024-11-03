@@ -1,13 +1,11 @@
 <ion-tab-bar slot="bottom" class="custom-tab-bar">
   <!-- Botones de navegación -->
-  <ion-tab-button *ngFor="let page of appPages" (click)="navigateTo(page.url)">
+  <ion-tab-button *ngFor="let page of appPages" (click)="navigateTo(page.url)" [title]="page.title">
     <ion-icon [name]="page.icon"></ion-icon>
-    <ion-label>{{ page.title }}</ion-label>
   </ion-tab-button>
 
   <!-- Botón para cerrar sesión -->
   <ion-tab-button (click)="logout()">
     <ion-icon name="log-out"></ion-icon>
-    <ion-label>Cerrar sesión</ion-label>
   </ion-tab-button>
 </ion-tab-bar>

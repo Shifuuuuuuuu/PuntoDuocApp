@@ -2,7 +2,7 @@
 import { Injectable } from '@angular/core';
 import { AngularFirestore, AngularFirestoreCollection } from '@angular/fire/compat/firestore';
 import { Invitado, InvitadoSinPassword } from '../interface/IInvitado';
-import { BehaviorSubject,  Observable } from 'rxjs';
+import { BehaviorSubject,  Observable, of } from 'rxjs';
 import {  map } from 'rxjs/operators';
 import 'firebase/compat/firestore';
 import { AngularFireAuth } from '@angular/fire/compat/auth';
@@ -47,6 +47,27 @@ export class InvitadoService {
 
     return { ...invitadoData, id_Invitado: uid };
   }
+  // invitado.service.ts
+async login(email: string, password: string): Promise<Invitado | null> {
+  const userCredential = await this.afAuth.signInWithEmailAndPassword(email, password);
+  const uid = userCredential.user?.uid;
+
+  if (uid) {
+    const invitadoSnapshot = await this.firestore.collection<Invitado>('Invitados', ref => ref.where('email', '==', email)).get().toPromise();
+
+    if (invitadoSnapshot && !invitadoSnapshot.empty) {
+      const invitadoDoc = invitadoSnapshot.docs[0];
+      const invitadoData = invitadoDoc.data() as Invitado;
+
+      // Guardar el tipo de usuario en localStorage
+      localStorage.setItem('userType', 'invitado');
+      localStorage.setItem('id', uid);
+
+      return invitadoData;
+    }
+  }
+  return null;
+}
 
   // Método para verificar si un invitado existe por correo electrónico
   verificarInvitadoPorCorreo(correo: string): Observable<boolean> {
@@ -91,9 +112,10 @@ export class InvitadoService {
     await this.invitadosCollection.doc(invitado.id_Invitado).update({ codigoQr: invitado.codigoQr });
   }
 
-  // Método para obtener el correo electrónico actual del usuario invitado como observable
-  getCurrentUserEmail(): Observable<string | undefined> {
-    return this.currentUserEmail$;
+  getCurrentUserEmail(): Observable<string | null> {
+    return this.afAuth.authState.pipe(
+      map(user => user ? user.email : null)
+    );
   }
 
   // Método para establecer el correo electrónico actual del usuario invitado
@@ -107,6 +129,23 @@ export class InvitadoService {
     localStorage.removeItem('currentUserEmail');
     this.currentUserEmailSubject.next(undefined);
   }
+  getInvitadoByEmail(email: string): Promise<Invitado | null> {
+    return this.firestore.collection<Invitado>('Invitados', ref => ref.where('email', '==', email))
+      .get()
+      .toPromise()
+      .then(snapshot => {
+        if (snapshot && !snapshot.empty) {
+          return snapshot.docs[0].data() as Invitado;
+        } else {
+          return null;
+        }
+      })
+      .catch(error => {
+        console.error('Error al obtener invitado por email:', error);
+        return null;
+      });
+  }
+
 
   // Métodos para agregar y eliminar eventos
   async agregarEventoAInvitado(invitadoId: string, eventoId: string): Promise<void> {
@@ -130,11 +169,35 @@ export class InvitadoService {
 
   // Método para obtener un invitado por ID
   async obtenerInvitadoPorId(id: string): Promise<Invitado | null> {
+  if (!id) {
+    console.error('ID vacío proporcionado al obtener invitado por ID');
+    return null;
+  }
+
+  try {
     const invitadoDoc = await this.firestore.collection('Invitados').doc(id).get().toPromise();
     if (invitadoDoc && invitadoDoc.exists) {
       const invitadoData = invitadoDoc.data() as Invitado;
       return { ...invitadoData, id_Invitado: invitadoDoc.id };
     }
     return null;
+  } catch (error) {
+    console.error('Error al obtener invitado por ID:', error);
+    throw error;
   }
+}
+  // estudiante.service.ts e invitado.service.ts
+  getUserId(): Observable<string | null> {
+    return this.afAuth.authState.pipe(
+      map(user => {
+        console.log('Estado de autenticación del usuario:', user); // Verifica si el usuario está autenticado
+        return user ? user.uid : null;
+      })
+    );
+  }
+  getUserById(userId: string): Observable<any> {
+    return this.firestore.collection('Invitados').doc(userId).valueChanges();
+  }
+
+
 }
