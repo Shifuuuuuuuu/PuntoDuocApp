@@ -5,27 +5,82 @@ import { defaultIfEmpty, map } from 'rxjs/operators';
 import firebase from 'firebase/compat/app';
 import { firstValueFrom, Observable, of } from 'rxjs';
 import { AngularFireAuth } from '@angular/fire/compat/auth';
+import { Evento } from '../interface/IEventos';
 @Injectable({
   providedIn: 'root'
 })
 export class EstudianteService {
 
   constructor(private firestore: AngularFirestore, private afAuth: AngularFireAuth) { }
-  obtenerHistorialPuntajeDesdeFirestore(estudianteId: string): Observable<any[]> {
-    return this.firestore
-      .collection('Estudiantes')
-      .doc(estudianteId)
-      .collection('historialPuntaje', ref => ref.orderBy('fecha', 'asc'))
-      .valueChanges()
-      .pipe(
-        map((historial: any[]) =>
-          historial.map((data: any) => ({
-            puntaje: data.puntaje,
-            fecha: data.fecha?.toDate().toLocaleDateString('es-ES') || 'Fecha desconocida',
-          }))
-        )
-      );
+  // Obtener eventos asistidos por categoría
+  obtenerEventosAsistidosPorCategoria(estudianteId: string): Promise<Evento[]> {
+    return this.firestore.collection<Evento>('Eventos').get()
+      .toPromise()
+      .then(snapshot => {
+        if (snapshot && !snapshot.empty) {
+          const eventosAsistidos: Evento[] = snapshot.docs
+            .map(doc => {
+              const data = doc.data() as Evento;
+
+              // Verificar si el estudiante está inscrito en el evento y obtener su estado de verificación
+              const inscripcion = data.Inscripciones?.find((inscripcion: any) =>
+                inscripcion.id_estudiante === estudianteId
+              );
+
+              if (inscripcion) {
+                // Añadir la información de verificación a cada evento
+                return {
+                  ...data,
+                  verificado: inscripcion.verificado || false // `true` si está verificado, `false` si no
+                };
+              }
+              return null;
+            })
+            .filter(evento => evento !== null) as Evento[]; // Filtrar eventos donde el estudiante está inscrito
+
+          return eventosAsistidos;
+        } else {
+          console.log('No se encontraron eventos en la colección.');
+          return [];
+        }
+      })
+      .catch(error => {
+        console.error('Error al obtener eventos asistidos por categoría:', error);
+        return [];
+      });
   }
+
+
+obtenerHistorialPuntajeDesdeFirestore(estudianteId: string): Observable<{ fecha: string; puntaje: number }[]> {
+  return this.firestore
+    .collection('Estudiantes')
+    .doc(estudianteId)
+    .collection('historialPuntaje', ref => ref.orderBy('fecha', 'asc'))
+    .valueChanges()
+    .pipe(
+      map((historial: any[]) => {
+        // Crear un objeto para almacenar el puntaje total por fecha
+        const puntajePorFecha: { [fecha: string]: number } = {};
+
+        historial.forEach((data: any) => {
+          // Convertir la fecha al formato de cadena deseado
+          const fecha = data.fecha?.toDate().toLocaleDateString('es-ES') || 'Fecha desconocida';
+
+          // Sumar el puntaje de cada verificación en la misma fecha
+          if (!puntajePorFecha[fecha]) {
+            puntajePorFecha[fecha] = 0; // Inicializar si no existe
+          }
+          puntajePorFecha[fecha] += data.puntaje;
+        });
+
+        // Convertir el objeto en un array de objetos con fecha y puntaje
+        return Object.keys(puntajePorFecha).map(fecha => ({
+          fecha,
+          puntaje: puntajePorFecha[fecha]
+        }));
+      })
+    );
+}
   // Registrar estudiante y enviar correo de verificación
   async registrarEstudiante(estudiante: Estudiante): Promise<Omit<Estudiante, 'password'>> {
     // Registrar usuario en Firebase Authentication usando email y password
@@ -70,7 +125,6 @@ export class EstudianteService {
   getUserId(): Observable<string | null> {
     return this.afAuth.authState.pipe(
       map(user => {
-        console.log('Estado de autenticación del usuario:', user); // Verifica si el usuario está autenticado
         return user ? user.uid : null;
       })
     );

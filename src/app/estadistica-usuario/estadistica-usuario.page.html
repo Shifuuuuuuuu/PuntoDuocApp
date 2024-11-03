@@ -3,19 +3,49 @@
     <ion-buttons slot="start">
       <ion-back-button defaultHref="/" style="color: white;"></ion-back-button>
     </ion-buttons>
-    <ion-title style="color:  white">Tu estadística</ion-title>
+    <ion-title style="color: white">Tu estadística</ion-title>
   </ion-toolbar>
 </ion-header>
 
 <ion-content [fullscreen]="true" class="content-center">
 
-
+  <!-- Gráfico de Puntaje Acumulado -->
   <ion-card style="background-color: white;">
     <ion-card-header>
       <ion-card-title style="color: black;">Puntaje Acumulado</ion-card-title>
     </ion-card-header>
     <ion-card-content>
       <canvas #puntajeChart></canvas>
+    </ion-card-content>
+  </ion-card>
+
+  <!-- Gráfico de Promedio Mensual -->
+  <ion-card style="background-color: white;">
+    <ion-card-header>
+      <ion-card-title style="color: black;">Promedio Mensual de Puntaje</ion-card-title>
+    </ion-card-header>
+    <ion-card-content>
+      <canvas #promedioMensualChart></canvas>
+    </ion-card-content>
+  </ion-card>
+
+  <!-- Gráfico de Eventos por Categoría -->
+  <ion-card style="background-color: white;">
+    <ion-card-header>
+      <ion-card-title style="color: black;">Eventos Inscritos por Categoría</ion-card-title>
+    </ion-card-header>
+    <ion-card-content>
+      <canvas #eventosPorCategoriaChart></canvas>
+    </ion-card-content>
+  </ion-card>
+
+  <!-- Gráfico de Porcentaje de Verificación -->
+  <ion-card style="background-color: white;">
+    <ion-card-header>
+      <ion-card-title style="color: black;">Porcentaje de Verificación en Eventos</ion-card-title>
+    </ion-card-header>
+    <ion-card-content>
+      <canvas #porcentajeVerificacionChart></canvas>
     </ion-card-content>
   </ion-card>
 

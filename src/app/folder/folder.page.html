@@ -41,7 +41,7 @@
 
   <div class="categories-header">
     <ion-text color="dark">
-      <h2 style="color: black;">Explorar eventos de las escuelas</h2>
+      <h2 style="color: black;">Explora las categorias de eventos</h2>
     </ion-text>
   </div>
 
@@ -120,10 +120,7 @@
   </swiper-slide>
 </swiper-container>
 
-<div *ngIf="loading" class="ion-padding" style="text-align: center;">
-  <ion-spinner name="crescent" style="color: black"></ion-spinner>
-  <p style="color: black">Cargando...</p>
-</div>
+
   <ion-text color="dark">
     <h2 style="color: black;">Eventos Recientes</h2>
   </ion-text>
@@ -183,22 +180,22 @@
         ></ion-icon>
 
         <ion-card-header>
-          <ion-card-title class="centered-text" style="color: #0A49A7;">
+          <ion-card-title class="centered-text" style="color: black;">
             {{ event.titulo }}
           </ion-card-title>
         </ion-card-header>
 
         <ion-card-content class="centered-content">
-          <p *ngIf="event.show" style="color: #0A49A7;">{{ event.descripcion }}</p>
-          <p style="color: #0A49A7;">Cupos disponibles: {{ event.Cupos }}</p>
-          <p style="color: #0A49A7;">Inscritos: {{ event.inscritos }}</p>
-          <p *ngIf="event.estaInscrito && event.verificado" class="verificado-text" style="color: #0A49A7;">
+          <p *ngIf="event.show" style="color: black;">{{ event.descripcion }}</p>
+          <p style="color: black;">Cupos disponibles: {{ event.Cupos }}</p>
+          <p style="color: black;">Inscritos: {{ event.inscritos }}</p>
+          <p *ngIf="event.estaInscrito && event.verificado" class="verificado-text" style="color: black;">
             ¡Estás verificado en este evento!
           </p>
-          <p *ngIf="event.estaInscrito && !event.verificado" class="inscrito-text" style="color: #0A49A7;">
+          <p *ngIf="event.estaInscrito && !event.verificado" class="inscrito-text" style="color: black;">
             ¡Ya estás inscrito en este evento!
           </p>
-          <p *ngIf="event.enListaEspera" class="en-lista-espera-text" style="color: #0A49A7;">
+          <p *ngIf="event.enListaEspera" class="en-lista-espera-text" style="color: black;">
             ¡Ya estás en la lista de espera!
           </p>
         </ion-card-content>
@@ -208,7 +205,10 @@
   <div *ngIf="popularEvents.length === 0" class="ion-padding" style="text-align: center;">
     <p style="color: black;">No hay eventos populares disponibles.</p>
   </div>
-
+  <div *ngIf="loading" class="ion-padding" style="text-align: center;">
+    <ion-spinner name="crescent" style="color: black"></ion-spinner>
+    <p style="color: black">Cargando...</p>
+  </div>
 
   <ion-footer collapse="fade" class="footer">
     <p>Síguenos en nuestras redes sociales:</p>
