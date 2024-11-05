@@ -75,10 +75,10 @@
           </ion-label>
         </ion-item>
       </div>
-      <div class="qr-container" *ngIf="(estudiante && estudiante.codigoQr) || (invitado && invitado.codigoQr)">
+      <div class="qr-container" *ngIf="qrData">
         <h1 style="color: black; text-align: center;">Código QR</h1>
         <div class="qr-image-container">
-          <img [src]="estudiante?.codigoQr || invitado?.codigoQr" alt="Código QR" class="qr-image" />
+          <img [src]="qrData" alt="Código QR" class="qr-image" />
         </div>
       </div>
     </form>

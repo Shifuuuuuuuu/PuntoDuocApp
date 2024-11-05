@@ -9,6 +9,7 @@ import { CartService } from '../services/cart.service';
 import Swal from 'sweetalert2';
 import { QRCodeData } from '../interface/IQR';
 import { NavController } from '@ionic/angular';
+import * as QRCode from 'qrcode';
 @Component({
   selector: 'app-perfil-usuario',
   templateUrl: './perfil-usuario.page.html',
@@ -147,16 +148,35 @@ export class PerfilUsuarioPage implements OnInit {
   async saveProfile() {
     try {
       if (this.isInvitado && this.invitado) {
+        // Actualiza los datos temporales del invitado
         this.invitado.Nombre_completo = this.tempNombreCompleto;
         this.invitado.Rut = this.tempRut;
         this.invitado.Telefono = this.tempTelefono;
-        await this.invitadoService.updateInvitado(this.invitado);
+
+        // Llama a la función para actualizar el QR con los nuevos datos
+        this.generateQrData();
+
+        // Actualiza en Firestore el invitado junto con el nuevo código QR
+        await this.invitadoService.updateInvitado({
+          ...this.invitado,
+          codigoQr: this.qrData // Guarda el nuevo código QR en Firestore
+        });
       } else if (this.estudiante) {
+        // Actualiza los datos temporales del estudiante
         this.estudiante.Nombre_completo = this.tempNombreCompleto;
         this.estudiante.Rut = this.tempRut;
         this.estudiante.Telefono = this.tempTelefono;
-        await this.authService.updateEstudiante(this.estudiante);
+
+        // Llama a la función para actualizar el QR con los nuevos datos
+        this.generateQrData();
+
+        // Actualiza en Firestore el estudiante junto con el nuevo código QR
+        await this.authService.updateEstudiante({
+          ...this.estudiante,
+          codigoQr: this.qrData // Guarda el nuevo código QR en Firestore
+        });
       }
+
       this.isEditing = false;
 
       // Alerta de confirmación de actualización
@@ -172,6 +192,7 @@ export class PerfilUsuarioPage implements OnInit {
       this.errorMessage = 'Error al guardar el perfil.';
     }
   }
+
 
   cancelEdit() {
     this.isEditing = false;
@@ -194,21 +215,24 @@ export class PerfilUsuarioPage implements OnInit {
     this.authService.logout();
     this.router.navigate(['/iniciar-sesion']);
   }
-  generateQrData() {
+  async generateQrData() {
     const eventosInscritos = this.isInvitado
       ? this.invitado?.eventosInscritos || []
       : this.estudiante?.eventosInscritos || [];
 
-    const qrDataObject: QRCodeData = {
-      qrData: JSON.stringify({
-        userId: this.isInvitado ? this.invitado?.id_Invitado : this.estudiante?.id_estudiante,
-        eventosInscritos: eventosInscritos,
-      }),
-      userId: this.isInvitado ? (this.invitado?.id_Invitado || '') : (this.estudiante?.id_estudiante || ''),
+    const qrDataObject = {
+      userId: this.isInvitado ? this.invitado?.id_Invitado : this.estudiante?.id_estudiante,
       eventosInscritos: eventosInscritos,
+      nombreCompleto: this.isInvitado ? this.invitado?.Nombre_completo : this.estudiante?.Nombre_completo,
+      rut: this.isInvitado ? this.invitado?.Rut : this.estudiante?.Rut,
+      telefono: this.isInvitado ? this.invitado?.Telefono : this.estudiante?.Telefono,
     };
 
-    this.qrData = qrDataObject.qrData;
+    // Convierte el JSON en una cadena
+    const qrString = JSON.stringify(qrDataObject);
+
+    // Genera la imagen QR y guárdala en `this.qrData`
+    this.qrData = await QRCode.toDataURL(qrString);
   }
   irAConsultas() {
     this.navCtrl.navigateForward('/consultas'); // Ruta de la página de consultas
