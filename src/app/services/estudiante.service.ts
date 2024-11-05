@@ -147,6 +147,7 @@ obtenerHistorialPuntajeDesdeFirestore(estudianteId: string): Observable<{ fecha:
       });
   }
 
+
   verificarEstudiantePorCorreo(correo: string): Observable<boolean> {
     return this.firestore
       .collection<Estudiante>('Estudiantes', ref => ref.where('email', '==', correo))
@@ -163,16 +164,13 @@ obtenerHistorialPuntajeDesdeFirestore(estudianteId: string): Observable<{ fecha:
     await this.firestore.collection('Estudiantes').doc(estudiante.id_estudiante).update(estudiante);
   }
 
-  async actualizarPuntajeEstudiante(id_estudiante: string, nuevoPuntaje: number): Promise<void> {
-    try {
-      await this.firestore.collection('Estudiantes').doc(id_estudiante).update({
-        puntaje: nuevoPuntaje
-      });
-    } catch (error) {
-      console.error('Error al actualizar el puntaje del estudiante:', error);
-      throw error;
-    }
+  async actualizarPuntajeEstudiante(id_estudiante: string, puntosAdicionales: number): Promise<void> {
+    const estudianteRef = this.firestore.collection('Estudiantes').doc(id_estudiante);
+    await estudianteRef.update({
+      puntaje: firebase.firestore.FieldValue.increment(puntosAdicionales)
+    });
   }
+
   async agregarEventoAEstudiante(estudianteId: string, eventoId: string): Promise<void> {
     const estudianteDocRef = this.firestore.collection('Estudiantes').doc(estudianteId);
     await estudianteDocRef.update({

@@ -237,5 +237,8 @@ export class PerfilUsuarioPage implements OnInit {
   irAConsultas() {
     this.navCtrl.navigateForward('/consultas'); // Ruta de la página de consultas
   }
+  irARecomendacion() {
+    this.navCtrl.navigateForward('/recomendacion'); // Redirige a la página de recomendación
+  }
 
 }

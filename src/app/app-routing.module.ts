@@ -91,6 +91,10 @@ const routes: Routes = [
     path: 'consultas',
     loadChildren: () => import('./consultas/consultas.module').then( m => m.ConsultasPageModule)
   },
+  {
+    path: 'recomendacion',
+    loadChildren: () => import('./recomendacion/recomendacion.module').then( m => m.RecomendacionPageModule)
+  },
 
 
 
