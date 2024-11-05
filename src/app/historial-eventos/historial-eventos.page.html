@@ -1,8 +1,5 @@
 <ion-header [translucent]="true" class="custom-header">
   <ion-toolbar class="custom-toolbar" style="background-color: black;">
-    <ion-buttons slot="start">
-      <ion-back-button defaultHref="/folder/Inicio" style="color: white;"></ion-back-button>
-    </ion-buttons>
     <ion-title style="color: white">Historial de Eventos</ion-title>
   </ion-toolbar>
 </ion-header>
@@ -13,7 +10,7 @@
       <ion-thumbnail slot="start" class="event-thumbnail">
         <img [src]="evento.imagen" alt="Imagen del evento" class="event-image">
       </ion-thumbnail>
-      <ion-label>
+      <ion-label >
         <h2>{{ evento.titulo }}</h2>
         <p>Estado: Verificado</p>
       </ion-label>

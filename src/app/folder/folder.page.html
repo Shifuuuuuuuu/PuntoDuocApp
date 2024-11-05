@@ -130,9 +130,18 @@
       <ion-col size="12" size-md="6" *ngFor="let event of recentEvents" (click)="goToEventDetails(event)">
         <ion-card class="event-card">
           <img alt="Imagen del evento" [src]="event.imagen" class="event-image" />
-          <p style="color: black; font-weight: bold; padding: 0 16px;">
-            {{ transformarFecha(event.fecha_creacion) | date: 'EEEE, d \'de\' MMMM \'de\' yyyy, HH:mm' }}
-          </p>
+          <!-- Fecha del evento en español -->
+        <p style="color: black; font-weight: bold; padding: 0 16px;">
+          {{ transformarFecha(event.fecha) | date: 'EEEE, d \'de\' MMMM \'de\' yyyy, HH:mm' }}
+        </p>
+
+        <!-- Icono de estrella para marcar como favorito -->
+        <ion-icon
+          name="star"
+          (click)="toggleFavorite(event); $event.stopPropagation()"
+          [style.color]="event.isFavorite ? '#FFD700' : 'gray'"
+          style="position: absolute; top: 10px; right: 10px; font-size: 24px; cursor: pointer;"
+        ></ion-icon>
           <ion-card-header>
             <ion-card-title class="centered-text" style="color: black;">
               {{ event.titulo }}
@@ -167,7 +176,7 @@
         <img alt="Imagen del evento" [src]="event.imagen" class="event-image" />
 
         <!-- Fecha del evento en español -->
-        <p style="color: #0A49A7; font-weight: bold; padding: 0 16px;">
+        <p style="color: black; font-weight: bold; padding: 0 16px;">
           {{ transformarFecha(event.fecha) | date: 'EEEE, d \'de\' MMMM \'de\' yyyy, HH:mm' }}
         </p>
 

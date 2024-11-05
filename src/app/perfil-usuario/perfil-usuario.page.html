@@ -1,8 +1,5 @@
 <ion-header [translucent]="true" class="custom-header">
   <ion-toolbar class="custom-toolbar">
-    <ion-buttons slot="start">
-      <ion-back-button defaultHref="/" style="color: white;"></ion-back-button>
-    </ion-buttons>
     <ion-title style="color: white;">Mi cuenta</ion-title>
   </ion-toolbar>
 </ion-header>
@@ -19,7 +16,7 @@
 
   <!-- Información personal -->
   <div class="form-container" style="max-width: 380px; margin: auto; padding: 25px; background-color: white; border-radius: 20px;">
-    <h1 class="center" style="color: #0A49A7; text-align: center;">Información personal</h1>
+    <h1 class="center" style="color: #0A49A7; text-align: center; margin-bottom: 20px;">Información personal</h1>
     <form *ngIf="estudiante || invitado">
       <!-- Nombre Completo -->
       <div class="mb-3 position-relative">
@@ -88,10 +85,28 @@
         <ion-button class="button-inline" *ngIf="!isEditing" (click)="editProfile()">Editar Perfil</ion-button>
         <ion-button class="button-inline" color="success" *ngIf="isEditing" (click)="saveProfile()">Guardar Cambios</ion-button>
         <ion-button class="button-inline" color="danger" *ngIf="isEditing" (click)="cancelEdit()">Cancelar</ion-button>
-        <ion-button class="button-inline" color="danger" (click)="confirmLogout()" *ngIf="!isEditing">Cerrar Sesión</ion-button>
       </div>
     </form>
   </div>
+
+  <!-- Espacio entre Información personal y la lista -->
+  <div class="spacer"></div>
+
+  <!-- Lista de opciones adicionales -->
+  <ion-list class="custom-list">
+    <ion-item button class="custom-item2" (click)="irAConsultas()">
+      <ion-icon style="color: black;" slot="start" name="chatbubbles-outline"></ion-icon>
+      <ion-label>Consultas</ion-label>
+      <ion-icon style="color: black;" slot="end" name="chevron-forward-outline"></ion-icon>
+    </ion-item>
+    <ion-item button class="custom-item2" (click)="confirmLogout()">
+      <ion-icon style="color: black;" slot="start" name="log-out-outline"></ion-icon>
+      <ion-label>Cerrar sesión</ion-label>
+      <ion-icon style="color: black;" slot="end" name="chevron-forward-outline"></ion-icon>
+    </ion-item>
+  </ion-list>
+
+  <!-- Footer -->
   <ion-footer collapse="fade" class="footer">
     <p>Síguenos en nuestras redes sociales:</p>
     <div class="social-icons">

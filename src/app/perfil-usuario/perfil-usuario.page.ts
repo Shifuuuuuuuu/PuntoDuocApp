@@ -8,6 +8,7 @@ import { firstValueFrom, Subscription } from 'rxjs';
 import { CartService } from '../services/cart.service';
 import Swal from 'sweetalert2';
 import { QRCodeData } from '../interface/IQR';
+import { NavController } from '@ionic/angular';
 @Component({
   selector: 'app-perfil-usuario',
   templateUrl: './perfil-usuario.page.html',
@@ -37,7 +38,8 @@ export class PerfilUsuarioPage implements OnInit {
     private authService: AuthService,
     private invitadoService: InvitadoService,
     private cartService: CartService,
-    private router: Router
+    private router: Router,
+    private navCtrl: NavController
   ) {}
 
   async ngOnInit() {
@@ -200,6 +202,9 @@ export class PerfilUsuarioPage implements OnInit {
     };
 
     this.qrData = qrDataObject.qrData;
+  }
+  irAConsultas() {
+    this.navCtrl.navigateForward('/consultas'); // Ruta de la página de consultas
   }
 
 }

@@ -1,0 +1,46 @@
+<ion-header [translucent]="true" class="custom-header">
+  <ion-toolbar class="custom-toolbar" style="background-color: black;">
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/perfil-usuario" style="color: white;"></ion-back-button>
+    </ion-buttons>
+    <ion-title style="color:  white">Enviar Consulta</ion-title>
+  </ion-toolbar>
+</ion-header>
+<ion-content [fullscreen]="true" class="content-center">
+  <ion-card style="background-color: white;">
+    <ion-card-header>
+      <ion-card-title style="color: black;">Consulta, Reclamo o Sugerencia</ion-card-title>
+    </ion-card-header>
+
+    <ion-card-content  >
+      <form  (submit)="enviarConsulta()">
+        <ion-item  style="--background: transparent;">
+          <ion-label style="color: black;">Motivo</ion-label>
+          <ion-select style="color: black;" [(ngModel)]="consulta.motivo" name="motivo" required>
+            <ion-select-option value="consulta" >Consulta</ion-select-option>
+            <ion-select-option value="reclamo" >Reclamo</ion-select-option>
+            <ion-select-option value="sugerencia" >Sugerencia</ion-select-option>
+          </ion-select>
+        </ion-item>
+
+        <ion-item style="--background: transparent;">
+          <ion-label position="floating" style="color: black;">Mensaje</ion-label>
+          <ion-textarea style="color: black;" [(ngModel)]="consulta.mensaje" name="mensaje" required></ion-textarea>
+        </ion-item>
+
+        <ion-button expand="full" type="submit">Enviar</ion-button>
+      </form>
+    </ion-card-content>
+  </ion-card>
+  <ion-footer collapse="fade" class="footer">
+    <p>Síguenos en nuestras redes sociales:</p>
+    <div class="social-icons">
+      <ion-icon name="logo-facebook" class="social-icon"></ion-icon>
+      <ion-icon name="logo-twitter" class="social-icon"></ion-icon>
+      <ion-icon name="logo-instagram" class="social-icon"></ion-icon>
+    </div>
+    <p>&copy; 2024 Punto Duoc. Todos los derechos reservados.</p>
+  </ion-footer>
+</ion-content>
+
+<app-tab-usuario></app-tab-usuario>

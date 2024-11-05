@@ -188,6 +188,8 @@
   gap: 5px;
   max-width: 100%;
   flex-grow: 1;
+  --border-width: 0px; /* Quita la línea inferior */
+  --inner-border-width: 0px; /* Quita cualquier borde interno */
 }
 
 .event-image {

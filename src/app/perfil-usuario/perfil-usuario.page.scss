@@ -31,7 +31,8 @@ ion-content {
   --background: #f2f2f2;
   --border-radius: 10px;
   margin-bottom: 15px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  --border-width: 0px; /* Quita la línea inferior */
+  --inner-border-width: 0px; /* Quita cualquier borde interno */
 }
 
 ion-input {
@@ -175,4 +176,27 @@ ion-input {
   max-width: 100%; /* Ajustar el tamaño de la imagen al contenedor */
   height: auto; /* Mantener la relación de aspecto de la imagen */
 }
+.custom-item2 {
+  --background: #ffffff;
+  --ion-text-color: black;
+  --ion-icon-color: black;
+  --border-width: 0px; /* Quita la línea inferior */
+  --inner-border-width: 0px; /* Quita cualquier borde interno */
+  border: none; /* Asegura que no haya bordes adicionales */
+  border-radius: 8px;
+  padding: 10px;
+  margin-bottom: 10px;
+}
+/* Espacio adicional entre secciones */
+.spacer {
+  height: 10px;
+}
 
+/* Estilo personalizado para ion-list e ion-item */
+.custom-list {
+  background-color: #ffffff;
+  border-radius: 15px;
+  padding: 10px;
+  margin-top: 20px; /* Espacio adicional para separar de la sección de arriba */
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
