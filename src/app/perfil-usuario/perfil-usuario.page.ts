@@ -148,18 +148,25 @@ export class PerfilUsuarioPage implements OnInit {
     try {
       if (this.isInvitado && this.invitado) {
         this.invitado.Nombre_completo = this.tempNombreCompleto;
-        this.invitado.email = this.tempEmail;
         this.invitado.Rut = this.tempRut;
         this.invitado.Telefono = this.tempTelefono;
         await this.invitadoService.updateInvitado(this.invitado);
       } else if (this.estudiante) {
         this.estudiante.Nombre_completo = this.tempNombreCompleto;
-        this.estudiante.email = this.tempEmail;
         this.estudiante.Rut = this.tempRut;
         this.estudiante.Telefono = this.tempTelefono;
         await this.authService.updateEstudiante(this.estudiante);
       }
       this.isEditing = false;
+
+      // Alerta de confirmación de actualización
+      Swal.fire({
+        title: 'Perfil Actualizado',
+        text: 'Los cambios en tu perfil se han guardado correctamente.',
+        icon: 'success',
+        confirmButtonText: 'OK'
+      });
+
     } catch (error) {
       console.error('Error al guardar el perfil:', error);
       this.errorMessage = 'Error al guardar el perfil.';

@@ -1,19 +1,18 @@
-
-
 /* Estilo del mensaje de error */
 .error-card {
-  background-color: #f8d7da; /* Fondo claro para el mensaje de error */
-  border-color: #f5c6cb; /* Color del borde */
-  padding: 15px; /* Espacio interno */
-  margin: 20px; /* Espacio alrededor del card de error */
-  border-radius: 8px; /* Bordes redondeados para el card de error */
+  background-color: #f8d7da;
+  border-color: #f5c6cb;
+  padding: 15px;
+  margin: 20px;
+  border-radius: 8px;
 }
+
 ion-content {
   --background: #ffffff;
   display: flex;
   justify-content: center;
   align-items: center;
-  height: 100vh; /* Asegura que ocupe toda la pantalla */
+  height: 100vh;
 }
 
 /* Ajustes del formulario */
@@ -31,8 +30,8 @@ ion-content {
   --background: #f2f2f2;
   --border-radius: 10px;
   margin-bottom: 15px;
-  --border-width: 0px; /* Quita la línea inferior */
-  --inner-border-width: 0px; /* Quita cualquier borde interno */
+  --border-width: 0px;
+  --inner-border-width: 0px;
 }
 
 ion-input {
@@ -71,18 +70,19 @@ ion-input {
   text-align: left;
 }
 
+/* Header personalizado */
 .custom-header {
-  --background: linear-gradient(45deg, #0A49A7, #0a74da); /* Degradado de fondo */
+  --background: linear-gradient(45deg, #0A49A7, #0a74da);
   position: relative;
-  z-index: 10; /* Asegura que el header esté siempre al frente */
+  z-index: 10;
 }
 
 .custom-toolbar {
-  height: 120px; /* Aumenta la altura del toolbar */
+  height: 120px;
   display: flex;
-  justify-content: center; /* Centra horizontalmente */
-  align-items: center; /* Centra verticalmente */
-  border-bottom-left-radius: 50px; /* Bordes redondeados */
+  justify-content: center;
+  align-items: center;
+  border-bottom-left-radius: 50px;
   border-bottom-right-radius: 50px;
   background-color: black;
   --background: transparent;
@@ -91,17 +91,16 @@ ion-input {
 .custom-toolbar ion-title {
   font-size: 24px;
   font-weight: bold;
-  color: white; /* Texto en blanco */
+  color: white;
   text-align: center;
 }
 
-/* Para crear una curva en el borde inferior */
 .custom-header::after {
   position: absolute;
-  bottom: -30px; /* Ajusta la altura de la curva */
+  bottom: -30px;
   left: 0;
   width: 100%;
-  height: 60px; /* Altura de la curva */
+  height: 60px;
   background-color: white;
   border-top-left-radius: 50%;
   border-top-right-radius: 50%;
@@ -109,11 +108,9 @@ ion-input {
 
 /* Centrar el título */
 .centered-title {
-  width: 100%; /* Asegura que el título ocupe todo el espacio disponible */
-  text-align: center; /* Alineación centrada */
+  width: 100%;
+  text-align: center;
 }
-
-
 
 /* Estilo para los iconos de redes sociales */
 .social-icons {
@@ -139,54 +136,47 @@ ion-input {
   margin-top: 20px;
   padding: 20px;
   background-color: #f2f2f2;
-  border-radius: 15px; /* Bordes redondeados */
+  border-radius: 15px;
   color: #0A49A7;
 }
 
-/* Texto de derechos reservados */
 .footer p {
   margin: 5px 0;
   font-size: 14px;
 }
-.button-container {
-  display: flex;
-  justify-content: space-between; /* Espaciado entre botones */
-  flex-wrap: wrap; /* Permitir que los botones se ajusten en varias líneas si es necesario */
-  gap: 10px; /* Espacio entre botones */
-  margin-top: 20px; /* Margen superior para separar de otros elementos */
-}
 
-.button-inline {
-  flex: 1; /* Hacer que los botones ocupen espacio igual */
-  min-width: 120px; /* Ancho mínimo para los botones */
-}
+
+/* QR Container */
 .qr-container {
-  text-align: center; /* Centrar texto y elementos dentro del contenedor */
-  margin-top: 20px; /* Margen superior para separar del contenido anterior */
+  text-align: center;
+  margin-top: 20px;
 }
 
 .qr-image-container {
-  display: flex; /* Usar flexbox para centrar la imagen */
-  justify-content: center; /* Centrar horizontalmente */
-  align-items: center; /* Centrar verticalmente */
-  margin: 0 auto; /* Asegurar que el contenedor ocupe espacio y esté centrado */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin: 0 auto;
 }
 
 .qr-image {
-  max-width: 100%; /* Ajustar el tamaño de la imagen al contenedor */
-  height: auto; /* Mantener la relación de aspecto de la imagen */
+  max-width: 100%;
+  height: auto;
 }
+
+/* Lista personalizada */
 .custom-item2 {
   --background: #ffffff;
   --ion-text-color: black;
   --ion-icon-color: black;
-  --border-width: 0px; /* Quita la línea inferior */
-  --inner-border-width: 0px; /* Quita cualquier borde interno */
-  border: none; /* Asegura que no haya bordes adicionales */
+  --border-width: 0px;
+  --inner-border-width: 0px;
+  border: none;
   border-radius: 8px;
   padding: 10px;
   margin-bottom: 10px;
 }
+
 /* Espacio adicional entre secciones */
 .spacer {
   height: 10px;
@@ -197,6 +187,37 @@ ion-input {
   background-color: #ffffff;
   border-radius: 15px;
   padding: 10px;
-  margin-top: 20px; /* Espacio adicional para separar de la sección de arriba */
+  margin-top: 20px;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
+.header-container {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+
+.header-container h1 {
+  color: #0A49A7;
+  font-size: 24px;
+  font-weight: bold;
+  margin: 0;
+}
+
+.icon-container {
+  display: flex;
+  gap: 15px;
+}
+
+.icon-container ion-icon {
+  font-size: 24px;
+  color: #0A49A7;
+  cursor: pointer;
+  transition: color 0.3s ease, transform 0.3s ease;
+}
+
+.icon-container ion-icon:hover {
+  color: #084a9a; /* Cambia de color al pasar el cursor */
+  transform: scale(1.1); /* Efecto de zoom en hover */
+}
+

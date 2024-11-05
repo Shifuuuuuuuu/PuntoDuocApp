@@ -16,7 +16,14 @@
 
   <!-- Información personal -->
   <div class="form-container" style="max-width: 380px; margin: auto; padding: 25px; background-color: white; border-radius: 20px;">
-    <h1 class="center" style="color: #0A49A7; text-align: center; margin-bottom: 20px;">Información personal</h1>
+    <div class="header-container">
+      <h1 class="center">Información personal</h1>
+      <div class="icon-container">
+        <ion-icon *ngIf="!isEditing" name="create-outline" (click)="editProfile()"></ion-icon>
+        <ion-icon *ngIf="isEditing" name="checkmark-outline" (click)="saveProfile()"></ion-icon>
+        <ion-icon *ngIf="isEditing" name="close-outline" (click)="cancelEdit()"></ion-icon>
+      </div>
+    </div>
     <form *ngIf="estudiante || invitado">
       <!-- Nombre Completo -->
       <div class="mb-3 position-relative">
@@ -24,7 +31,7 @@
           <ion-label>
             <h2 style="color: black;">Nombre Completo</h2>
             <p *ngIf="!isEditing">{{ estudiante ? estudiante.Nombre_completo : invitado?.Nombre_completo }}</p>
-            <ion-input *ngIf="isEditing" [(ngModel)]="tempNombreCompleto" [placeholder]="estudiante ? estudiante.Nombre_completo : invitado?.Nombre_completo"></ion-input>
+            <ion-input *ngIf="isEditing" [(ngModel)]="tempNombreCompleto" name="nombreCompleto" [placeholder]="estudiante ? estudiante.Nombre_completo : invitado?.Nombre_completo" [ngModelOptions]="{ standalone: true }"></ion-input>
           </ion-label>
         </ion-item>
       </div>
@@ -34,8 +41,7 @@
         <ion-item class="custom-item">
           <ion-label>
             <h2 style="color: black;">Correo Electrónico</h2>
-            <p *ngIf="!isEditing">{{ estudiante ? estudiante.email : invitado?.email }}</p>
-            <ion-input *ngIf="isEditing" [(ngModel)]="tempEmail" [placeholder]="estudiante ? estudiante.email : invitado?.email"></ion-input>
+            <p>{{ estudiante ? estudiante.email : invitado?.email }}</p> <!-- Siempre muestra el correo como texto -->
           </ion-label>
         </ion-item>
       </div>
@@ -46,7 +52,7 @@
           <ion-label>
             <h2 style="color: black;">RUT</h2>
             <p *ngIf="!isEditing">{{ estudiante ? estudiante.Rut : invitado?.Rut }}</p>
-            <ion-input *ngIf="isEditing" [(ngModel)]="tempRut" [placeholder]="estudiante ? estudiante.Rut : invitado?.Rut"></ion-input>
+            <ion-input *ngIf="isEditing" [(ngModel)]="tempRut" name="rut" [placeholder]="estudiante ? estudiante.Rut : invitado?.Rut" [ngModelOptions]="{ standalone: true }"></ion-input>
           </ion-label>
         </ion-item>
       </div>
@@ -57,34 +63,23 @@
           <ion-label>
             <h2 style="color: black;">Teléfono</h2>
             <p *ngIf="!isEditing">{{ estudiante ? estudiante.Telefono : invitado?.Telefono }}</p>
-            <ion-input *ngIf="isEditing" [(ngModel)]="tempTelefono" [placeholder]="estudiante ? estudiante.Telefono : invitado?.Telefono"></ion-input>
+            <ion-input *ngIf="isEditing" [(ngModel)]="tempTelefono" name="telefono" [placeholder]="estudiante ? estudiante.Telefono : invitado?.Telefono" [ngModelOptions]="{ standalone: true }"></ion-input>
           </ion-label>
         </ion-item>
       </div>
-
-      <!-- Puntaje -->
       <div class="mb-3 position-relative" *ngIf="estudiante">
         <ion-item class="custom-item">
           <ion-label>
             <h2 style="color: black;">Puntaje</h2>
-            <p>{{ estudiante.puntaje }}</p>
+            <p>{{ estudiante.puntaje }}</p> <!-- Muestra el puntaje como texto sin opción de edición -->
           </ion-label>
         </ion-item>
       </div>
-
-      <!-- Código QR -->
       <div class="qr-container" *ngIf="(estudiante && estudiante.codigoQr) || (invitado && invitado.codigoQr)">
-        <h1 style="color: black;">Código QR</h1>
+        <h1 style="color: black; text-align: center;">Código QR</h1>
         <div class="qr-image-container">
           <img [src]="estudiante?.codigoQr || invitado?.codigoQr" alt="Código QR" class="qr-image" />
         </div>
-      </div>
-
-      <!-- Botones de acción -->
-      <div class="button-container">
-        <ion-button class="button-inline" *ngIf="!isEditing" (click)="editProfile()">Editar Perfil</ion-button>
-        <ion-button class="button-inline" color="success" *ngIf="isEditing" (click)="saveProfile()">Guardar Cambios</ion-button>
-        <ion-button class="button-inline" color="danger" *ngIf="isEditing" (click)="cancelEdit()">Cancelar</ion-button>
       </div>
     </form>
   </div>
