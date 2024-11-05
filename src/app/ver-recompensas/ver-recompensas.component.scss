@@ -18,6 +18,8 @@ ion-content {
   /* Espaciado en cada ítem de la lista */
   ion-item {
     margin-bottom: 8px; /* Espacio entre ítems */
+    --border-width: 0px; /* Quita la línea inferior */
+  --inner-border-width: 0px; /* Quita cualquier borde interno */
   }
 
 /* Ajustes de las tarjetas */

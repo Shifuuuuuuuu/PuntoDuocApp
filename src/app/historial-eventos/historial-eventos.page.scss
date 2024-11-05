@@ -1,29 +1,6 @@
-/* Estilo del botón de filtro */
-.filter-button {
-  --background: #0A49A7; /* Fondo azul */
-  --color: white; /* Color del texto en blanco */
-  border-radius: 12px; /* Bordes redondeados */
-  box-shadow: 0 2px 8px #0A49A7;
-}
-
-/* Estado expandido para la barra de filtros */
-.filters-container {
-  max-height: 0;
-  overflow: hidden;
-  transition: max-height 0.3s ease-in-out;
-}
-
-.filters-container.visible {
-  max-height: 500px; /* Ajusta este valor según el contenido */
-}
-/* Estilo de los ítems de la lista de eventos */
-.event-item {
-  margin-bottom: 15px; /* Espaciado inferior */
-}
 
 /* Header */
 .custom-header {
-
   position: relative;
   z-index: 10; /* Asegura que el header esté siempre al frente */
 }
@@ -58,12 +35,6 @@
   border-top-right-radius: 50%;
 }
 
-/* Barra de búsqueda */
-.custom-searchbar {
-  --border-radius: 20px; /* Borde redondeado */
-  background: white;
-}
-
 /* Ajustes del contenido */
 .content-center {
   --background: #ffffff;
@@ -71,33 +42,6 @@
   flex-direction: column;
   align-items: center;
   height: 100%; /* Asegura que ocupe toda la pantalla */
-}
-
-/* Ajustes de los elementos de la barra de búsqueda */
-.search-container {
-  display: flex;
-  align-items: center;
-  margin: 20px 0;
-}
-
-/* Botón de filtro */
-.filter-button {
-  --border-radius: 20px; /* Borde redondeado */
-  margin-left: 10px;
-}
-
-/* Ajustes de las tarjetas */
-.event-card {
-  background-color: #ffffff; /* Fondo blanco */
-  border-radius: 15px; /* Bordes redondeados */
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-}
-
-/* Imágenes de eventos */
-.event-image {
-  width: 100%; /* Se adapta al tamaño de la tarjeta */
-  height: 150px; /* Altura fija para todas las imágenes */
-  object-fit: cover; /* Mantiene la relación de aspecto */
 }
 
 /* Estilo para los iconos de redes sociales */
@@ -140,28 +84,9 @@
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
   transition: transform 0.3s ease; /* Transición suave para el efecto de escala */
 }
-
-/* Efecto al pasar el ratón */
-.event-card:hover {
-  transform: scale(1.05); /* Aumenta el tamaño al 105% */
-}
-
-.loading-indicator {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 100%;
-}
-
 .no-events {
   text-align: center;
   margin-top: 20px;
-}
-
-.footer {
-  text-align: center;
-  padding: 10px;
-  background-color: #f8f8f8; // O cualquier otro color que desees
 }
 /* Ajustes de los ítems de la lista */
 .event-item {
@@ -176,22 +101,9 @@
   gap: 10px;
   justify-content: space-between;
   flex-wrap: wrap;
-}
-
-.event-item ion-thumbnail {
-  background-color: white;
-}
-
-.event-item ion-label {
-  display: flex;
-  flex-direction: column;
-  gap: 5px;
-  max-width: 100%;
-  flex-grow: 1;
   --border-width: 0px; /* Quita la línea inferior */
   --inner-border-width: 0px; /* Quita cualquier borde interno */
 }
-
 .event-image {
   width: 50px;
   height: 50px;
@@ -199,10 +111,3 @@
   object-fit: cover;
 }
 
-.button-container {
-  display: flex;
-  gap: 4px; /* Reduce el espacio entre botones */
-  justify-content: flex-start; /* Alinea los botones al inicio */
-  align-items: center;
-  margin-top: 8px; /* Espacio superior entre el texto y los botones */
-}
