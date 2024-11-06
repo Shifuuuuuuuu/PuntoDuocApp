@@ -5,7 +5,7 @@ import { Observable, Subscription } from 'rxjs';
 import { Evento } from '../interface/IEventos';
 import { AuthService } from '../services/auth.service';
 import { InvitadoService } from '../services/invitado.service';
-import { IonSelect } from '@ionic/angular';
+import { IonSelect, MenuController } from '@ionic/angular';
 import { register } from 'swiper/element/bundle';
 import {  addDays, startOfWeek, endOfWeek, startOfMonth, endOfMonth } from 'date-fns';
 
@@ -70,6 +70,7 @@ export class FolderPage implements OnInit {
     private activatedRoute: ActivatedRoute,
     private authService: AuthService,
     private invitadoService: InvitadoService,
+    private menu: MenuController
   ) {}
   getPopularEvents() {
     // Filtrar eventos con más de 20 inscritos y ordenar de mayor a menor cantidad de inscritos
@@ -79,6 +80,9 @@ export class FolderPage implements OnInit {
       })
       .sort((a, b) => b.inscritos - a.inscritos)
       .slice(0, 5); // Obtener los primeros 5 eventos más populares
+  }
+  ionViewWillEnter() {
+    this.menu.enable(false);  // Deshabilita el menú en esta página
   }
 
 

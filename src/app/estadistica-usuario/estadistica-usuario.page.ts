@@ -1,8 +1,8 @@
 import { Component, OnInit, ViewChild, ElementRef } from '@angular/core';
 import { Chart } from 'chart.js';
 import { EstudianteService } from '../services/estudiante.service';
-import { AuthService } from '../services/auth.service'; // Asegúrate de tener AuthService configurado para obtener el ID del usuario
 import { firstValueFrom } from 'rxjs';
+import { MenuController } from '@ionic/angular';
 
 @Component({
   selector: 'app-estadistica-usuario',
@@ -25,10 +25,13 @@ export class EstadisticaUsuarioPage implements OnInit {
   totalEventosVerificados: number = 0;
   porcentajeVerificacion: number = 0;
 
-  constructor(private estudianteService: EstudianteService, private authService: AuthService) {}
+  constructor(private estudianteService: EstudianteService,private menu: MenuController) {}
 
   ngOnInit() {
     this.cargarEstadisticas();
+  }
+  ionViewWillEnter() {
+    this.menu.enable(false);  // Deshabilita el menú en esta página
   }
 
   async cargarEstadisticas() {

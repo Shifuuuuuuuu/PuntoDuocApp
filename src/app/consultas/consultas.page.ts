@@ -4,6 +4,7 @@ import { ConsultaService } from '../services/consulta.service';
 import { EstudianteService } from '../services/estudiante.service';
 import { firstValueFrom } from 'rxjs';
 import Swal from 'sweetalert2';
+import { MenuController } from '@ionic/angular';
 @Component({
   selector: 'app-consultas',
   templateUrl: './consultas.page.html',
@@ -20,11 +21,15 @@ export class ConsultasPage implements OnInit {
   constructor(
     private consultaService: ConsultaService,
     private estudianteService: EstudianteService,
-    private invitadoService: InvitadoService
+    private invitadoService: InvitadoService,
+    private menu: MenuController
   ) {
     this.obtenerUsuario();
   }
   ngOnInit() {
+  }
+  ionViewWillEnter() {
+    this.menu.enable(false);  // Deshabilita el menú en esta página
   }
 
   async obtenerUsuario() {

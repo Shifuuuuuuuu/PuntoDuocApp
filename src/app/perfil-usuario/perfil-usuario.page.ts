@@ -8,7 +8,7 @@ import { firstValueFrom, Subscription } from 'rxjs';
 import { CartService } from '../services/cart.service';
 import Swal from 'sweetalert2';
 import { QRCodeData } from '../interface/IQR';
-import { NavController } from '@ionic/angular';
+import { MenuController, NavController } from '@ionic/angular';
 import * as QRCode from 'qrcode';
 @Component({
   selector: 'app-perfil-usuario',
@@ -40,8 +40,12 @@ export class PerfilUsuarioPage implements OnInit {
     private invitadoService: InvitadoService,
     private cartService: CartService,
     private router: Router,
-    private navCtrl: NavController
+    private navCtrl: NavController,
+    private menu: MenuController
   ) {}
+  ionViewWillEnter() {
+    this.menu.enable(false);  // Deshabilita el menú en esta página
+  }
 
   async ngOnInit() {
     this.authSubscription = this.authService.getCurrentUserEmail().subscribe(email => {

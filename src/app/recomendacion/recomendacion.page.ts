@@ -12,16 +12,13 @@ export class RecomendacionPage implements OnInit {
   constructor(private estudianteService: EstudianteService) {}
 
   async recomendarPorWhatsapp() {
-    const mensaje = `¡Hola! Descarga la app y ambos ganaremos puntos para canjear grandes recompensas. Solo tienes que descargar la app y registrarte. ¡Nos vemos en los eventos!`;
+    const mensaje = `¡Hola! Descarga ya la app PuntoDuoc para que puedas estar al tanto de los eventos, participa y recibirás puntajes para que después puedas canjear por productos exclusivos de Duoc UC. ¡Nos vemos en los eventos!`;
+    const urlApp = 'https://tuapp.com'; // Cambia esto por la URL de tu app
+    const mensajeCompleto = `${mensaje} ${urlApp}`;
+    const whatsappUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(mensajeCompleto)}`;
 
     try {
-      await Share.share({
-        title: 'Recomienda nuestra app',
-        text: mensaje,
-        url: 'https://tuapp.com', // Cambia esto por la URL de tu app si tienes una.
-        dialogTitle: 'Compartir con tus amigos'
-      });
-
+      window.open(whatsappUrl, '_blank');
       // Otorgar los puntos al estudiante que recomienda
       this.otorgarPuntosRecomendacion();
     } catch (error) {
@@ -65,8 +62,6 @@ export class RecomendacionPage implements OnInit {
     }
   }
 
-
-  ngOnInit() {
-  }
+  ngOnInit() {}
 
 }
