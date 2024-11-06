@@ -207,6 +207,17 @@ obtenerHistorialPuntajeDesdeFirestore(estudianteId: string): Observable<{ fecha:
   updateEstudiantePuntaje(id_estudiante: string, puntaje: number) {
     return this.firestore.collection('Estudiantes').doc(id_estudiante).update({ puntaje });
   }
+  async verificarCorreoExistente(email: string): Promise<boolean> {
+    try {
+      const snapshot = await this.firestore.collection('Estudiantes', ref => ref.where('email', '==', email)).get().toPromise();
+
+      // Verificar si snapshot no es undefined y si no está vacío
+      return snapshot ? !snapshot.empty : false;
+    } catch (error) {
+      console.error('Error al verificar el correo:', error);
+      throw error;
+    }
+  }
   async actualizarPuntajeConFecha(estudianteId: string, puntos: number): Promise<void> {
     const puntajeDoc = {
       puntaje: puntos,
