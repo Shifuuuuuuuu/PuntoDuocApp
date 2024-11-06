@@ -89,6 +89,9 @@ export class PerfilUsuarioPage implements OnInit {
         }
       }
 
+      // Generar el QR después de cargar los datos del usuario
+      await this.generateQrData();
+
       if (this.userEmail && this.eventoId) {
         await this.verificarEstadoAcreditacion();
       }

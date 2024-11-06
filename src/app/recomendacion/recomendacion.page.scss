@@ -43,14 +43,17 @@
 }
 
 /* Tarjeta de invitación */
+/* Tarjeta de invitación */
 .invita-card {
   width: 100%;
   max-width: 400px;
   border-radius: 15px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-  margin-top: 20px;
+  margin: 20px auto; /* Esto centra horizontalmente la tarjeta */
   background-color: #ffffff;
   text-align: center;
+  padding: 10px;
+  box-sizing: border-box;
 }
 
 .card-header {
@@ -87,14 +90,16 @@ ion-progress-bar {
 /* Estilo para la tarjeta de invitación con imagen */
 .invita-content {
   display: flex;
-  flex-direction: column;
-  align-items: flex-start;
+  justify-content: center; /* Centra horizontalmente */
+  align-items: center;
+
 }
 
 .invita-horizontal {
   display: flex;
   align-items: center;
   justify-content: space-between; /* Espacio entre la imagen y el botón */
+
 }
 
 .invita-image {
@@ -141,13 +146,14 @@ ion-button {
 /* Pie de página */
 .footer {
   text-align: center;
-  margin-top: 20px;
+  margin-top: 150px;
   padding: 20px;
   background-color: #f2f2f2;
-  border-radius: 15px;
+  border-radius: 15px; /* Bordes redondeados */
   color: #0A49A7;
 }
 
+/* Texto de derechos reservados */
 .footer p {
   margin: 5px 0;
   font-size: 14px;
