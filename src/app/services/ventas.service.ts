@@ -5,6 +5,7 @@ import { UsuarioVentas } from '../interface/IUVentas'; // Asegúrate de colocar 
 import { Recompensa } from '../interface/IRecompensa';
 import { CapacitorBarcodeScanner } from '@capacitor/barcode-scanner';
 import Swal from 'sweetalert2';
+import { Estudiante } from '../interface/IEstudiante';
 
 
 @Injectable({
@@ -128,6 +129,26 @@ export class VentasAuthService {
           // Actualizar la colección
           await this.firestore.collection('Recompensas').doc(id_recompensa).update(recompensa);
   
+          // Obtener el documento del estudiante
+          const estudianteDoc = await this.firestore.collection('Estudiantes').doc(id_estudiante).get().toPromise();
+          if (!estudianteDoc || !estudianteDoc.exists) {
+            Swal.fire({
+              title: 'Error',
+              text: 'No se encontró el estudiante.',
+              icon: 'error',
+              confirmButtonText: 'OK'
+            });
+            return;
+          }
+  
+          const estudiante = estudianteDoc.data() as Estudiante;
+  
+          // Restar los puntos requeridos de la recompensa al puntaje del estudiante
+          const nuevoPuntaje = estudiante.puntaje - recompensa.puntos_requeridos;
+  
+          // Actualizar el puntaje del estudiante
+          await this.firestore.collection('Estudiantes').doc(id_estudiante).update({ puntaje: nuevoPuntaje });
+  
           Swal.fire({
             title: 'Éxito',
             text: `Reclamación de la recompensa "${recompensa.descripcion}" confirmada para el estudiante.`,
@@ -160,6 +181,7 @@ export class VentasAuthService {
       });
     }
   }
+  
   
 
 
