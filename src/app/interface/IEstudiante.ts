@@ -10,6 +10,7 @@ export interface Estudiante {
   eventosInscritos?: string[];
   puntaje: number;
   tokenFCM: string | null;
+  verificado: boolean;
 }
 
 export interface EstudianteSinPassword {
@@ -23,4 +24,5 @@ export interface EstudianteSinPassword {
   eventosInscritos?: string[];
   puntaje: number;
   tokenFCM: string | null;
+  verificado: boolean;
 }

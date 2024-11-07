@@ -2,50 +2,64 @@
 import { Injectable } from '@angular/core';
 import { AngularFirestore, AngularFirestoreCollection } from '@angular/fire/compat/firestore';
 import { Invitado, InvitadoSinPassword } from '../interface/IInvitado';
-import { BehaviorSubject,  Observable, of } from 'rxjs';
+import { BehaviorSubject,  firstValueFrom,  Observable, of } from 'rxjs';
 import {  map } from 'rxjs/operators';
 import 'firebase/compat/firestore';
 import { AngularFireAuth } from '@angular/fire/compat/auth';
 import { arrayUnion, arrayRemove } from '@angular/fire/firestore';
+import { environment } from 'src/environments/environment';
+import { AngularFireMessaging } from '@angular/fire/compat/messaging';
 
 @Injectable({
   providedIn: 'root'
 })
 export class InvitadoService {
+
   private invitadosCollection: AngularFirestoreCollection<InvitadoSinPassword>;
 
   private currentUserEmailSubject: BehaviorSubject<string | undefined> = new BehaviorSubject<string | undefined>(this.getStoredUserEmail());
   public currentUserEmail$: Observable<string | undefined> = this.currentUserEmailSubject.asObservable();
 
-  constructor(private firestore: AngularFirestore, private afAuth: AngularFireAuth) {
+  constructor(private firestore: AngularFirestore, private afAuth: AngularFireAuth,private angularFireMessaging: AngularFireMessaging,) {
     this.invitadosCollection = this.firestore.collection<InvitadoSinPassword>('Invitados');
   }
 
   // Método para registrar un invitado con autenticación y enviar verificación de correo
   async registrarInvitado(invitado: Invitado): Promise<Omit<Invitado, 'password'>> {
-    const userCredential = await this.afAuth.createUserWithEmailAndPassword(invitado.email, invitado.password);
-    const uid = userCredential.user?.uid;
+    try {
+      // Cerrar sesión antes de registrar para evitar mantener la sesión activa de un usuario previo
+      await this.afAuth.signOut();
 
-    // Enviar verificación de correo electrónico
-    if (userCredential.user) {
-      await userCredential.user.sendEmailVerification();
+      const userCredential = await this.afAuth.createUserWithEmailAndPassword(invitado.email, invitado.password);
+      console.log('Usuario registrado en Firebase Authentication:', userCredential);
+
+      // Enviar correo de verificación
+      if (userCredential.user) {
+        await userCredential.user.sendEmailVerification();
+        console.log('Correo de verificación enviado a:', invitado.email);
+      }
+
+      // Crear el objeto invitado sin el campo password
+      const invitadoData: Omit<Invitado, 'password'> = {
+        id_Invitado: userCredential.user?.uid || '',
+        email: invitado.email,
+        Nombre_completo: invitado.Nombre_completo,
+        Rut: invitado.Rut,
+        Telefono: invitado.Telefono,
+        codigoQr: '',
+        tokenFCM: '',
+        verificado: false
+      };
+
+      // Guardar los datos del invitado en Firestore
+      await this.firestore.collection<Omit<Invitado, 'password'>>('Invitados').doc(invitadoData.id_Invitado).set(invitadoData);
+      console.log('Datos del invitado guardados en Firestore:', invitadoData);
+
+      return invitadoData;
+    } catch (error) {
+      console.error('Error al registrar en Firebase Authentication:', error);
+      throw error;
     }
-
-    // Crear el objeto con la información básica
-    const invitadoData: Omit<Invitado, 'password'> = {
-      id_Invitado: invitado.id_Invitado,
-      email: invitado.email,
-      Nombre_completo: invitado.Nombre_completo,
-      Rut: invitado.Rut,
-      Telefono: invitado.Telefono,
-      codigoQr: invitado.codigoQr,
-      eventosInscritos: invitado.eventosInscritos || [],
-    };
-
-    // Guardar el invitado en Firestore
-    await this.invitadosCollection.doc(uid).set(invitadoData);
-
-    return { ...invitadoData, id_Invitado: uid };
   }
   // invitado.service.ts
 async login(email: string, password: string): Promise<Invitado | null> {
@@ -69,13 +83,29 @@ async login(email: string, password: string): Promise<Invitado | null> {
   return null;
 }
 
-  // Método para verificar si un invitado existe por correo electrónico
-  verificarInvitadoPorCorreo(correo: string): Observable<boolean> {
-    return this.firestore
-      .collection<Invitado>('Invitados', ref => ref.where('email', '==', correo))
-      .valueChanges()
-      .pipe(map(invitados => invitados.length > 0));
+async verificarInvitadoPorCorreo(correo: string): Promise<boolean> {
+  try {
+    const snapshot = await this.firestore
+      .collection('Invitados', ref => ref.where('email', '==', correo))
+      .get()
+      .toPromise();
+
+    // Agregar más logs para ver los resultados de la consulta
+    console.log('Snapshot de la consulta:', snapshot);
+    if (snapshot && !snapshot.empty) {
+      console.log('El correo ya existe en la base de datos.');
+      return true;
+    } else {
+      console.log('El correo no existe en la base de datos.');
+      return false;
+    }
+  } catch (error) {
+    console.error('Error al verificar el correo:', error);
+    throw error;
   }
+}
+
+
 
   // Método para restablecer la contraseña
   async restablecerContrasena(email: string): Promise<void> {
@@ -199,5 +229,31 @@ async login(email: string, password: string): Promise<Invitado | null> {
     return this.firestore.collection('Invitados').doc(userId).valueChanges();
   }
 
+  async solicitarPermisosYObtenerToken(invitadoId: string): Promise<string | null> {
+    try {
+        const permission = await Notification.requestPermission();
+        if (permission === 'granted') {
+            const token = await firstValueFrom(
+                this.angularFireMessaging.requestToken.pipe()
+            );
 
+            console.log('Token FCM obtenido:', token);
+            if (token) {
+                await this.firestore.collection('Invitados').doc(invitadoId).update({
+                    tokenFCM: token,
+                });
+                return token;
+            } else {
+                console.warn('No se pudo obtener el token FCM.');
+                return null;
+            }
+        } else {
+            console.log('Permiso de notificación denegado.');
+            return null;
+        }
+    } catch (error) {
+        console.error('Error al obtener el token FCM:', error);
+        throw error;
+    }
+}
 }

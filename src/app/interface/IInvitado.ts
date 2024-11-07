@@ -7,6 +7,8 @@ export interface Invitado {
     Telefono: string;
     codigoQr?: string;
     eventosInscritos?: string[];
+    tokenFCM: string | null;
+    verificado: boolean;
   }
 export interface InvitadoSinPassword {
     id_Invitado?: string;
@@ -16,4 +18,6 @@ export interface InvitadoSinPassword {
     Telefono: string;
     codigoQr?: string;
     eventosInscritos?: string[];
+    tokenFCM: string | null;
+    verificado: boolean;
   }

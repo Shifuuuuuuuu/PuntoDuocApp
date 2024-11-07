@@ -5,10 +5,10 @@ import { InvitadoService } from '../services/invitado.service';
 import { VentasAuthService } from '../services/ventas.service';
 import { GestorEventosService } from '../services/gestoreventos.service';
 import { AngularFireAuth } from '@angular/fire/compat/auth';
-import { firstValueFrom } from 'rxjs';
 import { MenuController } from '@ionic/angular';
 import { EstudianteService } from '../services/estudiante.service';
-
+import Swal from 'sweetalert2';
+import { firstValueFrom } from 'rxjs';
 
 
 @Component({
@@ -43,7 +43,7 @@ export class IniciarSesionPage implements OnInit {
 
   ngOnInit() {}
 
-  iniciarSesion() {
+  async iniciarSesion() {
     // Limpiar errores anteriores
     this.emailError = false;
     this.passwordError = false;
@@ -65,18 +65,23 @@ export class IniciarSesionPage implements OnInit {
     // Intentar iniciar sesión como estudiante
     this.authService.login(this.user.email, this.user.password)
       .then(async (studentData) => {
-        if (studentData && studentData.id_estudiante) {  // Verifica que studentData y id_estudiante no sean undefined
+        if (studentData && studentData.id_estudiante) {
+          // Verificar si el estudiante está verificado
+          if (!studentData.verificado) {
+            Swal.fire('Error', 'Primero te tienes que verificar en el correo que se te mandó.', 'error');
+            return;
+          }
+
           console.log('Inicio de sesión como estudiante exitoso:', studentData);
           this.authService.setCurrentUserEmail(this.user.email);
-          localStorage.setItem('userType', 'estudiante'); // Almacenar tipo de usuario
-          localStorage.setItem('id', studentData.id_estudiante); // Guardar el ID del estudiante
+          localStorage.setItem('userType', 'estudiante');
+          localStorage.setItem('id', studentData.id_estudiante);
 
-          // Obtener y almacenar el token FCM
+          // Obtener y actualizar el token FCM
           try {
             const tokenFCM = await this.estudianteService.solicitarPermisosYObtenerToken(studentData.id_estudiante);
             if (tokenFCM) {
               console.log('Token FCM obtenido al iniciar sesión:', tokenFCM);
-              // Actualizar el token FCM en Firestore
               await this.authService.updateEstudiante({
                 ...studentData,
                 tokenFCM: tokenFCM
@@ -89,7 +94,7 @@ export class IniciarSesionPage implements OnInit {
           this.router.navigate(['/folder/Inicio']);
         } else {
           this.errorMessage = 'No se pudo encontrar un estudiante con este correo.';
-          await this.iniciarSesionComoInvitado(); // Intentar iniciar sesión como invitado si no es estudiante
+          await this.iniciarSesionComoInvitado();
         }
       })
       .catch(async (error) => {
@@ -98,35 +103,43 @@ export class IniciarSesionPage implements OnInit {
       });
   }
 
-
-
   // Método para manejar la sesión como invitado
-  iniciarSesionComoInvitado() {
-    console.log('Intentando iniciar sesión como invitado con:', this.user.email);
+async iniciarSesionComoInvitado() {
+  console.log('Intentando iniciar sesión como invitado con:', this.user.email);
 
-    this.afAuth.signInWithEmailAndPassword(this.user.email, this.user.password)
-      .then(async (userCredential) => {
-        if (userCredential && userCredential.user) {
-          const authUserEmail = userCredential.user.email;
-          if (authUserEmail) {
-            console.log('Inicio de sesión como invitado exitoso:', userCredential);
-            this.invitadoService.setCurrentUserEmail(authUserEmail);
-            localStorage.setItem('userType', 'invitado'); // Almacenar tipo de usuario como invitado
-            localStorage.setItem('id', userCredential.user.uid); // Guardar el ID del invitado
-            this.router.navigate(['/folder/Inicio']);
-          } else {
-            this.errorMessage = 'No se pudo autenticar al invitado. El correo es nulo.';
+  this.afAuth.signInWithEmailAndPassword(this.user.email, this.user.password)
+    .then(async (userCredential) => {
+      if (userCredential && userCredential.user) {
+        const authUserEmail = userCredential.user.email;
+        if (authUserEmail) {
+          console.log('Inicio de sesión como invitado exitoso:', userCredential);
+
+          // Obtener datos del invitado por correo
+          const invitadoData = await firstValueFrom(this.invitadoService.obtenerInvitadoPorEmail(authUserEmail));
+
+          if (invitadoData && !invitadoData.verificado) {
+            Swal.fire('Error', 'Primero te tienes que verificar en el correo que se te mandó.', 'error');
+            return;
           }
+
+          this.invitadoService.setCurrentUserEmail(authUserEmail);
+          localStorage.setItem('userType', 'invitado'); // Almacenar tipo de usuario como invitado
+          localStorage.setItem('id', userCredential.user.uid); // Guardar el ID del invitado
+          this.router.navigate(['/folder/Inicio']);
         } else {
-          this.errorMessage = 'No se pudo autenticar al invitado.';
+          this.errorMessage = 'No se pudo autenticar al invitado. El correo es nulo.';
         }
-      })
-      .catch((error) => {
-        console.error('Error de inicio de sesión como invitado:', error);
-        this.errorMessage = 'Correo o contraseña incorrectos para el invitado.';
-        this.verificarUsuarioVentasOEventos(this.user.email, this.user.password);
-      });
-  }
+      } else {
+        this.errorMessage = 'No se pudo autenticar al invitado.';
+      }
+    })
+    .catch((error) => {
+      console.error('Error de inicio de sesión como invitado:', error);
+      this.errorMessage = 'Correo o contraseña incorrectos para el invitado.';
+      this.verificarUsuarioVentasOEventos(this.user.email, this.user.password);
+    });
+}
+
 
   // Verificar si el usuario es de ventas o de eventos
   verificarUsuarioVentasOEventos(email: string, password: string) {

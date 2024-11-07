@@ -4,6 +4,8 @@ import { Router } from '@angular/router';
 import { EstudianteService } from '../services/estudiante.service';
 import * as QRCode from 'qrcode';
 import Swal from 'sweetalert2';
+import { firstValueFrom } from 'rxjs';
+import { AngularFireMessaging } from '@angular/fire/compat/messaging';
 @Component({
   selector: 'app-registrar-usuarios',
   templateUrl: './registrar-usuarios.page.html',
@@ -20,7 +22,8 @@ export class RegistrarUsuariosPage implements OnInit {
     carrera: '',
     codigoQr: '',
     puntaje: 0,
-    tokenFCM: ''
+    tokenFCM: '',
+    verificado: false // Agregar el campo verificado
   };
 
   errorMessage: string = '';
@@ -28,8 +31,8 @@ export class RegistrarUsuariosPage implements OnInit {
   constructor(
     private estudianteService: EstudianteService,
     private router: Router,
+    private angularFireMessaging: AngularFireMessaging
   ) {}
-
 
   async registrar() {
     this.errorMessage = '';
@@ -37,65 +40,75 @@ export class RegistrarUsuariosPage implements OnInit {
     // Validar que el correo pertenezca a duocuc.cl
     const emailPattern = /^[a-zA-Z0-9._%+-]+@(duocuc)\.cl$/;
     if (!emailPattern.test(this.estudiante.email)) {
-        this.errorMessage = 'El correo electrónico debe ser de la institución (@duocuc.cl).';
-        return;
+      this.errorMessage = 'El correo electrónico debe ser de la institución (@duocuc.cl).';
+      return;
     }
 
     try {
-        // Verificar si el correo ya existe en la base de datos
-        const existeCorreo = await this.estudianteService.verificarCorreoExistente(this.estudiante.email);
-        if (existeCorreo) {
-            Swal.fire('Error', 'El correo electrónico ya está registrado.', 'error');
-            return;
-        }
+      // Verificar si el correo ya existe en la base de datos
+      const existeCorreo = await this.estudianteService.verificarCorreoExistente(this.estudiante.email);
+      if (existeCorreo) {
+        Swal.fire('Error', 'El correo electrónico ya está registrado.', 'error');
+        return;
+      }
 
-        // Registrar al estudiante en Firebase Auth
-        const estudianteRegistrado = await this.estudianteService.registrarEstudiante(this.estudiante);
+      // Registrar al estudiante en Firebase Auth
+      const estudianteRegistrado = await this.estudianteService.registrarEstudiante(this.estudiante);
 
-        if (!estudianteRegistrado.id_estudiante) {
-            throw new Error('ID del estudiante no encontrado después del registro.');
-        }
+      if (!estudianteRegistrado.id_estudiante) {
+        throw new Error('ID del estudiante no encontrado después del registro.');
+      }
 
-        // Solicitar y obtener el token FCM usando el id_estudiante recién registrado
-        try {
-            const tokenFCM = await this.estudianteService.solicitarPermisosYObtenerToken(estudianteRegistrado.id_estudiante);
-            this.estudiante.tokenFCM = tokenFCM || null;
-            console.log('Token FCM obtenido:', tokenFCM);
-        } catch (error) {
-            console.error('No se pudo obtener el token FCM:', error);
-        }
+      // Aquí debes crear el documento en Firestore
+      await this.estudianteService.updateEstudiante({
+        id_estudiante: estudianteRegistrado.id_estudiante,
+        email: this.estudiante.email,
+        Nombre_completo: this.estudiante.Nombre_completo,
+        Rut: this.estudiante.Rut,
+        Telefono: this.estudiante.Telefono,
+        carrera: this.estudiante.carrera,
+        codigoQr: '',
+        puntaje: 0,
+        tokenFCM: '',
+        verificado: false // Establecer verificado como false inicialmente
+      });
 
-        // Generar el código QR basado en los datos del estudiante registrado
-        const qrData = JSON.stringify({
-            id_estudiante: estudianteRegistrado.id_estudiante,
-            email: estudianteRegistrado.email,
-            Nombre_completo: estudianteRegistrado.Nombre_completo,
-            Rut: estudianteRegistrado.Rut
-        });
-        this.estudiante.codigoQr = await QRCode.toDataURL(qrData);
+      // Solicitar y obtener el token FCM
+      const tokenFCM = await this.estudianteService.solicitarPermisosYObtenerToken(estudianteRegistrado.id_estudiante);
+      if (tokenFCM) {
+        this.estudiante.tokenFCM = tokenFCM;
+        console.log('Token FCM obtenido:', tokenFCM);
+      } else {
+        console.warn('No se obtuvo ningún token FCM.');
+      }
 
-        // Actualizar el estudiante en Firestore con el código QR y el token FCM
-        await this.estudianteService.updateEstudiante({
-            ...estudianteRegistrado,
-            codigoQr: this.estudiante.codigoQr,
-            tokenFCM: this.estudiante.tokenFCM  // Agregar el token FCM al estudiante
-        });
+      // Generar el código QR basado en los datos del estudiante registrado
+      const qrData = JSON.stringify({
+        id_estudiante: estudianteRegistrado.id_estudiante,
+        email: estudianteRegistrado.email,
+        Nombre_completo: estudianteRegistrado.Nombre_completo,
+        Rut: estudianteRegistrado.Rut
+      });
+      this.estudiante.codigoQr = await QRCode.toDataURL(qrData);
 
-        Swal.fire('Éxito', 'Estudiante registrado correctamente. Verifique su correo electrónico.', 'success');
-        this.router.navigate(['/iniciar-sesion']);
+      // Actualizar el estudiante en Firestore con el código QR y el token FCM
+      await this.estudianteService.updateEstudiante({
+        ...estudianteRegistrado,
+        codigoQr: this.estudiante.codigoQr,
+        tokenFCM: this.estudiante.tokenFCM // Agregar el token FCM al estudiante
+      });
+
+      Swal.fire('Éxito', 'Estudiante registrado correctamente. Verifique su correo electrónico.', 'success');
+      this.router.navigate(['/iniciar-sesion']);
     } catch (error: any) {
-        if (error.code === 'auth/email-already-in-use') {
-            Swal.fire('Error', 'El correo electrónico ya está en uso por otra cuenta.', 'error');
-        } else {
-            Swal.fire('Error', 'Ocurrió un error al registrar el estudiante.', 'error');
-            console.error('Error al registrar estudiante:', error);
-        }
+      if (error.code === 'auth/email-already-in-use') {
+        Swal.fire('Error', 'El correo electrónico ya está en uso por otra cuenta.', 'error');
+      } else {
+        Swal.fire('Error', 'Ocurrió un error al registrar el estudiante.', 'error');
+        console.error('Error al registrar estudiante:', error);
+      }
     }
-}
-
-
-
-
+  }
 
   validarRUT(event: any) {
     let rut = event.target.value;
@@ -141,19 +154,19 @@ export class RegistrarUsuariosPage implements OnInit {
     this.estudiante.Telefono = telefono;
   }
 
-
-
   ngOnInit() {
-    const estudianteId = localStorage.getItem('id'); // O la forma en que obtengas el ID del estudiante
-    if (estudianteId) {
-        this.estudianteService.solicitarPermisosYObtenerToken(estudianteId).then(token => {
+    firstValueFrom(this.angularFireMessaging.requestToken).then(
+        (token) => {
             if (token) {
-                console.log('Token FCM en ngOnInit:', token);
+                console.log('Token obtenido manualmente:', token);
+            } else {
+                console.warn('No se pudo obtener el token');
             }
-        }).catch(error => {
-            console.error('Error al obtener el token FCM en ngOnInit:', error);
-        });
-    }
+        }
+    ).catch(
+        (error) => {
+            console.error('Error al obtener el token manualmente:', error);
+        }
+    );
 }
-
 }

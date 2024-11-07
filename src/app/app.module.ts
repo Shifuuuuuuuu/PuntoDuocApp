@@ -18,6 +18,7 @@ import { RecompensasModalComponent } from './recompensas-modal-component/recompe
 import { RecompensasReclamadasModalComponent } from './recompensas-reclamadas-modal-component/recompensas-reclamadas-modal-component.component';
 import { registerLocaleData } from '@angular/common';
 import localeEs from '@angular/common/locales/es';
+import { AngularFireMessagingModule } from '@angular/fire/compat/messaging';
 
 
 registerLocaleData(localeEs);
@@ -27,7 +28,7 @@ registerLocaleData(localeEs);
   declarations: [AppComponent, RecompensasModalComponent,
     RecompensasReclamadasModalComponent],
   imports: [AngularFireModule.initializeApp(environment.firebaseConfig),
-    AngularFireAuthModule ,BrowserModule, IonicModule.forRoot(), AppRoutingModule,FormsModule,AngularFirestoreModule,TabBarModule,TabBarAdminModule,TabUsuarioModule ],
+    AngularFireAuthModule ,BrowserModule, IonicModule.forRoot(), AppRoutingModule,FormsModule,AngularFirestoreModule,TabBarModule,TabBarAdminModule,TabUsuarioModule,AngularFireMessagingModule ],
   providers: [{ provide: RouteReuseStrategy, useClass: IonicRouteStrategy },{ provide: LOCALE_ID, useValue: 'es' },InvitadoService,QRCodeModule ],
   bootstrap: [AppComponent],
 

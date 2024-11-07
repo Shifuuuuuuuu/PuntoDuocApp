@@ -1,19 +1,19 @@
 import { Injectable } from '@angular/core';
 import { AngularFirestore } from '@angular/fire/compat/firestore';
-import { Estudiante, EstudianteSinPassword } from '../interface/IEstudiante'; // Asegúrate de tener la interfaz creada
-import { defaultIfEmpty, map } from 'rxjs/operators';
+import { Estudiante } from '../interface/IEstudiante'; // Asegúrate de tener la interfaz creada
+import {  map } from 'rxjs/operators';
 import firebase from 'firebase/compat/app';
 import { firstValueFrom, Observable, of } from 'rxjs';
 import { AngularFireAuth } from '@angular/fire/compat/auth';
 import { Evento } from '../interface/IEventos';
-import { getMessaging, getToken } from 'firebase/messaging';
-import { environment } from '../../environments/environment';
+import { AngularFireMessaging } from '@angular/fire/compat/messaging';
+
 @Injectable({
   providedIn: 'root'
 })
 export class EstudianteService {
-  angularFireMessaging: any;
-  constructor(private firestore: AngularFirestore, private afAuth: AngularFireAuth) { }
+
+  constructor(private firestore: AngularFirestore, private afAuth: AngularFireAuth,private angularFireMessaging: AngularFireMessaging) { }
 
   // Obtener eventos asistidos por categoría
   obtenerEventosAsistidosPorCategoria(estudianteId: string): Promise<Evento[]> {
@@ -84,7 +84,6 @@ export class EstudianteService {
       );
   }
 
-  // Registrar estudiante y enviar correo de verificación
   async registrarEstudiante(estudiante: Estudiante): Promise<Omit<Estudiante, 'password'>> {
     // Registrar usuario en Firebase Authentication usando email y password
     const userCredential = await this.afAuth.createUserWithEmailAndPassword(estudiante.email, estudiante.password);
@@ -97,23 +96,24 @@ export class EstudianteService {
 
     // Crear el objeto estudianteData sin el campo password
     const estudianteData: Omit<Estudiante, 'password'> = {
-      email: estudiante.email,
-      Nombre_completo: estudiante.Nombre_completo,
-      Rut: estudiante.Rut,
-      Telefono: estudiante.Telefono,
-      carrera: estudiante.carrera,
-      puntaje: 0,
-      id_estudiante: uid,
-      codigoQr: '',  // Puedes dejar esto vacío hasta que lo generes
-      eventosInscritos: [],
-      tokenFCM: null,
+        email: estudiante.email,
+        Nombre_completo: estudiante.Nombre_completo,
+        Rut: estudiante.Rut,
+        Telefono: estudiante.Telefono,
+        carrera: estudiante.carrera,
+        puntaje: 0,
+        id_estudiante: uid,
+        codigoQr: '',  // Puedes dejar esto vacío hasta que lo generes
+        eventosInscritos: [],
+        tokenFCM: null,
+        verificado: false // Establecer verificado como false
     };
 
     // Guardar los datos del estudiante en Firestore, excluyendo el password
     await this.firestore.collection<Omit<Estudiante, 'password'>>('Estudiantes').doc(uid).set(estudianteData);
 
     return estudianteData; // Retornar los datos del estudiante registrado
-  }
+}
 
   // Método para solicitar restablecimiento de contraseña
   async restablecerPassword(email: string): Promise<void> {
@@ -248,26 +248,26 @@ export class EstudianteService {
     try {
         const permission = await Notification.requestPermission();
         if (permission === 'granted') {
-            const token = await this.angularFireMessaging.getToken({
-                vapidKey: environment.vapidKey,
-            }).toPromise();
+            // Asegúrate de que requestToken esté correctamente definido
+            const token = await firstValueFrom(this.angularFireMessaging.requestToken);
+
             console.log('Token FCM obtenido:', token);
             if (token) {
-                // Guardar el token en la base de datos bajo el perfil del estudiante
                 await this.firestore.collection('Estudiantes').doc(estudianteId).update({
-                    tokenFCM: token
+                    tokenFCM: token,
                 });
-                return token;
+                return token; // Asegúrate de que aquí se retorne un token de tipo string
+            } else {
+                console.warn('No se pudo obtener el token FCM.');
+                return null; // Retorna null si no hay token
             }
         } else {
             console.log('Permiso de notificación denegado.');
+            return null; // Retorna null si no se concedió el permiso
         }
-        return null;
     } catch (error) {
         console.error('Error al obtener el token FCM:', error);
-        throw error;
+        throw error; // Propaga el error
     }
 }
-
-
 }
