@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "445454255986",
+    "project_id": "puntoduoc-894e9",
+    "storage_bucket": "puntoduoc-894e9.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:445454255986:android:069e23364a690bcbd0ffeb",
+        "android_client_info": {
+          "package_name": "com.PuntoDuocApp.app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCgowXNsBzFQR5S2BwMROfQ__ZteaLwvGo"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

@@ -7,6 +7,7 @@ import { GestorEventosService } from '../services/gestoreventos.service';
 import { AngularFireAuth } from '@angular/fire/compat/auth';
 import { firstValueFrom } from 'rxjs';
 import { MenuController } from '@ionic/angular';
+import { EstudianteService } from '../services/estudiante.service';
 
 
 
@@ -32,7 +33,8 @@ export class IniciarSesionPage implements OnInit {
     private gestorEventosService: GestorEventosService,
     private router: Router,
     private afAuth: AngularFireAuth,
-    private menu: MenuController
+    private menu: MenuController,
+    private estudianteService: EstudianteService
   ) {}
 
   ionViewWillEnter() {
@@ -68,6 +70,22 @@ export class IniciarSesionPage implements OnInit {
           this.authService.setCurrentUserEmail(this.user.email);
           localStorage.setItem('userType', 'estudiante'); // Almacenar tipo de usuario
           localStorage.setItem('id', studentData.id_estudiante); // Guardar el ID del estudiante
+
+          // Obtener y almacenar el token FCM
+          try {
+            const tokenFCM = await this.estudianteService.solicitarPermisosYObtenerToken(studentData.id_estudiante);
+            if (tokenFCM) {
+              console.log('Token FCM obtenido al iniciar sesión:', tokenFCM);
+              // Actualizar el token FCM en Firestore
+              await this.authService.updateEstudiante({
+                ...studentData,
+                tokenFCM: tokenFCM
+              });
+            }
+          } catch (error) {
+            console.error('No se pudo obtener el token FCM al iniciar sesión:', error);
+          }
+
           this.router.navigate(['/folder/Inicio']);
         } else {
           this.errorMessage = 'No se pudo encontrar un estudiante con este correo.';
@@ -79,6 +97,7 @@ export class IniciarSesionPage implements OnInit {
         await this.iniciarSesionComoInvitado();
       });
   }
+
 
 
   // Método para manejar la sesión como invitado

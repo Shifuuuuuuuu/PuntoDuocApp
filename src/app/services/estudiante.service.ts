@@ -6,12 +6,15 @@ import firebase from 'firebase/compat/app';
 import { firstValueFrom, Observable, of } from 'rxjs';
 import { AngularFireAuth } from '@angular/fire/compat/auth';
 import { Evento } from '../interface/IEventos';
+import { getMessaging, getToken } from 'firebase/messaging';
+import { environment } from '../../environments/environment';
 @Injectable({
   providedIn: 'root'
 })
 export class EstudianteService {
-
+  angularFireMessaging: any;
   constructor(private firestore: AngularFirestore, private afAuth: AngularFireAuth) { }
+
   // Obtener eventos asistidos por categoría
   obtenerEventosAsistidosPorCategoria(estudianteId: string): Promise<Evento[]> {
     return this.firestore.collection<Evento>('Eventos').get()
@@ -50,37 +53,37 @@ export class EstudianteService {
       });
   }
 
+  obtenerHistorialPuntajeDesdeFirestore(estudianteId: string): Observable<{ fecha: string; puntaje: number }[]> {
+    return this.firestore
+      .collection('Estudiantes')
+      .doc(estudianteId)
+      .collection('historialPuntaje', ref => ref.orderBy('fecha', 'asc'))
+      .valueChanges()
+      .pipe(
+        map((historial: any[]) => {
+          // Crear un objeto para almacenar el puntaje total por fecha
+          const puntajePorFecha: { [fecha: string]: number } = {};
 
-obtenerHistorialPuntajeDesdeFirestore(estudianteId: string): Observable<{ fecha: string; puntaje: number }[]> {
-  return this.firestore
-    .collection('Estudiantes')
-    .doc(estudianteId)
-    .collection('historialPuntaje', ref => ref.orderBy('fecha', 'asc'))
-    .valueChanges()
-    .pipe(
-      map((historial: any[]) => {
-        // Crear un objeto para almacenar el puntaje total por fecha
-        const puntajePorFecha: { [fecha: string]: number } = {};
+          historial.forEach((data: any) => {
+            // Convertir la fecha al formato de cadena deseado
+            const fecha = data.fecha?.toDate().toLocaleDateString('es-ES') || 'Fecha desconocida';
 
-        historial.forEach((data: any) => {
-          // Convertir la fecha al formato de cadena deseado
-          const fecha = data.fecha?.toDate().toLocaleDateString('es-ES') || 'Fecha desconocida';
+            // Sumar el puntaje de cada verificación en la misma fecha
+            if (!puntajePorFecha[fecha]) {
+              puntajePorFecha[fecha] = 0; // Inicializar si no existe
+            }
+            puntajePorFecha[fecha] += data.puntaje;
+          });
 
-          // Sumar el puntaje de cada verificación en la misma fecha
-          if (!puntajePorFecha[fecha]) {
-            puntajePorFecha[fecha] = 0; // Inicializar si no existe
-          }
-          puntajePorFecha[fecha] += data.puntaje;
-        });
+          // Convertir el objeto en un array de objetos con fecha y puntaje
+          return Object.keys(puntajePorFecha).map(fecha => ({
+            fecha,
+            puntaje: puntajePorFecha[fecha]
+          }));
+        })
+      );
+  }
 
-        // Convertir el objeto en un array de objetos con fecha y puntaje
-        return Object.keys(puntajePorFecha).map(fecha => ({
-          fecha,
-          puntaje: puntajePorFecha[fecha]
-        }));
-      })
-    );
-}
   // Registrar estudiante y enviar correo de verificación
   async registrarEstudiante(estudiante: Estudiante): Promise<Omit<Estudiante, 'password'>> {
     // Registrar usuario en Firebase Authentication usando email y password
@@ -102,7 +105,8 @@ obtenerHistorialPuntajeDesdeFirestore(estudianteId: string): Observable<{ fecha:
       puntaje: 0,
       id_estudiante: uid,
       codigoQr: '',  // Puedes dejar esto vacío hasta que lo generes
-      eventosInscritos: []
+      eventosInscritos: [],
+      tokenFCM: null,
     };
 
     // Guardar los datos del estudiante en Firestore, excluyendo el password
@@ -121,7 +125,8 @@ obtenerHistorialPuntajeDesdeFirestore(estudianteId: string): Observable<{ fecha:
       throw error;
     }
   }
-  // estudiante.service.ts e invitado.service.ts
+
+  // Obtener el ID del usuario
   getUserId(): Observable<string | null> {
     return this.afAuth.authState.pipe(
       map(user => {
@@ -130,10 +135,12 @@ obtenerHistorialPuntajeDesdeFirestore(estudianteId: string): Observable<{ fecha:
     );
   }
 
-
+  // Obtener un estudiante por ID
   getUserById(userId: string): Observable<any> {
     return this.firestore.collection('Estudiantes').doc(userId).valueChanges();
   }
+
+  // Obtener estudiante por correo
   getEstudianteByEmail(email: string): Promise<Estudiante | null> {
     return this.firestore.collection<Estudiante>('Estudiantes', ref => ref.where('email', '==', email))
       .get()
@@ -147,7 +154,7 @@ obtenerHistorialPuntajeDesdeFirestore(estudianteId: string): Observable<{ fecha:
       });
   }
 
-
+  // Verificar si un estudiante existe por correo
   verificarEstudiantePorCorreo(correo: string): Observable<boolean> {
     return this.firestore
       .collection<Estudiante>('Estudiantes', ref => ref.where('email', '==', correo))
@@ -157,6 +164,7 @@ obtenerHistorialPuntajeDesdeFirestore(estudianteId: string): Observable<{ fecha:
       );
   }
 
+  // Actualizar datos del estudiante
   async updateEstudiante(estudiante: Omit<Estudiante, 'password'>): Promise<void> {
     if (!estudiante.id_estudiante) {
       throw new Error('El estudiante no tiene un ID asignado');
@@ -164,6 +172,7 @@ obtenerHistorialPuntajeDesdeFirestore(estudianteId: string): Observable<{ fecha:
     await this.firestore.collection('Estudiantes').doc(estudiante.id_estudiante).update(estudiante);
   }
 
+  // Actualizar puntaje del estudiante
   async actualizarPuntajeEstudiante(id_estudiante: string, puntosAdicionales: number): Promise<void> {
     const estudianteRef = this.firestore.collection('Estudiantes').doc(id_estudiante);
     await estudianteRef.update({
@@ -171,6 +180,7 @@ obtenerHistorialPuntajeDesdeFirestore(estudianteId: string): Observable<{ fecha:
     });
   }
 
+  // Agregar evento a estudiante
   async agregarEventoAEstudiante(estudianteId: string, eventoId: string): Promise<void> {
     const estudianteDocRef = this.firestore.collection('Estudiantes').doc(estudianteId);
     await estudianteDocRef.update({
@@ -178,6 +188,7 @@ obtenerHistorialPuntajeDesdeFirestore(estudianteId: string): Observable<{ fecha:
     });
   }
 
+  // Eliminar evento de estudiante
   async eliminarEventoDeEstudiante(estudianteId: string, eventoId: string): Promise<void> {
     const estudianteDocRef = this.firestore.collection('Estudiantes').doc(estudianteId);
     await estudianteDocRef.update({
@@ -185,6 +196,7 @@ obtenerHistorialPuntajeDesdeFirestore(estudianteId: string): Observable<{ fecha:
     });
   }
 
+  // Obtener estudiante por ID
   async obtenerEstudiantePorId(id: string): Promise<Estudiante | null> {
     if (!id) {
       console.error('ID vacío proporcionado al obtener estudiante por ID');
@@ -204,9 +216,6 @@ obtenerHistorialPuntajeDesdeFirestore(estudianteId: string): Observable<{ fecha:
       throw error;
     }
   }
-  updateEstudiantePuntaje(id_estudiante: string, puntaje: number) {
-    return this.firestore.collection('Estudiantes').doc(id_estudiante).update({ puntaje });
-  }
   async verificarCorreoExistente(email: string): Promise<boolean> {
     try {
       const snapshot = await this.firestore.collection('Estudiantes', ref => ref.where('email', '==', email)).get().toPromise();
@@ -218,6 +227,13 @@ obtenerHistorialPuntajeDesdeFirestore(estudianteId: string): Observable<{ fecha:
       throw error;
     }
   }
+
+  // Actualizar puntaje de estudiante
+  updateEstudiantePuntaje(id_estudiante: string, puntaje: number) {
+    return this.firestore.collection('Estudiantes').doc(id_estudiante).update({ puntaje });
+  }
+
+  // Actualizar puntaje con fecha
   async actualizarPuntajeConFecha(estudianteId: string, puntos: number): Promise<void> {
     const puntajeDoc = {
       puntaje: puntos,
@@ -228,4 +244,30 @@ obtenerHistorialPuntajeDesdeFirestore(estudianteId: string): Observable<{ fecha:
       historialPuntaje: firebase.firestore.FieldValue.arrayUnion(puntajeDoc)
     });
   }
+  async solicitarPermisosYObtenerToken(estudianteId: string): Promise<string | null> {
+    try {
+        const permission = await Notification.requestPermission();
+        if (permission === 'granted') {
+            const token = await this.angularFireMessaging.getToken({
+                vapidKey: environment.vapidKey,
+            }).toPromise();
+            console.log('Token FCM obtenido:', token);
+            if (token) {
+                // Guardar el token en la base de datos bajo el perfil del estudiante
+                await this.firestore.collection('Estudiantes').doc(estudianteId).update({
+                    tokenFCM: token
+                });
+                return token;
+            }
+        } else {
+            console.log('Permiso de notificación denegado.');
+        }
+        return null;
+    } catch (error) {
+        console.error('Error al obtener el token FCM:', error);
+        throw error;
+    }
+}
+
+
 }

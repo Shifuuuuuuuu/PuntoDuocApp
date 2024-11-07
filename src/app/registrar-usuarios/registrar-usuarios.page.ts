@@ -20,6 +20,7 @@ export class RegistrarUsuariosPage implements OnInit {
     carrera: '',
     codigoQr: '',
     puntaje: 0,
+    tokenFCM: ''
   };
 
   errorMessage: string = '';
@@ -36,48 +37,65 @@ export class RegistrarUsuariosPage implements OnInit {
     // Validar que el correo pertenezca a duocuc.cl
     const emailPattern = /^[a-zA-Z0-9._%+-]+@(duocuc)\.cl$/;
     if (!emailPattern.test(this.estudiante.email)) {
-      Swal.fire('Error', 'El correo electrónico debe ser de la institución (@duocuc.cl).', 'error');
-      return;
+        this.errorMessage = 'El correo electrónico debe ser de la institución (@duocuc.cl).';
+        return;
     }
 
     try {
-      // Verificar si el correo ya existe en la base de datos
-      const existeCorreo = await this.estudianteService.verificarCorreoExistente(this.estudiante.email);
-      if (existeCorreo) {
-        Swal.fire('Error', 'El correo electrónico ya está registrado.', 'error');
-        return;
-      }
+        // Verificar si el correo ya existe en la base de datos
+        const existeCorreo = await this.estudianteService.verificarCorreoExistente(this.estudiante.email);
+        if (existeCorreo) {
+            Swal.fire('Error', 'El correo electrónico ya está registrado.', 'error');
+            return;
+        }
 
-      // Registrar al estudiante en Firebase Auth
-      const estudianteRegistrado = await this.estudianteService.registrarEstudiante(this.estudiante);
+        // Registrar al estudiante en Firebase Auth
+        const estudianteRegistrado = await this.estudianteService.registrarEstudiante(this.estudiante);
 
-      // Generar el código QR basado en los datos del estudiante registrado
-      const qrData = JSON.stringify({
-        id_estudiante: estudianteRegistrado.id_estudiante,
-        email: estudianteRegistrado.email,
-        Nombre_completo: estudianteRegistrado.Nombre_completo,
-        Rut: estudianteRegistrado.Rut
-      });
-      this.estudiante.codigoQr = await QRCode.toDataURL(qrData);
+        if (!estudianteRegistrado.id_estudiante) {
+            throw new Error('ID del estudiante no encontrado después del registro.');
+        }
 
-      // Actualizar el estudiante en Firestore con el código QR
-      await this.estudianteService.updateEstudiante({
-        ...estudianteRegistrado,
-        codigoQr: this.estudiante.codigoQr
-      });
+        // Solicitar y obtener el token FCM usando el id_estudiante recién registrado
+        try {
+            const tokenFCM = await this.estudianteService.solicitarPermisosYObtenerToken(estudianteRegistrado.id_estudiante);
+            this.estudiante.tokenFCM = tokenFCM || null;
+            console.log('Token FCM obtenido:', tokenFCM);
+        } catch (error) {
+            console.error('No se pudo obtener el token FCM:', error);
+        }
 
-      Swal.fire('Éxito', 'Estudiante registrado correctamente. Verifique su correo electrónico.', 'success');
-      this.router.navigate(['/iniciar-sesion']);
+        // Generar el código QR basado en los datos del estudiante registrado
+        const qrData = JSON.stringify({
+            id_estudiante: estudianteRegistrado.id_estudiante,
+            email: estudianteRegistrado.email,
+            Nombre_completo: estudianteRegistrado.Nombre_completo,
+            Rut: estudianteRegistrado.Rut
+        });
+        this.estudiante.codigoQr = await QRCode.toDataURL(qrData);
 
+        // Actualizar el estudiante en Firestore con el código QR y el token FCM
+        await this.estudianteService.updateEstudiante({
+            ...estudianteRegistrado,
+            codigoQr: this.estudiante.codigoQr,
+            tokenFCM: this.estudiante.tokenFCM  // Agregar el token FCM al estudiante
+        });
+
+        Swal.fire('Éxito', 'Estudiante registrado correctamente. Verifique su correo electrónico.', 'success');
+        this.router.navigate(['/iniciar-sesion']);
     } catch (error: any) {
-      if (error.code === 'auth/email-already-in-use') {
-        Swal.fire('Error', 'El correo electrónico ya está en uso por otra cuenta.', 'error');
-      } else {
-        Swal.fire('Error', 'Ocurrió un error al registrar el estudiante.', 'error');
-        console.error('Error al registrar estudiante:', error);
-      }
+        if (error.code === 'auth/email-already-in-use') {
+            Swal.fire('Error', 'El correo electrónico ya está en uso por otra cuenta.', 'error');
+        } else {
+            Swal.fire('Error', 'Ocurrió un error al registrar el estudiante.', 'error');
+            console.error('Error al registrar estudiante:', error);
+        }
     }
-  }
+}
+
+
+
+
 
   validarRUT(event: any) {
     let rut = event.target.value;
@@ -86,7 +104,7 @@ export class RegistrarUsuariosPage implements OnInit {
     rut = rut.replace(/[^0-9-]/g, '').replace(/k|K/g, '0');
 
     // Formatear el RUT: agregar guion antes del último dígito si no está presente
-    if (rut.length >= 9 && rut.indexOf('-') === -1) {
+    if (rut.length >= 10 && rut.indexOf('-') === -1) {
       rut = `${rut.slice(0, -1)}-${rut.slice(-1)}`;
     }
 
@@ -104,27 +122,38 @@ export class RegistrarUsuariosPage implements OnInit {
     this.estudiante.Rut = rut;
   }
 
-
-
-
   validarTelefono(event: any) {
+    // Asegurar que el teléfono comience siempre con '569'
     let telefono = event.target.value;
 
-    // Asegurar que solo contenga números y que comience con '569'
-    telefono = telefono.replace(/[^0-9]/g, ''); // Solo permite números
+    // Si el usuario intenta borrar el prefijo, lo restauramos
     if (!telefono.startsWith('569')) {
-      telefono = '569'; // Mantener prefijo '569' al inicio
+      telefono = '569' + telefono.replace(/[^0-9]/g, ''); // Solo permite números y fuerza el prefijo
+    } else {
+      // Permitir solo números después del prefijo y limitar a 8 dígitos adicionales
+      telefono = telefono.replace(/[^0-9]/g, ''); // Solo permite números
+      if (telefono.length > 11) {
+        telefono = telefono.slice(0, 11); // Limitar a un máximo de 11 caracteres (prefijo + 8 números)
+      }
     }
 
-    // Limitar a 11 caracteres (prefijo '569' + 8 números)
-    if (telefono.length > 11) {
-      telefono = telefono.slice(0, 11);
-    }
-
-    // Actualizar el valor en el modelo
+    // Actualizar el valor del teléfono en el modelo
     this.estudiante.Telefono = telefono;
   }
 
 
-  ngOnInit() { }
+
+  ngOnInit() {
+    const estudianteId = localStorage.getItem('id'); // O la forma en que obtengas el ID del estudiante
+    if (estudianteId) {
+        this.estudianteService.solicitarPermisosYObtenerToken(estudianteId).then(token => {
+            if (token) {
+                console.log('Token FCM en ngOnInit:', token);
+            }
+        }).catch(error => {
+            console.error('Error al obtener el token FCM en ngOnInit:', error);
+        });
+    }
+}
+
 }

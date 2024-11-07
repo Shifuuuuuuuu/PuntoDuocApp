@@ -9,6 +9,7 @@ export interface Estudiante {
   codigoQr?: string;
   eventosInscritos?: string[];
   puntaje: number;
+  tokenFCM: string | null;
 }
 
 export interface EstudianteSinPassword {
@@ -21,4 +22,5 @@ export interface EstudianteSinPassword {
   codigoQr?: string;
   eventosInscritos?: string[];
   puntaje: number;
+  tokenFCM: string | null;
 }

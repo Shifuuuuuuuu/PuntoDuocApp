@@ -1,5 +1,6 @@
 plugins {
   id 'com.android.application'
+  id 'com.google.gms.google-services'
 }
 
 android {
@@ -35,32 +36,38 @@ android {
 
   buildToolsVersion '35.0.0'
 }
+
 repositories {
-    flatDir{
-        dirs '../capacitor-cordova-android-plugins/src/main/libs', 'libs'
-    }
+  flatDir {
+    dirs '../capacitor-cordova-android-plugins/src/main/libs', 'libs'
+  }
 }
+
 dependencies {
   implementation 'com.journeyapps:zxing-android-embedded:3.3.0'
   implementation 'androidx.appcompat:appcompat:1.6.1'
   implementation 'com.google.android.material:material:1.9.0'
   implementation project(':capacitor-android')
   implementation project(':capacitor-cordova-android-plugins')
-  implementation project(':capacitor-barcode-scanner')// Esto es necesario para Capacitor
+  implementation project(':capacitor-barcode-scanner') // Esto es necesario para Capacitor
   testImplementation 'junit:junit:4.13.2'
   androidTestImplementation 'androidx.test.ext:junit:1.1.5'
   androidTestImplementation 'androidx.test:core:1.5.0'
   androidTestImplementation 'androidx.test:runner:1.5.2'
   androidTestImplementation 'androidx.test:rules:1.5.0'
   androidTestImplementation 'androidx.test.espresso:espresso-core:3.5.1'
+  implementation platform('com.google.firebase:firebase-bom:33.5.1')
+  implementation 'com.google.firebase:firebase-analytics'
+  implementation 'com.google.firebase:firebase-messaging'
 }
+
 apply from: 'capacitor.build.gradle'
 
 try {
-    def servicesJSON = file('google-services.json')
-    if (servicesJSON.text) {
-        apply plugin: 'com.google.gms.google-services'
-    }
-} catch(Exception e) {
-    logger.info("google-services.json not found, google-services plugin not applied. Push Notifications won't work")
+  def servicesJSON = file('google-services.json')
+  if (servicesJSON.text) {
+    apply plugin: 'com.google.gms.google-services'
+  }
+} catch (Exception e) {
+  logger.info("google-services.json not found, google-services plugin not applied. Push Notifications won't work")
 }
