@@ -1,0 +1,57 @@
+<ion-header [translucent]="true" class="custom-header">
+  <ion-toolbar class="custom-toolbar" style="background-color: black;">
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/folder-gestor-eventos" style="color: white;"></ion-back-button>
+    </ion-buttons>
+    <ion-title style="color:  white">Estadísticas del Evento</ion-title>
+  </ion-toolbar>
+</ion-header>
+<ion-content [fullscreen]="true" class="content-center">
+  <div class="stats-container">
+    <ion-grid>
+      <ion-row>
+        <ion-col size="12">
+          <ion-card>
+            <ion-card-header>
+              <ion-card-subtitle style="color: black;">Inscritos Totales</ion-card-subtitle>
+              <ion-card-title style="color: black;">{{ inscritos }}</ion-card-title>
+            </ion-card-header>
+          </ion-card>
+        </ion-col>
+      </ion-row>
+      <ion-row>
+        <ion-col size="6">
+          <ion-card>
+            <ion-card-header>
+              <ion-card-subtitle style="color: black;">Acreditados</ion-card-subtitle>
+              <ion-card-title style="color: black;">{{ verificados }}</ion-card-title>
+            </ion-card-header>
+          </ion-card>
+        </ion-col>
+        <ion-col size="6">
+          <ion-card>
+            <ion-card-header>
+              <ion-card-subtitle style="color: black;">No Acreditados</ion-card-subtitle>
+              <ion-card-title style="color: black;">{{ noVerificados }}</ion-card-title>
+            </ion-card-header>
+          </ion-card>
+        </ion-col>
+      </ion-row>
+      <ion-row>
+        <ion-col size="12">
+          <canvas #barChart></canvas>
+        </ion-col>
+      </ion-row>
+      <ion-row>
+        <ion-col size="12">
+          <canvas #pieChart></canvas>
+        </ion-col>
+      </ion-row>
+      <ion-row>
+        <ion-col size="12">
+          <canvas #carreraPieChart></canvas>
+        </ion-col>
+      </ion-row>
+    </ion-grid>
+  </div>
+</ion-content>

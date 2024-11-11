@@ -11,4 +11,5 @@ export interface Inscripcion {
   Rut: string;
   verificado?: boolean;
   puntaje?: number;
+  carrera: string;
 }

@@ -56,7 +56,7 @@
             </ion-button>
           </ion-col>
           <ion-col>
-            <ion-button fill="clear" color="primary" (click)="verDetalles(evento)">
+            <ion-button fill="clear" color="primary" [routerLink]="['/graficos-evento', evento.id_evento]">
               <ion-icon slot="icon-only" name="analytics-outline"></ion-icon>
               <p class="button-label">Gráficos</p>
             </ion-button>
@@ -107,7 +107,7 @@
             </ion-button>
           </ion-col>
           <ion-col>
-            <ion-button fill="clear" color="primary" (click)="verDetalles(evento)">
+            <ion-button fill="clear" color="primary" [routerLink]="['/graficos-evento', evento.id_evento]">
               <ion-icon slot="icon-only" name="analytics-outline"></ion-icon>
               <p class="button-label">Gráficos</p>
             </ion-button>
