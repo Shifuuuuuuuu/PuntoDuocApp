@@ -15,7 +15,6 @@ public class MyFirebaseMsgService extends FirebaseMessagingService {
 
     @Override
     public void onMessageReceived(RemoteMessage remoteMessage) {
-        // Verifica si el mensaje contiene una carga útil de notificación.
         if (remoteMessage.getNotification() != null) {
             String messageBody = remoteMessage.getNotification().getBody();
             Log.d("MyFirebaseMsgService", "Message Notification Body: " + messageBody);
@@ -25,7 +24,7 @@ public class MyFirebaseMsgService extends FirebaseMessagingService {
 
     private void sendNotification(String messageBody) {
         NotificationCompat.Builder notificationBuilder = new NotificationCompat.Builder(this, "default_channel_id")
-                .setSmallIcon(android.R.drawable.ic_dialog_info)// Cambia esto por un ícono existente en tu proyecto.
+                .setSmallIcon(android.R.drawable.ic_dialog_info)
                 .setContentTitle("Nuevo mensaje")
                 .setContentText(messageBody)
                 .setAutoCancel(true)

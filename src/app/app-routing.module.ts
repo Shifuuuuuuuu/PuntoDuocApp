@@ -95,6 +95,14 @@ const routes: Routes = [
     path: 'recomendacion',
     loadChildren: () => import('./recomendacion/recomendacion.module').then( m => m.RecomendacionPageModule)
   },
+  {
+    path: 'verificacion',
+    loadChildren: () => import('./verificacion/verificacion.module').then( m => m.VerificacionPageModule)
+  },
+  {
+    path: 'notifications',
+    loadChildren: () => import('./notifications/notifications.module').then( m => m.NotificationsPageModule)
+  },
 
 
 

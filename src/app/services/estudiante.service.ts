@@ -270,4 +270,23 @@ export class EstudianteService {
         throw error; // Propaga el error
     }
 }
+async verificarEstudiante(email: string): Promise<void> {
+  const estudianteRef = this.firestore.collection('Estudiantes', ref => ref.where('email', '==', email));
+  const snapshot = await estudianteRef.get().toPromise();
+
+  if (snapshot && !snapshot.empty) {
+    const docId = snapshot.docs[0].id;
+    await this.firestore.collection('Estudiantes').doc(docId).update({ verificado: true });
+  } else {
+    console.warn(`No se encontró un estudiante con el correo: ${email}`);
+  }
+}
+async obtenerEstudiantePorEmail(email: string): Promise<Estudiante | null> {
+  const snapshot = await this.firestore.collection('Estudiantes', ref => ref.where('email', '==', email)).get().toPromise();
+  if (snapshot && !snapshot.empty) {
+    return snapshot.docs[0].data() as Estudiante;
+  }
+  return null;
+}
+
 }

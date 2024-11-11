@@ -8,6 +8,7 @@ import { InvitadoService } from '../services/invitado.service';
 import { IonSelect, MenuController } from '@ionic/angular';
 import { register } from 'swiper/element/bundle';
 import {  addDays, startOfWeek, endOfWeek, startOfMonth, endOfMonth } from 'date-fns';
+import { NotificationService } from '../services/notification.service';
 
 register();
 
@@ -37,6 +38,7 @@ export class FolderPage implements OnInit {
   segmentFilteredEvents: Evento[] = []; // Eventos filtrados por segmento
   sedeFilteredEvents: Evento[] = [];
   recentEvents: Evento[] = [];
+  unreadNotificationsCount: number = 0;
   categories = [
     { name: 'Administración y Negocios', image: 'assets/img/Administracion.png' },
     { name: 'Comunicación', image: 'assets/img/Comunicacion.png' },
@@ -70,7 +72,8 @@ export class FolderPage implements OnInit {
     private activatedRoute: ActivatedRoute,
     private authService: AuthService,
     private invitadoService: InvitadoService,
-    private menu: MenuController
+    private menu: MenuController,
+    private notificationService: NotificationService
   ) {}
   getPopularEvents() {
     // Filtrar eventos con más de 20 inscritos y ordenar de mayor a menor cantidad de inscritos
@@ -87,8 +90,14 @@ export class FolderPage implements OnInit {
 
 
   ngOnInit() {
+    // Mantén la lógica existente
     this.folder = this.activatedRoute.snapshot.paramMap.get('id') as string;
     this.determinarTipoUsuarioYObtenerId();
+
+    // Agrega la suscripción al servicio de notificaciones
+    this.notificationService.unreadCount$.subscribe((count) => {
+      this.unreadNotificationsCount = count;
+    });
   }
 
   determinarTipoUsuarioYObtenerId() {

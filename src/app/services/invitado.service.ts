@@ -256,4 +256,18 @@ async verificarInvitadoPorCorreo(correo: string): Promise<boolean> {
         throw error;
     }
 }
+async verificarInvitado(email: string): Promise<void> {
+  const invitadoRef = this.firestore.collection('Invitados', ref => ref.where('email', '==', email));
+  const snapshot = await invitadoRef.get().toPromise();
+
+  if (snapshot && !snapshot.empty) {
+    const docId = snapshot.docs[0].id;
+    await this.firestore.collection('Invitados').doc(docId).update({ verificado: true });
+  } else {
+    console.warn(`No se encontró un invitado con el correo: ${email}`);
+  }
+}
+
+
+
 }
