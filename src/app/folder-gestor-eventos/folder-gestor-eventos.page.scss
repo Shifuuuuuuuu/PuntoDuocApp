@@ -1,78 +1,3 @@
-
-.custom-button {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 12px;
-  min-width: 80px; /* Ajuste de tamaño mínimo */
-  height: 35px;
-  padding: 0 8px; /* Compacta el espacio interno */
-  font-size: 13px;
-  font-weight: 500;
-  --ripple-color: #ffffff;
-}
-.custom-button ion-icon {
-  margin-right: 4px; /* Reduce el espacio entre icono y texto */
-  font-size: 18px;
-}
-
-.custom-button ion-label {
-  font-size: 13px;
-  font-weight: 500;
-  color: white;
-}
-
-ion-button[color="success"].custom-button {
-  --background: #28a745;
-}
-
-ion-button[color="danger"].custom-button {
-  --background: #dc3545;
-}
-
-
-.details-button {
-  --background: #007bff;
-  color: white;
-}
-
-/* Ajustes de los ítems de la lista */
-.event-item {
-  --background: white;
-  color: black;
-  margin: 10px 0;
-  padding: 15px;
-  border-radius: 15px;
-  box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  justify-content: space-between;
-  flex-wrap: wrap;
-}
-
-.event-item ion-label {
-  display: flex;
-  flex-direction: column;
-  gap: 5px;
-  max-width: 100%;
-  flex-grow: 1;
-}
-
-.event-image {
-  width: 50px;
-  height: 50px;
-  border-radius: 10px;
-  object-fit: cover;
-}
-
-.button-container {
-  display: flex;
-  gap: 4px; /* Reduce el espacio entre botones aún más */
-  justify-content: flex-start; /* Alinea los botones al principio */
-  align-items: center;
-  margin-top: 8px; /* Reduce el espacio superior entre el texto y los botones */
-}
 .custom-header {
   position: relative;
   z-index: 10; /* Asegura que el header esté siempre al frente */
@@ -116,4 +41,122 @@ ion-button[color="danger"].custom-button {
   flex-direction: column;
   align-items: center;
   height: 100%; /* Asegura que ocupe toda la pantalla */
+}
+.event-item {
+  margin-bottom: 1rem;
+}
+
+.event-thumbnail {
+  border-radius: 8px;
+  width: 100px;
+  height: 100px;
+}
+
+.event-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.custom-segment {
+  margin: 1rem;
+  background-color: white; /* Fondo blanco para todo el segmento */
+  border-radius: 8px;
+  padding: 0.5rem;
+
+}
+
+ion-segment-button {
+  font-weight: bold;
+  color: #808080; /* Color del texto plomo para las opciones no seleccionadas */
+  border: none; /* Sin borde para las opciones no seleccionadas */
+  background-color: transparent; /* Fondo transparente */
+}
+
+ion-segment-button::after {
+  content: '';
+  display: block;
+  width: 100%;
+  height: 2px;
+  background-color: transparent; /* Línea inferior transparente */
+  transition: background-color 0.3s;
+}
+
+ion-segment-button[checked] {
+  color: black; /* Texto negro para la opción seleccionada */
+  background-color: transparent; /* Fondo transparente */
+}
+
+ion-segment-button[checked]::after {
+  background-color: black; /* Línea negra para la opción seleccionada */
+}
+
+.event-card {
+  background-color: white;
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1px solid #d3d3d3; /* Borde sutil para destacar la tarjeta */
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Sombra más prominente */
+  transition: transform 0.2s, box-shadow 0.2s; /* Efecto de transición al pasar el mouse */
+}
+.event-card:hover {
+  transform: translateY(-5px); /* Efecto de elevación al pasar el mouse */
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2); /* Sombra más intensa al pasar el mouse */
+}
+
+.event-card-header {
+  height: 150px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 1rem;
+  color: white;
+  background-size: cover;
+  background-position: center;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
+}
+
+.event-title {
+  font-size: 1.2rem;
+  font-weight: bold;
+}
+
+.event-date,
+.event-location {
+  font-size: 0.9rem;
+}
+
+.event-stat {
+  text-align: center;
+}
+
+.event-stat-value {
+  font-weight: bold;
+  font-size: 1.2rem;
+}
+
+.event-stat-label {
+  font-size: 0.8rem;
+}
+
+.button-row {
+  margin-top: 1rem;
+  text-align: center;
+}
+
+.button-label {
+  font-size: 0.7rem;
+  margin-top: 0.2rem;
+  text-align: center;
+}
+
+/* Estilos para los íconos de los botones */
+ion-button {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+ion-button[disabled] {
+  opacity: 0.5; /* Reduce la opacidad para que se vea deshabilitado */
+  cursor: not-allowed; /* Cambia el cursor al pasar sobre el botón */
 }

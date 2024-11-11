@@ -1,6 +1,8 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { MessagingService } from '../services/messaging.service';
 import { FirebaseMessaging } from '@capacitor-firebase/messaging';
+import { NotificationService } from '../services/notification.service';
+import { Subscription } from 'rxjs';
 interface Notification {
   title: string;
   body: string;
@@ -12,27 +14,50 @@ interface Notification {
   styleUrls: ['./notifications.page.scss'],
 })
 
-export class NotificationsPage implements OnInit {
-  currentNotifications: any[] = []; // Array para almacenar las notificaciones recibidas
-  unreadNotificationsCount: number = 0; // Contador de notificaciones no leídas
+export class NotificationsPage implements OnInit, OnDestroy {
+  currentNotifications: any[] = [];
+  private messageSubscription: Subscription;
 
-  constructor(private messagingService: MessagingService) {}
+  constructor(
+    private messagingService: MessagingService,
+    private notificationService: NotificationService
+  ) {}
 
   ngOnInit() {
-    this.messagingService.requestPermission();
-    this.messagingService.listenForMessages();
-    this.messagingService.currentMessage.subscribe((message) => {
-      if (message) {
-        console.log('Mensaje recibido en primer plano:', message);
-        this.currentNotifications.unshift(message);
-        this.unreadNotificationsCount++; // Incrementa el contador
-      }
-    });
+    this.loadNotifications();
+
+    // Evitar suscripciones múltiples
+    if (!this.messageSubscription) {
+      this.messageSubscription = this.messagingService.currentMessage.subscribe((message) => {
+        if (message) {
+          console.log('Notificación recibida en primer plano:', message);
+
+          // Verifica si la notificación ya existe
+          const exists = this.currentNotifications.some(
+            (notif) => notif.messageId === message.messageId
+          );
+          if (!exists) {
+            this.notificationService.addNotification(message);
+            this.loadNotifications(); // Recargar las notificaciones en la vista
+          }
+        }
+      });
+    }
   }
 
-  // Método para marcar todas las notificaciones como leídas
+  loadNotifications() {
+    this.currentNotifications = this.notificationService.getNotifications();
+  }
+
   markAllAsRead() {
-    this.unreadNotificationsCount = 0;
+    this.notificationService.markAllAsRead();
+    this.loadNotifications(); // Actualiza la vista para reflejar el cambio
+  }
+
+  ngOnDestroy() {
+    // Desuscribirse para evitar fugas de memoria
+    if (this.messageSubscription) {
+      this.messageSubscription.unsubscribe();
+    }
   }
 }
-

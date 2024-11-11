@@ -10,6 +10,7 @@ import Swal from 'sweetalert2';
 import { QRCodeData } from '../interface/IQR';
 import { MenuController, NavController } from '@ionic/angular';
 import * as QRCode from 'qrcode';
+import { NotificationService } from '../services/notification.service';
 @Component({
   selector: 'app-perfil-usuario',
   templateUrl: './perfil-usuario.page.html',
@@ -34,14 +35,15 @@ export class PerfilUsuarioPage implements OnInit {
   eventoVerificadoId: string | null = null;  // ID del último evento verificado
   private authSubscription!: Subscription;
   private invitadoSubscription!: Subscription;
-
+  unreadNotificationsCount: number = 0;
   constructor(
     private authService: AuthService,
     private invitadoService: InvitadoService,
     private cartService: CartService,
     private router: Router,
     private navCtrl: NavController,
-    private menu: MenuController
+    private menu: MenuController,
+    private notificationService: NotificationService
   ) {}
   ionViewWillEnter() {
     this.menu.enable(false);  // Deshabilita el menú en esta página
@@ -62,6 +64,10 @@ export class PerfilUsuarioPage implements OnInit {
           }
         });
       }
+    });
+    // Suscríbete al observable para actualizar el contador de notificaciones en la interfaz
+    this.notificationService.unreadCount$.subscribe((count) => {
+      this.unreadNotificationsCount = count;
     });
   }
 

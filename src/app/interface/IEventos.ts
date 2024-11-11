@@ -25,6 +25,7 @@ export interface Evento {
   Inscripciones?: Inscripcion[];
   verificado?: boolean;
   isFavorite?: boolean;
+  verificados?: number; // Agrega esta propiedad para contar los verificados
 }
 
 

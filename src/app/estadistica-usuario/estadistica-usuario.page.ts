@@ -3,6 +3,7 @@ import { Chart } from 'chart.js';
 import { EstudianteService } from '../services/estudiante.service';
 import { firstValueFrom } from 'rxjs';
 import { MenuController } from '@ionic/angular';
+import { NotificationService } from '../services/notification.service';
 
 @Component({
   selector: 'app-estadistica-usuario',
@@ -24,11 +25,15 @@ export class EstadisticaUsuarioPage implements OnInit {
   totalEventosInscritos: number = 0;
   totalEventosVerificados: number = 0;
   porcentajeVerificacion: number = 0;
-
-  constructor(private estudianteService: EstudianteService,private menu: MenuController) {}
+  unreadNotificationsCount: number = 0;
+  constructor(private estudianteService: EstudianteService,private menu: MenuController, private notificationService: NotificationService) {}
 
   ngOnInit() {
     this.cargarEstadisticas();
+    // Suscríbete al observable para actualizar el contador de notificaciones en la interfaz
+    this.notificationService.unreadCount$.subscribe((count) => {
+      this.unreadNotificationsCount = count;
+    });
   }
   ionViewWillEnter() {
     this.menu.enable(false);  // Deshabilita el menú en esta página

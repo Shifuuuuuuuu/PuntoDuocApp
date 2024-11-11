@@ -9,6 +9,7 @@ import { InvitadoService } from '../services/invitado.service';
 import { EstudianteService } from '../services/estudiante.service';
 import { Evento } from '../interface/IEventos';
 import { firstValueFrom } from 'rxjs';
+import { NotificationService } from '../services/notification.service';
 
 @Component({
   selector: 'app-event-details',
@@ -20,6 +21,7 @@ export class EventDetailsPage implements OnInit {
   userId: string = '';
   isInvitado: boolean = false;
   loading: boolean = false;
+  unreadNotificationsCount: number = 0;
 
   constructor(
     private route: ActivatedRoute,
@@ -27,7 +29,8 @@ export class EventDetailsPage implements OnInit {
     private eventosService: EventosService,
     private authService: AuthService,
     private invitadoService: InvitadoService,
-    private estudianteService: EstudianteService
+    private estudianteService: EstudianteService,
+    private notificationService: NotificationService
   ) {}
 
   async ngOnInit() {
@@ -36,6 +39,10 @@ export class EventDetailsPage implements OnInit {
       await this.identificarUsuario();
       await this.loadEventDetails(eventId);
     }
+    // Suscríbete al observable para actualizar el contador de notificaciones en la interfaz
+    this.notificationService.unreadCount$.subscribe((count) => {
+      this.unreadNotificationsCount = count;
+    });
   }
 
   async identificarUsuario() {

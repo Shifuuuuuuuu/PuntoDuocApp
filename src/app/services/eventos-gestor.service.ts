@@ -21,6 +21,10 @@ export class EventosGestorService {
       filter((evento: Evento | undefined): evento is Evento => !!evento) // Filtra si es undefined
     );
   }
+  // Método para eliminar un evento de Firestore
+  eliminarEvento(eventoId: string): Promise<void> {
+    return this.firestore.collection('Eventos').doc(eventoId).delete();
+  }
 
   // Verificar inscripción
   verificarInscripcion(eventoId: string, userId: string): Observable<Inscripcion[]> {

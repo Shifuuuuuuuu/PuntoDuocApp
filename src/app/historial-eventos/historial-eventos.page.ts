@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { HistorialEventosService } from '../services/historial-eventos.service';
+import { NotificationService } from '../services/notification.service';
 
 @Component({
   selector: 'app-historial-eventos',
@@ -11,11 +12,16 @@ export class HistorialEventosPage implements OnInit {
   userType: 'estudiante' | 'invitado' | null = null;
   eventosVerificados: any[] = [];
   loading: boolean = true;
+  unreadNotificationsCount: number = 0;
 
-  constructor(private historialEventosService: HistorialEventosService) {}
+  constructor(private historialEventosService: HistorialEventosService,private notificationService: NotificationService) {}
 
   ngOnInit() {
     this.determinarTipoUsuarioYObtenerId();
+    // Suscríbete al observable para actualizar el contador de notificaciones en la interfaz
+    this.notificationService.unreadCount$.subscribe((count) => {
+      this.unreadNotificationsCount = count;
+    });
   }
 
   determinarTipoUsuarioYObtenerId() {

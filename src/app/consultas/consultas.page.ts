@@ -5,6 +5,7 @@ import { EstudianteService } from '../services/estudiante.service';
 import { firstValueFrom } from 'rxjs';
 import Swal from 'sweetalert2';
 import { MenuController } from '@ionic/angular';
+import { NotificationService } from '../services/notification.service';
 @Component({
   selector: 'app-consultas',
   templateUrl: './consultas.page.html',
@@ -17,16 +18,21 @@ export class ConsultasPage implements OnInit {
     nombre: '',
     correo: ''
   };
-
+  unreadNotificationsCount: number = 0;
   constructor(
     private consultaService: ConsultaService,
     private estudianteService: EstudianteService,
     private invitadoService: InvitadoService,
-    private menu: MenuController
+    private menu: MenuController,
+    private notificationService: NotificationService
   ) {
     this.obtenerUsuario();
   }
   ngOnInit() {
+    // Suscríbete al observable para actualizar el contador de notificaciones en la interfaz
+    this.notificationService.unreadCount$.subscribe((count) => {
+      this.unreadNotificationsCount = count;
+    });
   }
   ionViewWillEnter() {
     this.menu.enable(false);  // Deshabilita el menú en esta página

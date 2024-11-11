@@ -3,6 +3,15 @@
 <ion-header [translucent]="true" class="custom-header">
   <ion-toolbar class="custom-toolbar" style="background-color: black;">
     <ion-title style="color:  white">Recompensas</ion-title>
+    <ion-buttons slot="end">
+      <ion-button [routerLink]="['/notifications']" style="position: relative;">
+        <ion-icon slot="icon-only" name="notifications-outline" style="color: white;"></ion-icon>
+        <!-- Badge para mostrar el número de notificaciones -->
+        <ion-badge *ngIf="unreadNotificationsCount > 0" color="danger" style="position: absolute; top: -5px; right: -5px;">
+          {{ unreadNotificationsCount }}
+        </ion-badge>
+      </ion-button>
+    </ion-buttons>
   </ion-toolbar>
 </ion-header>
 

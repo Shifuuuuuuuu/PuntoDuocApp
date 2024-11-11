@@ -1,40 +1,127 @@
 <ion-header [translucent]="true" class="custom-header">
-  <ion-toolbar class="custom-toolbar" style="background-color: black;">
-    <ion-title style="color:  white">Acreditador</ion-title>
+  <ion-toolbar class="custom-toolbar" >
+    <ion-title style="color: white">Gestor de Eventos</ion-title>
   </ion-toolbar>
 </ion-header>
+
 <ion-content [fullscreen]="true" class="content-center">
-  <ion-list style="background-color: white;">
-    <ion-item *ngFor="let evento of eventos$ | async" class="event-item" lines="none">
-      <ion-thumbnail slot="start" class="event-thumbnail">
-        <img [src]="evento.imagen" alt="{{ evento.titulo }}" class="event-image">
-      </ion-thumbnail>
-      <ion-label>
-        <h2>{{ evento.titulo }}</h2>
-        <p>{{ evento.fechaInicio | date: 'dd/MM/yyyy, HH:mm' }}</p>
-        <p><ion-icon name="location-outline"></ion-icon> {{ evento.lugar }}</p>
+  <ion-segment [(ngModel)]="segment" class="custom-segment">
+    <ion-segment-button value="proximos">
+      Próximos Eventos
+    </ion-segment-button>
+    <ion-segment-button value="pasados">
+      Eventos Pasados
+    </ion-segment-button>
+  </ion-segment>
 
-        <div class="button-container">
-          <ion-button color="success" class="custom-button" (click)="comenzarEvento(evento.id_evento)"
-                      *ngIf="puedeMostrarComenzarEvento(evento.fechaInicio, evento.estado)">
-            <ion-icon name="play-circle-outline"></ion-icon>
+  <ng-container *ngIf="segment === 'proximos'">
+    <ion-card *ngFor="let evento of eventosProximos$ | async" class="event-card">
+      <div class="event-card-header" [ngStyle]="{'background-image': 'url(' + evento.imagen + ')'}">
+        <ion-card-title class="event-title">{{ evento.titulo }}</ion-card-title>
+        <ion-card-subtitle class="event-date">{{ evento.fechaInicio | date: 'fullDate' }}, {{ evento.fechaInicio | date: 'shortTime' }}</ion-card-subtitle>
+        <p class="event-location">{{ evento.lugar }}</p>
+      </div>
+      <ion-card-content>
+        <ion-row>
+          <ion-col>
+            <div class="event-stat">
+              <p class="event-stat-value">{{ evento.inscritos || 0 }}</p>
+              <p class="event-stat-label">Inscritos</p>
+            </div>
+          </ion-col>
+          <ion-col>
+            <div class="event-stat">
+              <p class="event-stat-value">{{ evento.verificados !== undefined ? evento.verificados : 0 }}</p>
+              <p class="event-stat-label">Verificados</p>
+            </div>
+          </ion-col>
+        </ion-row>
+        <ion-row class="button-row">
+          <ion-col>
+            <ion-button
+              fill="clear"
+              color="success"
+              [disabled]="!puedeMostrarComenzarEvento(evento.fechaInicio, evento.estado)"
+              (click)="comenzarEvento(evento.id_evento)">
+              <ion-icon slot="icon-only" name="play-circle-outline"></ion-icon>
+              <p class="button-label">Comenzar</p>
+            </ion-button>
+            <ion-button
+              *ngIf="eventoEnCurso(evento)"
+              fill="clear"
+              color="primary"
+              (click)="verDetalles(evento)">
+              <ion-icon slot="icon-only" name="eye-outline"></ion-icon>
+              <p class="button-label">Detalle</p>
+            </ion-button>
+          </ion-col>
+          <ion-col>
+            <ion-button fill="clear" color="primary" (click)="verDetalles(evento)">
+              <ion-icon slot="icon-only" name="analytics-outline"></ion-icon>
+              <p class="button-label">Gráficos</p>
+            </ion-button>
+          </ion-col>
+          <ion-col>
+            <ion-button fill="clear" color="danger" (click)="eliminarEvento(evento.id_evento)">
+              <ion-icon slot="icon-only" name="trash-outline"></ion-icon>
+              <p class="button-label">Eliminar</p>
+            </ion-button>
+          </ion-col>
+        </ion-row>
 
-          </ion-button>
+      </ion-card-content>
+    </ion-card>
+  </ng-container>
 
-          <ion-button class="custom-button details-button" (click)="verDetalles(evento)"
-                      [disabled]="!eventoEnCurso(evento)">
-            <ion-icon name="eye-outline"></ion-icon>
-
-          </ion-button>
-
-          <ion-button color="danger" class="custom-button" (click)="cancelarEvento(evento.id_evento)"
-                      *ngIf="evento.estado !== 'en_curso' && evento.estado !== 'cancelado'">
-            <ion-icon name="close-circle-outline"></ion-icon>
-
-          </ion-button>
-        </div>
-      </ion-label>
-    </ion-item>
-  </ion-list>
+  <ng-container *ngIf="segment === 'pasados'">
+    <ion-card *ngFor="let evento of eventosPasados$ | async" class="event-card">
+      <div class="event-card-header" [ngStyle]="{'background-image': 'url(' + evento.imagen + ')'}">
+        <ion-card-title class="event-title">{{ evento.titulo }}</ion-card-title>
+        <ion-card-subtitle class="event-date">{{ evento.fechaInicio | date: 'fullDate' }}, {{ evento.fechaInicio | date: 'shortTime' }}</ion-card-subtitle>
+        <p class="event-location">{{ evento.lugar }}</p>
+      </div>
+      <ion-card-content>
+        <ion-row>
+          <ion-col>
+            <div class="event-stat">
+              <p class="event-stat-value">{{ evento.inscritos || 0 }}</p>
+              <p class="event-stat-label">Inscritos</p>
+            </div>
+          </ion-col>
+          <ion-col>
+            <div class="event-stat">
+              <p class="event-stat-value">{{ evento.verificados !== undefined ? evento.verificados : 0 }}</p>
+              <p class="event-stat-label">Verificados</p>
+            </div>
+          </ion-col>
+        </ion-row>
+        <ion-row class="button-row">
+          <ion-col>
+            <ion-button *ngIf="puedeMostrarComenzarEvento(evento.fechaInicio, evento.estado)" fill="clear" color="success" (click)="comenzarEvento(evento.id_evento)">
+              <ion-icon slot="icon-only" name="play-circle-outline"></ion-icon>
+              <p class="button-label">Comenzar</p>
+            </ion-button>
+            <ion-button *ngIf="!puedeMostrarComenzarEvento(evento.fechaInicio, evento.estado) && eventoEnCurso(evento)" fill="clear" color="primary" (click)="verDetalles(evento)">
+              <ion-icon slot="icon-only" name="eye-outline"></ion-icon>
+              <p class="button-label">Detalle</p>
+            </ion-button>
+          </ion-col>
+          <ion-col>
+            <ion-button fill="clear" color="primary" (click)="verDetalles(evento)">
+              <ion-icon slot="icon-only" name="analytics-outline"></ion-icon>
+              <p class="button-label">Gráficos</p>
+            </ion-button>
+          </ion-col>
+          <ion-col>
+            <ion-button fill="clear" color="danger" (click)="eliminarEvento(evento.id_evento)">
+              <ion-icon slot="icon-only" name="trash-outline"></ion-icon>
+              <p class="button-label">Eliminar</p>
+            </ion-button>
+          </ion-col>
+        </ion-row>
+      </ion-card-content>
+    </ion-card>
+  </ng-container>
 </ion-content>
 <app-tab-bar-admin></app-tab-bar-admin>
+

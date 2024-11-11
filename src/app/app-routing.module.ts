@@ -46,14 +46,6 @@ const routes: Routes = [
     loadChildren: () => import('./centro-ayuda/centro-ayuda.module').then( m => m.CentroAyudaPageModule)
   },
   {
-    path: 'accesibilidad',
-    loadChildren: () => import('./accesibilidad/accesibilidad.module').then( m => m.AccesibilidadPageModule)
-  },
-  {
-    path: 'permisos-dispositivo',
-    loadChildren: () => import('./permisos-dispositivo/permisos-dispositivo.module').then( m => m.PermisosDispositivoPageModule)
-  },
-  {
     path: 'folder-ventas',
     loadChildren: () => import('./folder-ventas/folder-ventas.module').then( m => m.FolderVentasPageModule)
   },
@@ -73,10 +65,6 @@ const routes: Routes = [
     loadChildren: () => import('./ver-recompensas/ver-recompensas.module').then( m => m.VerRecompensasPageModule)
   },
   {
-    path: 'escanear-qr',
-    loadChildren: () => import('./escanear-qr/escanear-qr.module').then( m => m.EscanearQrPageModule)
-  },
-  {
     path: 'perfil-gestor',
     loadChildren: () => import('./perfil-gestor/perfil-gestor.module').then( m => m.PerfilGestorPageModule)
   },
@@ -87,17 +75,10 @@ const routes: Routes = [
   {
     path: 'event-details/:id_evento',
     loadChildren: () => import('./event-details/event-details.module').then( m => m.EventDetailsPageModule)
-  },  {
+  },
+  {
     path: 'consultas',
     loadChildren: () => import('./consultas/consultas.module').then( m => m.ConsultasPageModule)
-  },
-  {
-    path: 'recomendacion',
-    loadChildren: () => import('./recomendacion/recomendacion.module').then( m => m.RecomendacionPageModule)
-  },
-  {
-    path: 'verificacion',
-    loadChildren: () => import('./verificacion/verificacion.module').then( m => m.VerificacionPageModule)
   },
   {
     path: 'notifications',

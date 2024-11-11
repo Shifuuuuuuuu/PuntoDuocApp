@@ -15,6 +15,9 @@ import Swal from 'sweetalert2';
 export class FolderGestorEventosPage implements OnInit {
 
   eventos$: Observable<Evento[]> = new Observable<Evento[]>();
+  eventosProximos$: Observable<Evento[]> = new Observable<Evento[]>();
+  eventosPasados$: Observable<Evento[]> = new Observable<Evento[]>();
+  segment: string = 'proximos';
 
   constructor(
     private eventosService: EventosGestorService,
@@ -30,16 +33,38 @@ export class FolderGestorEventosPage implements OnInit {
     this.cargarEventos();
   }
 
-  // Cargar eventos desde Firestore
   cargarEventos() {
     this.eventos$ = this.eventosService.getEventos().pipe(
       map((eventos: Evento[]) => eventos.map((evento: Evento) => {
         evento.fechaInicio = this.transformarFecha(evento.fecha);
         evento.fechaFin = this.transformarFecha(evento.fecha_termino);
+
+        // Contar cuántas inscripciones tienen el campo verificado en true
+        if (evento.Inscripciones && Array.isArray(evento.Inscripciones)) {
+          evento.verificados = evento.Inscripciones.filter(inscripcion => {
+            // Verificar explícitamente si el campo verificado es booleano y true
+            return inscripcion.verificado === true;
+          }).length;
+        } else {
+          evento.verificados = 0;
+        }
+
+        console.log(`Evento ID: ${evento.id_evento}, Verificados: ${evento.verificados}`); // Debug para ver la cantidad de verificados
+
         return evento;
       }))
     );
+
+    this.eventosProximos$ = this.eventos$.pipe(
+      map(eventos => eventos.filter(evento => evento.fechaInicio && evento.fechaInicio > new Date()))
+    );
+
+    this.eventosPasados$ = this.eventos$.pipe(
+      map(eventos => eventos.filter(evento => evento.fechaInicio && evento.fechaInicio <= new Date()))
+    );
   }
+
+
 
   transformarFecha(fecha: any): Date | null {
     if (fecha && fecha.seconds) {
@@ -91,6 +116,25 @@ export class FolderGestorEventosPage implements OnInit {
         confirmButtonText: 'OK'
       });
       this.cargarEventos(); // Recargar la lista de eventos para reflejar el cambio de estado
+    });
+  }
+  eliminarEvento(eventoId: string) {
+    Swal.fire({
+      title: '¿Estás seguro?',
+      text: 'Este evento se eliminará permanentemente',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonText: 'Eliminar',
+      cancelButtonText: 'Cancelar'
+    }).then(result => {
+      if (result.isConfirmed) {
+        this.eventosService.eliminarEvento(eventoId).then(() => {
+          Swal.fire('Eliminado', 'El evento ha sido eliminado', 'success');
+          this.cargarEventos(); // Actualizar la lista de eventos
+        }).catch(error => {
+          Swal.fire('Error', 'Hubo un problema al eliminar el evento: ' + error.message, 'error');
+        });
+      }
     });
   }
 }
