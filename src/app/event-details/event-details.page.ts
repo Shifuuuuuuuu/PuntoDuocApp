@@ -71,18 +71,45 @@ export class EventDetailsPage implements OnInit {
   }
 
   async loadEventDetails(eventId: string) {
-    this.loading = true;
-    this.firestore.collection<Evento>('Eventos').doc(eventId).valueChanges().subscribe(async (event) => {
-      if (event) {
-        this.event = { ...event, verificado: false };
 
-        if (this.userId && this.event.id_evento) {
-          await this.actualizarEstadoInscripcion();
+    this.loading = true;
+
+    // Usa el `id` del documento directamente sin depender de un campo `id_evento`
+    this.firestore.collection<Evento>('Eventos').doc(eventId).snapshotChanges().subscribe(
+      async (snapshot) => {
+        if (snapshot.payload.exists) {
+          const documentId = snapshot.payload.id; // ID del documento de Firestore
+          const eventData = snapshot.payload.data() as Evento;
+
+
+
+          // Crea el objeto `event` sin depender del campo `id_evento` dentro del documento
+          this.event = {
+            ...eventData,
+            id_evento: documentId, // Aquí el `id` es el del documento de Firestore
+            verificado: false // Agrega cualquier otra propiedad necesaria
+          };
+
+
+          if (this.userId && documentId) {
+            await this.actualizarEstadoInscripcion();
+          }
+        } else {
+          console.log('El evento con el ID especificado no existe.');
         }
+
+        this.loading = false;
+      },
+      (error) => {
+        console.error('Error al obtener detalles del evento:', error);
+        this.loading = false;
       }
-      this.loading = false;
-    });
+    );
   }
+
+
+
+
   async actualizarEstadoInscripcion() {
     if (!this.event) return;
 
@@ -99,7 +126,6 @@ export class EventDetailsPage implements OnInit {
       this.event.enListaEspera = false;
     }
   }
-
 
   async handleEventButtonClick(event: Evento) {
     const usuarioId = this.isInvitado ? 'id_invitado' : 'id_estudiante';
@@ -239,6 +265,7 @@ export class EventDetailsPage implements OnInit {
       }
     }
   }
+
   async actualizarPerfilUsuario(eventoId: string, accion: 'agregar' | 'eliminar') {
     try {
       if (this.isInvitado) {

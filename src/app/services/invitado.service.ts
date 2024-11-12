@@ -25,21 +25,18 @@ export class InvitadoService {
   }
 
   // Método para registrar un invitado con autenticación y enviar verificación de correo
-  async registrarInvitado(invitado: Invitado): Promise<Omit<Invitado, 'password'>> {
+  async registrarInvitado(invitado: Omit<Invitado, 'password'>, password: string): Promise<Omit<Invitado, 'password'>> {
     try {
-      // Cerrar sesión antes de registrar para evitar mantener la sesión activa de un usuario previo
       await this.afAuth.signOut();
 
-      const userCredential = await this.afAuth.createUserWithEmailAndPassword(invitado.email, invitado.password);
+      const userCredential = await this.afAuth.createUserWithEmailAndPassword(invitado.email, password);
       console.log('Usuario registrado en Firebase Authentication:', userCredential);
 
-      // Enviar correo de verificación
       if (userCredential.user) {
         await userCredential.user.sendEmailVerification();
         console.log('Correo de verificación enviado a:', invitado.email);
       }
 
-      // Crear el objeto invitado sin el campo password
       const invitadoData: Omit<Invitado, 'password'> = {
         id_Invitado: userCredential.user?.uid || '',
         email: invitado.email,
@@ -51,7 +48,6 @@ export class InvitadoService {
         verificado: false
       };
 
-      // Guardar los datos del invitado en Firestore
       await this.firestore.collection<Omit<Invitado, 'password'>>('Invitados').doc(invitadoData.id_Invitado).set(invitadoData);
       console.log('Datos del invitado guardados en Firestore:', invitadoData);
 
@@ -61,6 +57,19 @@ export class InvitadoService {
       throw error;
     }
   }
+
+  async verificarEstudiante(email: string): Promise<void> {
+    const estudianteRef = this.firestore.collection('Invitados', ref => ref.where('email', '==', email));
+    const snapshot = await estudianteRef.get().toPromise();
+
+    if (snapshot && !snapshot.empty) {
+      const docId = snapshot.docs[0].id;
+      await this.firestore.collection('Invitados').doc(docId).update({ verificado: true });
+    } else {
+      console.warn(`No se encontró un estudiante con el correo: ${email}`);
+    }
+  }
+
   // invitado.service.ts
 async login(email: string, password: string): Promise<Invitado | null> {
   const userCredential = await this.afAuth.signInWithEmailAndPassword(email, password);
@@ -267,7 +276,5 @@ async verificarInvitado(email: string): Promise<void> {
     console.warn(`No se encontró un invitado con el correo: ${email}`);
   }
 }
-
-
 
 }

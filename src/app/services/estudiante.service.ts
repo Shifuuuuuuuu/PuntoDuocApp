@@ -251,7 +251,6 @@ export class EstudianteService {
             // Asegúrate de que requestToken esté correctamente definido
             const token = await firstValueFrom(this.angularFireMessaging.requestToken);
 
-            console.log('Token FCM obtenido:', token);
             if (token) {
                 await this.firestore.collection('Estudiantes').doc(estudianteId).update({
                     tokenFCM: token,

@@ -6,6 +6,7 @@ import * as QRCode from 'qrcode';
 import Swal from 'sweetalert2';
 import { firstValueFrom } from 'rxjs';
 import { AngularFireMessaging } from '@angular/fire/compat/messaging';
+import { AngularFireAuth } from '@angular/fire/compat/auth';
 @Component({
   selector: 'app-registrar-usuarios',
   templateUrl: './registrar-usuarios.page.html',
@@ -23,7 +24,7 @@ export class RegistrarUsuariosPage implements OnInit {
     codigoQr: '',
     puntaje: 0,
     tokenFCM: '',
-    verificado: false // Agregar el campo verificado
+    verificado: false // Establecer verificado como false inicialmente
   };
 
   errorMessage: string = '';
@@ -52,34 +53,22 @@ export class RegistrarUsuariosPage implements OnInit {
         return;
       }
 
-      // Registrar al estudiante en Firebase Auth
+      // Registrar al estudiante en Firebase Auth y crear el documento en Firestore
       const estudianteRegistrado = await this.estudianteService.registrarEstudiante(this.estudiante);
-
-      if (!estudianteRegistrado.id_estudiante) {
-        throw new Error('ID del estudiante no encontrado después del registro.');
-      }
-
-      // Aquí debes crear el documento en Firestore
-      await this.estudianteService.updateEstudiante({
-        id_estudiante: estudianteRegistrado.id_estudiante,
-        email: this.estudiante.email,
-        Nombre_completo: this.estudiante.Nombre_completo,
-        Rut: this.estudiante.Rut,
-        Telefono: this.estudiante.Telefono,
-        carrera: this.estudiante.carrera,
-        codigoQr: '',
-        puntaje: 0,
-        tokenFCM: '',
-        verificado: false // Establecer verificado como false inicialmente
-      });
+      console.log('Estudiante registrado en Firestore:', estudianteRegistrado);
 
       // Solicitar y obtener el token FCM
-      const tokenFCM = await this.estudianteService.solicitarPermisosYObtenerToken(estudianteRegistrado.id_estudiante);
-      if (tokenFCM) {
-        this.estudiante.tokenFCM = tokenFCM;
-        console.log('Token FCM obtenido:', tokenFCM);
-      } else {
-        console.warn('No se obtuvo ningún token FCM.');
+      try {
+        const tokenFCM = await this.estudianteService.solicitarPermisosYObtenerToken(estudianteRegistrado.id_estudiante || '');
+        if (tokenFCM) {
+          estudianteRegistrado.tokenFCM = tokenFCM;
+          await this.estudianteService.updateEstudiante(estudianteRegistrado);
+          console.log('Token FCM guardado en Firestore:', tokenFCM);
+        } else {
+          console.warn('No se obtuvo ningún token FCM.');
+        }
+      } catch (error) {
+        console.error('Error al obtener el token FCM:', error);
       }
 
       // Generar el código QR basado en los datos del estudiante registrado
@@ -89,14 +78,9 @@ export class RegistrarUsuariosPage implements OnInit {
         Nombre_completo: estudianteRegistrado.Nombre_completo,
         Rut: estudianteRegistrado.Rut
       });
-      this.estudiante.codigoQr = await QRCode.toDataURL(qrData);
-
-      // Actualizar el estudiante en Firestore con el código QR y el token FCM
-      await this.estudianteService.updateEstudiante({
-        ...estudianteRegistrado,
-        codigoQr: this.estudiante.codigoQr,
-        tokenFCM: this.estudiante.tokenFCM // Agregar el token FCM al estudiante
-      });
+      estudianteRegistrado.codigoQr = await QRCode.toDataURL(qrData);
+      await this.estudianteService.updateEstudiante(estudianteRegistrado);
+      console.log('Código QR generado y guardado en Firestore.');
 
       Swal.fire('Éxito', 'Estudiante registrado correctamente. Verifique su correo electrónico.', 'success');
       this.router.navigate(['/iniciar-sesion']);
@@ -110,63 +94,49 @@ export class RegistrarUsuariosPage implements OnInit {
     }
   }
 
+
+
   validarRUT(event: any) {
     let rut = event.target.value;
-
-    // Remover cualquier carácter que no sea número o guion, y reemplazar 'k' o 'K' por '0'
     rut = rut.replace(/[^0-9-]/g, '').replace(/k|K/g, '0');
-
-    // Formatear el RUT: agregar guion antes del último dígito si no está presente
     if (rut.length >= 10 && rut.indexOf('-') === -1) {
       rut = `${rut.slice(0, -1)}-${rut.slice(-1)}`;
     }
-
-    // Limitar la longitud total a 10 caracteres
     if (rut.length > 10) {
       rut = rut.slice(0, 10);
     }
-
-    // Evitar que se borre el guion y mantener la estructura del RUT
     if (rut.indexOf('-') !== -1 && rut.split('-')[1].length > 1) {
       rut = `${rut.split('-')[0]}-${rut.split('-')[1].slice(0, 1)}`;
     }
-
-    // Actualizar el valor en el modelo
     this.estudiante.Rut = rut;
   }
 
   validarTelefono(event: any) {
-    // Asegurar que el teléfono comience siempre con '569'
     let telefono = event.target.value;
-
-    // Si el usuario intenta borrar el prefijo, lo restauramos
     if (!telefono.startsWith('569')) {
-      telefono = '569' + telefono.replace(/[^0-9]/g, ''); // Solo permite números y fuerza el prefijo
+      telefono = '569' + telefono.replace(/[^0-9]/g, '');
     } else {
-      // Permitir solo números después del prefijo y limitar a 8 dígitos adicionales
-      telefono = telefono.replace(/[^0-9]/g, ''); // Solo permite números
+      telefono = telefono.replace(/[^0-9]/g, '');
       if (telefono.length > 11) {
-        telefono = telefono.slice(0, 11); // Limitar a un máximo de 11 caracteres (prefijo + 8 números)
+        telefono = telefono.slice(0, 11);
       }
     }
-
-    // Actualizar el valor del teléfono en el modelo
     this.estudiante.Telefono = telefono;
   }
 
   ngOnInit() {
     firstValueFrom(this.angularFireMessaging.requestToken).then(
-        (token) => {
-            if (token) {
-                console.log('Token obtenido manualmente:', token);
-            } else {
-                console.warn('No se pudo obtener el token');
-            }
+      (token) => {
+        if (token) {
+          console.log('Token obtenido manualmente:', token);
+        } else {
+          console.warn('No se pudo obtener el token');
         }
+      }
     ).catch(
-        (error) => {
-            console.error('Error al obtener el token manualmente:', error);
-        }
+      (error) => {
+        console.error('Error al obtener el token manualmente:', error);
+      }
     );
-}
+  }
 }

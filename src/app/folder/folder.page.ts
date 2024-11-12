@@ -92,13 +92,26 @@ export class FolderPage implements OnInit {
   ngOnInit() {
     // Mantén la lógica existente
     this.folder = this.activatedRoute.snapshot.paramMap.get('id') as string;
-    this.determinarTipoUsuarioYObtenerId();
+
+    // Verificar si el usuario está autenticado antes de cargar la página
+    this.authService.getCurrentUserEmail().subscribe(emailEstudiante => {
+      if (emailEstudiante) {
+        this.determinarTipoUsuarioYObtenerId();
+      } else {
+        // Redirigir a la página de inicio de sesión si no está autenticado
+        this.router.navigate(['/iniciar-sesion']);
+      }
+    }, error => {
+      console.error('Error al verificar el usuario:', error);
+      this.router.navigate(['/iniciar-sesion']);
+    });
 
     // Agrega la suscripción al servicio de notificaciones
     this.notificationService.unreadCount$.subscribe((count) => {
       this.unreadNotificationsCount = count;
     });
   }
+
 
   determinarTipoUsuarioYObtenerId() {
     this.authService.getCurrentUserEmail().subscribe(async emailEstudiante => {
@@ -139,25 +152,34 @@ export class FolderPage implements OnInit {
   goToCategoryEvents(category: string) {
     this.router.navigate(['/events-category', category]);
   }
+  goToEventDetails(event: Evento) {
+    this.router.navigate(['/event-details', event.id_evento]); // Usa el `id_evento` del objeto `event`
+  }
+
 
   async loadEvents() {
     this.loading = true;
-    this.Eventos = this.firestore.collection<Evento>('Eventos').valueChanges();
-    this.Eventos.subscribe(
-      (data: Evento[]) => {
+    this.firestore.collection<Evento>('Eventos').snapshotChanges().subscribe(
+      (snapshots) => {
         this.loading = false;
 
-        if (data.length === 0) {
-          console.log('No se encontraron eventos en la colección.');
+        if (snapshots.length === 0) {
         }
 
-        this.allEvents = data.map(evento => ({
-          ...evento,
-          verificado: false,
-          show: false,
-          estaInscrito: false,
-          enListaEspera: false
-        }));
+        // Mapear los snapshots para incluir el `id` del documento
+        this.allEvents = snapshots.map(snapshot => {
+          const eventData = snapshot.payload.doc.data() as Evento;
+          const docId = snapshot.payload.doc.id; // ID del documento de Firestore
+
+          return {
+            ...eventData,
+            id_evento: docId, // Utiliza el ID del documento de Firestore
+            verificado: false,
+            show: false,
+            estaInscrito: false,
+            enListaEspera: false
+          };
+        });
 
         this.filteredEvents = [...this.allEvents];
         this.events = [...this.allEvents];
@@ -186,9 +208,6 @@ export class FolderPage implements OnInit {
 
   toggleFavorite(event: Evento) {
     event.isFavorite = !event.isFavorite;
-  }
-  goToEventDetails(event: Evento) {
-    this.router.navigate(['/event-details', event.id_evento]);
   }
 
   filterEventsByDate() {
