@@ -148,6 +148,11 @@ async iniciarSesionComoInvitado() {
         if (ventasData) {
           console.log('Inicio de sesión como usuario de ventas exitoso:', ventasData);
           this.uventasService.setCurrentUserEmail(email);
+  
+          // Use nullish coalescing to provide a default string in case id_Uventas is undefined
+          const ventasUserId = ventasData.id_Uventas ?? 'default_id'; // 'default_id' is a fallback value
+  
+          localStorage.setItem('ventasUserId', ventasUserId);
           this.router.navigate(['/folder-ventas']);
         } else {
           this.gestorEventosService.login(email, password)

@@ -22,6 +22,9 @@ export class TabBarComponent  implements OnInit {
   verRecompensas() {
     this.router.navigate(['../ver-recompensas']);
   }
+  mostrarPerfil() {
+    this.router.navigate(['../perfil-ventas']);
+  }
   logout() {
     this.ventas.logout();  // Llamamos al método logout del servicio
     this.router.navigate(['/iniciar-sesion']);  // Redirige al usuario a la página de login

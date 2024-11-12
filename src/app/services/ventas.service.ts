@@ -29,6 +29,7 @@ export class VentasAuthService {
     this.currentUserEmailSubject.next(email);
     localStorage.setItem('currentUserEmail', email);
     localStorage.setItem('tipousuario', 'ventas');
+    
 
   }
 

@@ -1,0 +1,68 @@
+<ion-header [translucent]="true" class="custom-header">
+  <ion-toolbar class="custom-toolbar">
+    <ion-title style="color: white;">Mi Perfil</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true" class="ion-padding">
+  <ion-card *ngIf="errorMessage" class="error-card">
+    <ion-card-header>
+      <ion-card-title>Error</ion-card-title>
+    </ion-card-header>
+    <ion-card-content>
+      <p>{{ errorMessage }}</p>
+    </ion-card-content>
+  </ion-card>
+
+  <div *ngIf="usuarioVentas" class="form-container" style="max-width: 380px; margin: auto; padding: 25px; background-color: white; border-radius: 20px;">
+    <div class="header-container">
+      <h1 class="center">Información personal</h1>
+    </div>
+    <form>
+      <!-- Nombre Completo -->
+      <div class="mb-3 position-relative">
+        <ion-item class="custom-item">
+          <ion-label>
+            <h2 style="color: black;">Nombre Completo</h2>
+            <p>{{ usuarioVentas.nombre_completo }}</p>
+          </ion-label>
+        </ion-item>
+      </div>
+
+      <!-- Correo Electrónico -->
+      <div class="mb-3 position-relative">
+        <ion-item class="custom-item">
+          <ion-label>
+            <h2 style="color: black;">Correo Electrónico</h2>
+            <p>{{ usuarioVentas.email }}</p>
+          </ion-label>
+        </ion-item>
+      </div>
+
+      <!-- RUT -->
+      <div class="mb-3 position-relative">
+        <ion-item class="custom-item">
+          <ion-label>
+            <h2 style="color: black;">RUT</h2>
+            <p>{{ usuarioVentas.rut }}</p>
+          </ion-label>
+        </ion-item>
+      </div>
+    </form>
+  </div>
+
+  <div class="spacer"></div>
+
+
+  <!-- Footer -->
+  <ion-footer collapse="fade" class="footer">
+    <p>Síguenos en nuestras redes sociales:</p>
+    <div class="social-icons">
+      <ion-icon name="logo-facebook" class="social-icon"></ion-icon>
+      <ion-icon name="logo-twitter" class="social-icon"></ion-icon>
+      <ion-icon name="logo-instagram" class="social-icon"></ion-icon>
+    </div>
+    <p>&copy; 2024 Punto Duoc. Todos los derechos reservados.</p>
+  </ion-footer>
+</ion-content>
+<app-tab-bar></app-tab-bar>

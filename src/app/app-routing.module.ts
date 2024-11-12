@@ -87,7 +87,11 @@ const routes: Routes = [
   {
     path: 'graficos-evento/:id',
     loadChildren: () => import('./graficos-evento/graficos-evento.module').then( m => m.GraficosEventoPageModule)
+  },  {
+    path: 'perfil-ventas',
+    loadChildren: () => import('./perfil-ventas/perfil-ventas.module').then( m => m.PerfilVentasPageModule)
   },
+
 
 
 
