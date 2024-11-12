@@ -9,6 +9,8 @@ import { MenuController } from '@ionic/angular';
 import { EstudianteService } from '../services/estudiante.service';
 import Swal from 'sweetalert2';
 import { firstValueFrom } from 'rxjs';
+import { Estudiante, EstudianteSinPassword } from '../interface/IEstudiante';
+import { Invitado, InvitadoSinPassword } from '../interface/IInvitado';
 
 
 @Component({
@@ -38,11 +40,10 @@ export class IniciarSesionPage implements OnInit {
   ) {}
 
   ionViewWillEnter() {
-    this.menu.enable(false);  // Deshabilita el menú en esta página
+    this.menu.enable(false); // Deshabilita el menú en esta página
   }
 
   ngOnInit() {}
-
   async iniciarSesion() {
     // Limpiar errores anteriores
     this.emailError = false;
@@ -62,86 +63,127 @@ export class IniciarSesionPage implements OnInit {
       return;
     }
 
-    // Intentar iniciar sesión como estudiante
-    this.authService.login(this.user.email, this.user.password)
-      .then(async (studentData) => {
-        if (studentData && studentData.id_estudiante) {
-          // Verificar si el estudiante está verificado
-          if (!studentData.verificado) {
-            Swal.fire('Error', 'Primero te tienes que verificar en el correo que se te mandó.', 'error');
+    try {
+      const userCredential = await this.afAuth.signInWithEmailAndPassword(this.user.email, this.user.password);
+
+      if (userCredential.user) {
+        // Verificar y actualizar la verificación de correo en Firestore
+        await this.verificarYActualizarVerificacion(userCredential.user);
+
+        // Verificar si el usuario es estudiante y redirigir
+        const estudianteData: Estudiante | null = await this.estudianteService.obtenerEstudiantePorEmail(this.user.email);
+
+        if (estudianteData && estudianteData.verificado !== undefined) {
+          if (!estudianteData.verificado) {
+            Swal.fire('Error', 'Primero debes verificar tu correo electrónico.', 'error');
             return;
           }
 
-          console.log('Inicio de sesión como estudiante exitoso:', studentData);
+          console.log('Inicio de sesión como estudiante exitoso:', estudianteData);
           this.authService.setCurrentUserEmail(this.user.email);
           localStorage.setItem('userType', 'estudiante');
-          localStorage.setItem('id', studentData.id_estudiante);
+          localStorage.setItem('id', estudianteData.id_estudiante || '');
 
-          // Obtener y actualizar el token FCM
-          try {
-            const tokenFCM = await this.estudianteService.solicitarPermisosYObtenerToken(studentData.id_estudiante);
-            if (tokenFCM) {
-              console.log('Token FCM obtenido al iniciar sesión:', tokenFCM);
-              await this.authService.updateEstudiante({
-                ...studentData,
-                tokenFCM: tokenFCM
-              });
+          // Obtener y actualizar el token FCM si `id_estudiante` no es undefined
+          if (estudianteData.id_estudiante) {
+            try {
+              const tokenFCM = await this.estudianteService.solicitarPermisosYObtenerToken(estudianteData.id_estudiante);
+              if (tokenFCM) {
+                await this.estudianteService.updateEstudiante({ ...estudianteData, tokenFCM });
+                console.log('Token FCM actualizado:', tokenFCM);
+              }
+            } catch (error) {
+              console.error('No se pudo obtener el token FCM al iniciar sesión:', error);
             }
-          } catch (error) {
-            console.error('No se pudo obtener el token FCM al iniciar sesión:', error);
           }
 
           this.router.navigate(['/folder/Inicio']);
         } else {
-          this.errorMessage = 'No se pudo encontrar un estudiante con este correo.';
           await this.iniciarSesionComoInvitado();
         }
-      })
-      .catch(async (error) => {
-        console.error('Error al intentar iniciar sesión como estudiante:', error);
-        await this.iniciarSesionComoInvitado();
-      });
+      }
+    } catch (error: any) {
+      console.error('Error al iniciar sesión como estudiante:', error);
+      await this.iniciarSesionComoInvitado();
+    }
   }
 
-  // Método para manejar la sesión como invitado
-async iniciarSesionComoInvitado() {
-  console.log('Intentando iniciar sesión como invitado con:', this.user.email);
 
-  this.afAuth.signInWithEmailAndPassword(this.user.email, this.user.password)
-    .then(async (userCredential) => {
-      if (userCredential && userCredential.user) {
+
+
+  async iniciarSesionComoInvitado() {
+    console.log('Intentando iniciar sesión como invitado con:', this.user.email);
+
+    try {
+      const userCredential = await this.afAuth.signInWithEmailAndPassword(this.user.email, this.user.password);
+
+      if (userCredential.user) {
+        // Verificar y actualizar la verificación de correo en Firestore
+        await this.verificarYActualizarVerificacion(userCredential.user);
+
         const authUserEmail = userCredential.user.email;
         if (authUserEmail) {
           console.log('Inicio de sesión como invitado exitoso:', userCredential);
 
-          // Obtener datos del invitado por correo
+          // Obtener datos del invitado por correo usando firstValueFrom
           const invitadoData = await firstValueFrom(this.invitadoService.obtenerInvitadoPorEmail(authUserEmail));
+          if (invitadoData && 'verificado' in invitadoData) {
+            if (!invitadoData.verificado) {
+              Swal.fire('Error', 'Primero debes verificar tu correo electrónico.', 'error');
+              return;
+            }
 
-          if (invitadoData && !invitadoData.verificado) {
-            Swal.fire('Error', 'Primero te tienes que verificar en el correo que se te mandó.', 'error');
-            return;
+            this.invitadoService.setCurrentUserEmail(authUserEmail);
+            localStorage.setItem('userType', 'invitado');
+            localStorage.setItem('id', userCredential.user.uid);
+
+            this.router.navigate(['/folder/Inicio']);
+          } else {
+            this.errorMessage = 'No se pudo autenticar al invitado. El correo es nulo.';
           }
-
-          this.invitadoService.setCurrentUserEmail(authUserEmail);
-          localStorage.setItem('userType', 'invitado'); // Almacenar tipo de usuario como invitado
-          localStorage.setItem('id', userCredential.user.uid); // Guardar el ID del invitado
-          this.router.navigate(['/folder/Inicio']);
         } else {
-          this.errorMessage = 'No se pudo autenticar al invitado. El correo es nulo.';
+          this.errorMessage = 'No se pudo autenticar al invitado.';
         }
-      } else {
-        this.errorMessage = 'No se pudo autenticar al invitado.';
       }
-    })
-    .catch((error) => {
+    } catch (error) {
       console.error('Error de inicio de sesión como invitado:', error);
       this.errorMessage = 'Correo o contraseña incorrectos para el invitado.';
       this.verificarUsuarioVentasOEventos(this.user.email, this.user.password);
-    });
-}
+    }
+  }
 
 
-  // Verificar si el usuario es de ventas o de eventos
+
+  async verificarYActualizarVerificacion(user: any) {
+    await user.reload(); // Recargar la información del usuario
+    if (user.emailVerified) {
+      const userId = user.uid;
+      try {
+        // Obtener el documento actual del estudiante e invitado
+        const estudianteData = await this.estudianteService.obtenerEstudiantePorId(userId);
+        const invitadoData = await this.invitadoService.obtenerInvitadoPorId(userId);
+
+        if (estudianteData) {
+          // Actualizar solo el campo `verificado` del estudiante
+          estudianteData.verificado = true;
+          await this.estudianteService.updateEstudiante(estudianteData);
+        }
+
+        if (invitadoData) {
+          // Actualizar solo el campo `verificado` del invitado
+          invitadoData.verificado = true;
+          await this.invitadoService.updateInvitado(invitadoData);
+        }
+
+        console.log('Verificación de correo actualizada en Firestore.');
+      } catch (error) {
+        console.error('Error al actualizar la verificación en Firestore:', error);
+      }
+    }
+  }
+
+
+
   verificarUsuarioVentasOEventos(email: string, password: string) {
     this.uventasService.login(email, password)
       .then((ventasData) => {
@@ -176,13 +218,11 @@ async iniciarSesionComoInvitado() {
     this.user[field] = '';
   }
 
-  // Validación de correo
   validarCorreo(correo: string): boolean {
     const emailRegex = /^[a-zA-Z0-9._%+-]+@(gmail\.com|outlook\.com|yahoo\.com|duocuc\.cl)$/;
     return emailRegex.test(correo);
   }
 
-  // Validación de contraseña
   validarContraseña(contraseña: string): boolean {
     return contraseña.length >= 8 && contraseña.length <= 20;
   }

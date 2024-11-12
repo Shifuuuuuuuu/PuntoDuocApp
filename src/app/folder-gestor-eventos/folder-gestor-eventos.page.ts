@@ -49,8 +49,6 @@ export class FolderGestorEventosPage implements OnInit {
           evento.verificados = 0;
         }
 
-        console.log(`Evento ID: ${evento.id_evento}, Verificados: ${evento.verificados}`); // Debug para ver la cantidad de verificados
-
         return evento;
       }))
     );

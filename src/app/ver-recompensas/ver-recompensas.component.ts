@@ -57,8 +57,6 @@ export class VerRecompensasComponent implements OnInit {
         }));
 
 
-        console.log("Recompensas con QR:", this.recompensasConQR);
-
       } else {
         this.errorMessage = 'No tienes permisos para ver las recompensas.';
       }
