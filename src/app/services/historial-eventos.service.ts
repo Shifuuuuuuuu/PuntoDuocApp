@@ -45,16 +45,29 @@ getInvitadoIdByEmail(email: string): Observable<string | null> {
     );
 }
 getEventosVerificados(userId: string, userType: 'estudiante' | 'invitado'): Observable<any[]> {
-  return this.firestore.collection('Eventos').valueChanges().pipe(
-    map((eventos: any[]) => {
-      return eventos.filter(evento =>
-        evento.Inscripciones?.some((inscripcion: any) =>
-          ((inscripcion.id_estudiante === userId && userType === 'estudiante') ||
-           (inscripcion.id_Invitado === userId && userType === 'invitado')) &&
-          inscripcion.verificado === true
-        )
-      );
-    })
-  );
+  return this.firestore.collection('Eventos')
+    .snapshotChanges()
+    .pipe(
+      map(actions => actions
+        .map(a => {
+          const data = a.payload.doc.data() as any;
+          const inscripcionEncontrada = data.Inscripciones.find((inscripcion: any) =>
+            (inscripcion.id_estudiante === userId || inscripcion.id_invitado === userId)
+          );
+
+          if (inscripcionEncontrada) {
+            // Convertir el Timestamp de Firestore a Date si existe
+            const fechaVerificacion = inscripcionEncontrada.fechaVerificacion?.toDate ? inscripcionEncontrada.fechaVerificacion.toDate() : null;
+            const estadoVerificacion = inscripcionEncontrada.verificado ? 'Acreditado' : 'No Acreditado';
+            return { ...data, fechaVerificacion: fechaVerificacion, estadoVerificacion: estadoVerificacion };
+          } else {
+            return null; // No se devuelve si no hay inscripción
+          }
+        })
+        .filter(evento => evento !== null) // Filtrar eventos que no tienen inscripción
+      )
+    );
 }
+
+
 }

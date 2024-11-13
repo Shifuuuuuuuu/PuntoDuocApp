@@ -46,10 +46,13 @@ export class HistorialEventosPage implements OnInit {
         this.eventosVerificados = eventos;
         this.loading = false;
       }, error => {
+        console.error('Error al cargar eventos verificados:', error);
         this.loading = false;
       });
     } else {
+      console.warn('No se pudo cargar eventos verificados debido a la falta de ID o tipo de usuario.');
       this.loading = false;
     }
   }
+
 }

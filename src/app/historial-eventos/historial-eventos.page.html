@@ -14,16 +14,18 @@
 </ion-header>
 
 <ion-content [fullscreen]="true" class="content-center">
- <ion-list style="background-color: white;" *ngIf="eventosVerificados.length > 0">
+  <ion-list style="background-color: white;" *ngIf="eventosVerificados.length > 0">
     <ion-item class="event-item" *ngFor="let evento of eventosVerificados">
       <ion-thumbnail slot="start" class="event-thumbnail">
         <img [src]="evento.imagen" alt="Imagen del evento" class="event-image">
       </ion-thumbnail>
-      <ion-label >
+      <ion-label>
         <h2>{{ evento.titulo }}</h2>
-        <p>Estado: Verificado</p>
+        <p>Estado: {{ evento.estadoVerificacion }}</p>
+        <p *ngIf="evento.fechaVerificacion">Fecha de verificación: {{ evento.fechaVerificacion | date:'dd/MM/yyyy' }}</p>
       </ion-label>
     </ion-item>
   </ion-list>
 </ion-content>
+
 <app-tab-usuario></app-tab-usuario>

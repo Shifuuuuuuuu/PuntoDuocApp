@@ -32,8 +32,7 @@ export class DetallesEventoPage implements OnInit {
   constructor(
     private route: ActivatedRoute,
     private cartService: CartService,
-    private menu: MenuController,
-    private estudianteService: EstudianteService
+    private menu: MenuController
   ) {}
 
   ionViewWillEnter() {
@@ -78,45 +77,46 @@ export class DetallesEventoPage implements OnInit {
   async verificarInscripcion() {
     this.escaneando = true;
     try {
-        const qrData = await this.startScan();
-        console.log('Datos del QR escaneado:', qrData);
+      const qrData = await this.startScan();
+      console.log('Datos del QR escaneado:', qrData);
 
-        if (qrData) {
-          // Obtener la inscripción para el evento
-          const inscripcion = await this.cartService.getInscripcionVerificada(qrData, this.eventoId);
+      if (qrData) {
+        // Obtener la inscripción para el evento
+        const inscripcion = await this.cartService.getInscripcionVerificada(qrData, this.eventoId);
 
-          // Verificar si la inscripción existe y ya ha sido verificada
-          if (inscripcion && inscripcion.verificado === true) {
-              console.log('El usuario ya ha sido verificado previamente.');
-              this.mensajePresencia = 'Este usuario ya ha sido acreditado.';
-              await this.presentSweetAlertAcreditacion(qrData.nombreCompleto, this.evento?.titulo || 'Evento', 0, 'yaAcreditado');
-              return; // Salir de la función si el usuario ya estaba acreditado
-          }
+        // Verificar si la inscripción existe y ya ha sido verificada
+        if (inscripcion && inscripcion.verificado === true) {
+          console.log('El usuario ya ha sido verificado previamente.');
+          this.mensajePresencia = 'Este usuario ya ha sido acreditado.';
+          await this.presentSweetAlertAcreditacion(qrData.nombreCompleto, this.evento?.titulo || 'Evento', 0, 'yaAcreditado');
+          return; // Salir de la función si el usuario ya estaba acreditado
+        }
 
-          // Proceder con la verificación y actualización si el usuario no estaba verificado
-          const result = await this.cartService.verifyAndUpdateInscription(qrData, this.eventoId);
-          this.esVerificado = result.verificado;
+        // Proceder con la verificación y actualización si el usuario no estaba verificado
+        const fechaVerificacion = new Date(); // Fecha y hora actual
+        const result = await this.cartService.verifyAndUpdateInscription(qrData, this.eventoId, fechaVerificacion);
+        this.esVerificado = result.verificado;
 
-          if (this.esVerificado) {
-              const esInvitado = qrData.tipoUsuario === 'invitado';
-              const estado = esInvitado ? 'acreditadoInvitado' : 'acreditado';
+        if (this.esVerificado) {
+          const esInvitado = qrData.tipoUsuario === 'invitado';
+          const estado = esInvitado ? 'acreditadoInvitado' : 'acreditado';
 
-              this.mensajePresencia = 'Inscripción verificada con éxito.';
-              await this.presentSweetAlertAcreditacion(qrData.nombreCompleto, this.evento?.titulo || 'Evento', result.puntaje || 0, estado);
-              this.cargarListas(); // Actualiza las listas después de la acreditación
-          } else {
-              this.mensajePresencia = 'No se encontró inscripción.';
-              await this.presentSweetAlertAcreditacion(qrData.nombreCompleto, this.evento?.titulo || 'Evento', 0, 'noInscrito');
-          }
+          this.mensajePresencia = 'Inscripción verificada con éxito.';
+          await this.presentSweetAlertAcreditacion(qrData.nombreCompleto, this.evento?.titulo || 'Evento', result.puntaje || 0, estado);
+          this.cargarListas(); // Actualiza las listas después de la acreditación
+        } else {
+          this.mensajePresencia = 'No se encontró inscripción.';
+          await this.presentSweetAlertAcreditacion(qrData.nombreCompleto, this.evento?.titulo || 'Evento', 0, 'noInscrito');
+        }
       }
     } catch (error) {
-        this.mensajePresencia = 'Error al verificar inscripción. Intenta de nuevo.';
-        this.esVerificado = false;
-        console.error('Error durante la verificación de inscripción:', error);
+      this.mensajePresencia = 'Error al verificar inscripción. Intenta de nuevo.';
+      this.esVerificado = false;
+      console.error('Error durante la verificación de inscripción:', error);
     } finally {
-        this.escaneando = false;
+      this.escaneando = false;
     }
-}
+  }
 
 
 

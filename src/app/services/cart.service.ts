@@ -154,67 +154,71 @@ export class CartService {
         throw error;
     }
 }
-async verifyAndUpdateInscription(qrData: any, eventId: string): Promise<{ verificado: boolean; puntaje?: number }> {
+async verifyAndUpdateInscription(qrData: any, eventId: string, fechaVerificacion: Date): Promise<{ verificado: boolean; puntaje?: number }> {
   try {
-      console.log('Verificando inscripción para el evento:', eventId);
+    console.log('Verificando inscripción para el evento:', eventId);
 
-      const eventSnapshot = await this.firestore.collection('Eventos').doc(eventId).get().toPromise();
+    const eventSnapshot = await this.firestore.collection('Eventos').doc(eventId).get().toPromise();
 
-      if (eventSnapshot && eventSnapshot.exists) {
-          const eventData = eventSnapshot.data() as Evento | undefined;
-          console.log('Datos del evento obtenidos:', eventData);
+    if (eventSnapshot && eventSnapshot.exists) {
+      const eventData = eventSnapshot.data() as Evento | undefined;
+      console.log('Datos del evento obtenidos:', eventData);
 
-          if (eventData) {
-              const inscripciones = eventData?.Inscripciones || [];
-              const index = inscripciones.findIndex(
-                  (inscripcion) =>
-                      (inscripcion.id_estudiante === qrData.userId && qrData.tipoUsuario === 'estudiante') ||
-                      (inscripcion.id_invitado === qrData.userId && qrData.tipoUsuario === 'invitado')
-              );
+      if (eventData) {
+        const inscripciones = eventData?.Inscripciones || [];
+        const index = inscripciones.findIndex(
+          (inscripcion) =>
+            (inscripcion.id_estudiante === qrData.userId && qrData.tipoUsuario === 'estudiante') ||
+            (inscripcion.id_invitado === qrData.userId && qrData.tipoUsuario === 'invitado')
+        );
 
-              console.log('Índice de inscripción encontrada:', index);
+        console.log('Índice de inscripción encontrada:', index);
 
-              if (index !== -1) {
-                  if (inscripciones[index].verificado) {
-                      console.log('El usuario ya ha sido verificado previamente.');
-                      return { verificado: true, puntaje: 0 }; // Retorna si ya está verificado
-                  }
-
-                  // Actualizar estado de verificación a true solo si no ha sido verificado previamente
-                  inscripciones[index].verificado = true;
-                  let puntaje = typeof eventData.puntaje === 'string' ? parseInt(eventData.puntaje, 10) : eventData.puntaje; // Asegurar que sea un número
-                  console.log('Puntaje del evento:', puntaje);
-
-                  if (qrData.tipoUsuario === 'estudiante' && puntaje > 0) {
-                      console.log('Incrementando puntaje al estudiante con ID:', qrData.userId);
-                      puntaje = await this.incrementarPuntajeEstudiante(qrData.userId, puntaje);
-                      console.log('Nuevo puntaje total del estudiante:', puntaje);
-                  } else if (qrData.tipoUsuario === 'invitado') {
-                      console.log('El usuario es un invitado, no se sumarán puntos.');
-                      puntaje = 0; // No se asigna puntaje a los invitados
-                  }
-
-                  // Guardar los cambios en Firestore
-                  await this.firestore.collection('Eventos').doc(eventId).update({
-                      Inscripciones: inscripciones
-                  });
-                  console.log('Inscripciones actualizadas en Firestore');
-
-                  return { verificado: true, puntaje: puntaje };
-              } else {
-                  console.log('No se encontró la inscripción para el usuario en el evento.');
-                  return { verificado: false };
-              }
+        if (index !== -1) {
+          if (inscripciones[index].verificado) {
+            console.log('El usuario ya ha sido verificado previamente.');
+            return { verificado: true, puntaje: 0 }; // Retorna si ya está verificado
           }
-      }
 
-      console.log('El evento no existe o no se encontraron datos.');
-      return { verificado: false };
+          // Actualizar estado de verificación y agregar la fecha de verificación
+          inscripciones[index].verificado = true;
+          inscripciones[index].fechaVerificacion = fechaVerificacion; // Usa el parámetro
+
+          let puntaje = typeof eventData.puntaje === 'string' ? parseInt(eventData.puntaje, 10) : eventData.puntaje;
+          console.log('Puntaje del evento:', puntaje);
+
+          if (qrData.tipoUsuario === 'estudiante' && puntaje > 0) {
+            console.log('Incrementando puntaje al estudiante con ID:', qrData.userId);
+            puntaje = await this.incrementarPuntajeEstudiante(qrData.userId, puntaje);
+            console.log('Nuevo puntaje total del estudiante:', puntaje);
+          } else if (qrData.tipoUsuario === 'invitado') {
+            console.log('El usuario es un invitado, no se sumarán puntos.');
+            puntaje = 0;
+          }
+
+          // Guardar los cambios en Firestore
+          await this.firestore.collection('Eventos').doc(eventId).update({
+            Inscripciones: inscripciones
+          });
+          console.log('Inscripciones actualizadas en Firestore');
+
+          return { verificado: true, puntaje: puntaje };
+        } else {
+          console.log('No se encontró la inscripción para el usuario en el evento.');
+          return { verificado: false };
+        }
+      }
+    }
+
+    console.log('El evento no existe o no se encontraron datos.');
+    return { verificado: false };
   } catch (error) {
-      console.error('Error al verificar inscripción:', error);
-      return { verificado: false };
+    console.error('Error al verificar inscripción:', error);
+    return { verificado: false };
   }
 }
+
+
 
 
 async incrementarPuntajeEstudiante(estudianteId: string, puntos: number): Promise<number> {

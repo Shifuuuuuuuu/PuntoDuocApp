@@ -12,4 +12,5 @@ export interface Inscripcion {
   verificado?: boolean;
   puntaje?: number;
   carrera: string;
+  fechaVerificacion?: Date;
 }
