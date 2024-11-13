@@ -74,57 +74,71 @@ export class DetallesEventoPage implements OnInit {
       console.error('Error al cargar las listas:', error);
     }
   }
-  toggleDashboard() {
-    this.mostrarDashboard = !this.mostrarDashboard;
-    if (this.mostrarDashboard) {
-      this.cargarListas(); // Cargar datos y mostrar el gráfico si mostrarDashboard es true
-    }
-  }
-  toggleListas() {
-    this.mostrarListas = !this.mostrarListas; // Alterna la visibilidad de las listas
-    if (this.mostrarListas) {
-      this.cargarListas(); // Cargar las listas solo si se van a mostrar
-    }
-  }
-  toggleListaEspera() {
-    this.mostrarListaEspera = !this.mostrarListaEspera; // Alterna la visibilidad de la lista de espera
-    if (this.mostrarListaEspera && this.listaEspera.length === 0) {
-      this.cargarListas(); // Cargar la lista de espera solo si aún no ha sido cargada
-    }
-  }
 
   async verificarInscripcion() {
     this.escaneando = true;
     try {
-      const qrData = await this.startScan();
+        const qrData = await this.startScan();
+        console.log('Datos del QR escaneado:', qrData);
 
-      if (qrData) {
-        const inscripcion = await this.cartService.getInscripcionVerificada(qrData, this.eventoId);
+        if (qrData) {
+          // Obtener la inscripción para el evento
+          const inscripcion = await this.cartService.getInscripcionVerificada(qrData, this.eventoId);
 
-        if (inscripcion && inscripcion.verificado) {
-          this.mensajePresencia = 'Este usuario ya ha sido acreditado.';
-          await this.presentSweetAlertAcreditacion(qrData.Nombre_completo, this.evento?.titulo || 'Evento', 0, 'yaAcreditado');
-          return;
-        }
+          // Verificar si la inscripción existe y ya ha sido verificada
+          if (inscripcion && inscripcion.verificado === true) {
+              console.log('El usuario ya ha sido verificado previamente.');
+              this.mensajePresencia = 'Este usuario ya ha sido acreditado.';
+              await this.presentSweetAlertAcreditacion(qrData.nombreCompleto, this.evento?.titulo || 'Evento', 0, 'yaAcreditado');
+              return; // Salir de la función si el usuario ya estaba acreditado
+          }
 
-        const result = await this.cartService.verifyAndUpdateInscription(qrData, this.eventoId);
-        this.esVerificado = result.verificado;
+          // Proceder con la verificación y actualización si el usuario no estaba verificado
+          const result = await this.cartService.verifyAndUpdateInscription(qrData, this.eventoId);
+          this.esVerificado = result.verificado;
 
-        const esInvitado = !!qrData.id_Invitado;
-        const estado = this.esVerificado
-          ? esInvitado ? 'acreditadoInvitado' : 'acreditado'
-          : 'noInscrito';
+          if (this.esVerificado) {
+              const esInvitado = qrData.tipoUsuario === 'invitado';
+              const estado = esInvitado ? 'acreditadoInvitado' : 'acreditado';
 
-        this.mensajePresencia = this.esVerificado ? 'Inscripción verificada con éxito.' : 'No se encontró inscripción.';
-        await this.presentSweetAlertAcreditacion(qrData.Nombre_completo, this.evento?.titulo || 'Evento', result.puntaje || 200, estado);
-
+              this.mensajePresencia = 'Inscripción verificada con éxito.';
+              await this.presentSweetAlertAcreditacion(qrData.nombreCompleto, this.evento?.titulo || 'Evento', result.puntaje || 0, estado);
+              this.cargarListas(); // Actualiza las listas después de la acreditación
+          } else {
+              this.mensajePresencia = 'No se encontró inscripción.';
+              await this.presentSweetAlertAcreditacion(qrData.nombreCompleto, this.evento?.titulo || 'Evento', 0, 'noInscrito');
+          }
       }
     } catch (error) {
-      this.mensajePresencia = 'Error al verificar inscripción. Intenta de nuevo.';
-      this.esVerificado = false;
-      console.error('Error durante la verificación de inscripción:', error);
+        this.mensajePresencia = 'Error al verificar inscripción. Intenta de nuevo.';
+        this.esVerificado = false;
+        console.error('Error durante la verificación de inscripción:', error);
     } finally {
-      this.escaneando = false;
+        this.escaneando = false;
+    }
+}
+
+
+
+  async startScan() {
+    try {
+      const result = await CapacitorBarcodeScanner.scanBarcode({
+        hint: 17,
+        cameraDirection: 1,
+      });
+
+      const qrData = result.ScanResult;
+      const parsedData = JSON.parse(qrData);
+
+      // Ajusta la validación para que busque `userId`
+      if (parsedData.userId && parsedData.nombreCompleto) {
+        return parsedData; // Retorna los datos escaneados si son válidos
+      } else {
+        throw new Error('Los datos del QR no son válidos');
+      }
+    } catch (e) {
+      console.error('Error al escanear el código:', e);
+      throw e;
     }
   }
   createPieChart() {
@@ -169,62 +183,56 @@ export class DetallesEventoPage implements OnInit {
       plugins: [ChartDataLabels], // Activar el plugin de etiquetas
     });
   }
-
-  async presentSweetAlertAcreditacion(nombreUsuario: string, nombreEvento: string, puntos: number, estado: 'yaAcreditado' | 'acreditado' | 'acreditadoInvitado' | 'noInscrito') {
+  toggleDashboard() {
+    this.mostrarDashboard = !this.mostrarDashboard;
+    if (this.mostrarDashboard) {
+      this.cargarListas(); // Cargar datos y mostrar el gráfico si mostrarDashboard es true
+    }
+  }
+  toggleListas() {
+    this.mostrarListas = !this.mostrarListas; // Alterna la visibilidad de las listas
+    if (this.mostrarListas) {
+      this.cargarListas(); // Cargar las listas solo si se van a mostrar
+    }
+  }
+  toggleListaEspera() {
+    this.mostrarListaEspera = !this.mostrarListaEspera; // Alterna la visibilidad de la lista de espera
+    if (this.mostrarListaEspera && this.listaEspera.length === 0) {
+      this.cargarListas(); // Cargar la lista de espera solo si aún no ha sido cargada
+    }
+  }
+  async presentSweetAlertAcreditacion(nombreUsuario: string, nombreEvento: string, puntaje: number, estado: 'yaAcreditado' | 'acreditado' | 'acreditadoInvitado' | 'noInscrito') {
     let title = '';
     let text = '';
     let icon: 'success' | 'error' | 'info' = 'info';
 
     if (estado === 'yaAcreditado') {
-      title = 'Ya Acreditado';
-      text = `${nombreUsuario} ya está acreditado para el evento ${nombreEvento}.`;
-      icon = 'info';
+        title = 'Ya Acreditado';
+        text = `${nombreUsuario} ya está acreditado para el evento ${nombreEvento}.`;
+        icon = 'info';
     } else if (estado === 'acreditado') {
-      title = 'Acreditación Exitosa';
-      text = `${nombreUsuario} ha sido acreditado para el evento ${nombreEvento}. Se han añadido ${puntos} puntos a su cuenta.`;
-      icon = 'success';
+        title = 'Acreditación Exitosa';
+        text = `${nombreUsuario} ha sido acreditado para el evento ${nombreEvento}. Tu puntaje total es de  ${puntaje}.`;
+        icon = 'success';
     } else if (estado === 'acreditadoInvitado') {
-      title = 'Acreditación Exitosa';
-      text = `${nombreUsuario} ha sido acreditado para el evento ${nombreEvento}.`;
-      icon = 'success';
+        title = 'Acreditación Exitosa';
+        text = `${nombreUsuario} ha sido acreditado para el evento ${nombreEvento}.`;
+        icon = 'success';
     } else {
-      title = 'No Inscrito';
-      text = `${nombreUsuario} no está inscrito en el evento ${nombreEvento}.`;
-      icon = 'error';
+        title = 'No Inscrito';
+        text = `${nombreUsuario} no está inscrito en el evento ${nombreEvento}.`;
+        icon = 'error';
     }
 
     await Swal.fire({
-      title: title,
-      text: text,
-      icon: icon,
-      confirmButtonText: 'OK'
+        title: title,
+        text: text,
+        icon: icon,
+        confirmButtonText: 'OK'
     });
 
     // Recargar la página al confirmar el mensaje
     this.cargarListas();
-  }
-
-  async startScan() {
-    try {
-      const result = await CapacitorBarcodeScanner.scanBarcode({
-        hint: 17,
-        cameraDirection: 1,
-      });
-
-      const qrData = result.ScanResult;
-      const parsedData = JSON.parse(qrData);
-
-      // Ajusta la validación para que busque `userId`
-      if (parsedData.userId && parsedData.nombreCompleto) {
-        return parsedData; // Retorna los datos escaneados si son válidos
-      } else {
-        throw new Error('Los datos del QR no son válidos');
-      }
-    } catch (e) {
-      console.error('Error al escanear el código:', e);
-      throw e;
-    }
-  }
-
+}
 
 }

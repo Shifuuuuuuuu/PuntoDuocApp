@@ -72,12 +72,13 @@ export class RegistrarInvitadoPage implements OnInit {
         console.error('Error al obtener el token FCM:', error);
       }
 
-      // Generar el código QR basado en los datos del invitado registrado
+            // Generar el código QR basado en los datos del invitado registrado
       const qrData = JSON.stringify({
-        id_Invitado: invitadoRegistrado.id_Invitado,
-        email: invitadoRegistrado.email,
-        Nombre_completo: invitadoRegistrado.Nombre_completo,
-        Rut: invitadoRegistrado.Rut
+        idInvitado: invitadoRegistrado.id_Invitado,
+        nombreCompleto: invitadoRegistrado.Nombre_completo,
+        rut: invitadoRegistrado.Rut,
+        telefono: invitadoRegistrado.Telefono,
+        eventosInscritos: invitadoRegistrado.eventosInscritos || []
       });
       invitadoRegistrado.codigoQr = await QRCode.toDataURL(qrData);
       await this.invitadoService.updateInvitado(invitadoRegistrado);

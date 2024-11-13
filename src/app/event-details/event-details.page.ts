@@ -71,6 +71,7 @@ export class EventDetailsPage implements OnInit {
     }
   }
 
+
   async loadEventDetails(eventId: string) {
 
     this.loading = true;
@@ -108,9 +109,6 @@ export class EventDetailsPage implements OnInit {
     );
   }
 
-
-
-
   async actualizarEstadoInscripcion() {
     if (!this.event) return;
 
@@ -123,7 +121,6 @@ export class EventDetailsPage implements OnInit {
     try {
       // Verificar si el usuario está en la lista de espera
       this.event.enListaEspera = await this.eventosService.isUserInWaitList(this.event.id_evento, this.userId);
-      console.log('Estado de lista de espera:', this.event.enListaEspera); // Depuración
 
       // Lógica de inscripción automática si hay cupos disponibles y usuarios en lista de espera
       if (this.event.Cupos > 0 && this.event.listaEspera && this.event.listaEspera.length > 0) {
@@ -132,22 +129,25 @@ export class EventDetailsPage implements OnInit {
 
         // Inscribir automáticamente al primer usuario en la lista de espera
         const primerUsuario = this.event.listaEspera[0];
-        console.log('Contenido de primerUsuario:', primerUsuario); // Depuración
+        console.log('Contenido de primerUsuario:', primerUsuario);
 
         // Asignar las propiedades de manera manual
-        const userId = primerUsuario.id_Invitado || primerUsuario.id_estudiante
+        const userId = primerUsuario.id_Invitado || primerUsuario.id_estudiante;
         const userName = primerUsuario.Nombre_completo || primerUsuario.userName;
         const rut = primerUsuario.Rut || primerUsuario.rut;
 
         console.log('Intentando inscribir al usuario:', userId, userName, rut);
 
         if (userId) {
-          if (this.isInvitado) {
+          if (primerUsuario.id_Invitado) {
             console.log('Inscribiendo como invitado...');
-            await this.eventosService.inscribirInvitado(this.event.id_evento, userId, userName, rut);
-          } else {
+            await this.eventosService.inscribirInvitado(this.event.id_evento, userId, userName, rut, false);
+          } else if (primerUsuario.id_estudiante) {
             console.log('Inscribiendo como estudiante...');
-            await this.eventosService.inscribirEstudiante(this.event.id_evento, userId, userName, rut);
+            const estudianteData = await this.estudianteService.obtenerEstudiantePorId(userId);
+            const carrera = estudianteData?.carrera || ''; // Obtiene la carrera
+
+            await this.eventosService.inscribirEstudiante(this.event.id_evento, userId, userName, rut, carrera, false);
           }
 
           // Eliminar al usuario de la lista de espera
@@ -279,17 +279,23 @@ export class EventDetailsPage implements OnInit {
     try {
       let userName = '';
       let rut = '';
+      let carrera = ''; // Nueva variable para la carrera
 
       if (this.isInvitado) {
         const invitado = await this.invitadoService.obtenerInvitadoPorId(this.userId);
         userName = invitado?.Nombre_completo || 'Invitado';
         rut = invitado?.Rut || '';
-        await this.eventosService.inscribirInvitado(eventoId, this.userId, userName, rut);
+
+        // Llamada con el argumento `verificado`
+        await this.eventosService.inscribirInvitado(eventoId, this.userId, userName, rut, false);
       } else {
         const estudiante = await this.estudianteService.obtenerEstudiantePorId(this.userId);
         userName = estudiante?.Nombre_completo || 'Estudiante';
         rut = estudiante?.Rut || '';
-        await this.eventosService.inscribirEstudiante(eventoId, this.userId, userName, rut);
+        carrera = estudiante?.carrera || ''; // Obtiene la carrera del estudiante
+
+        // Llamada con el argumento `verificado`
+        await this.eventosService.inscribirEstudiante(eventoId, this.userId, userName, rut, carrera, false);
       }
 
       Swal.fire('Éxito', 'Te has inscrito al evento correctamente.', 'success');
@@ -302,6 +308,7 @@ export class EventDetailsPage implements OnInit {
       this.loading = false;
     }
   }
+
 
   async cancelarInscripcion(eventoId: string) {
     const result = await Swal.fire({

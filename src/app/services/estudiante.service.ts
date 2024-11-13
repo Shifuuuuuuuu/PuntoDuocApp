@@ -287,5 +287,10 @@ async obtenerEstudiantePorEmail(email: string): Promise<Estudiante | null> {
   }
   return null;
 }
-
+async sumarPuntaje(userId: string, puntos: number): Promise<void> {
+  const estudianteDocRef = this.firestore.collection('Estudiantes').doc(userId);
+  await estudianteDocRef.update({
+    puntaje: firebase.firestore.FieldValue.increment(puntos)
+  });
+}
 }

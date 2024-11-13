@@ -230,15 +230,16 @@ export class PerfilUsuarioPage implements OnInit {
   }
   async generateQrData() {
     const eventosInscritos = this.isInvitado
-      ? this.invitado?.eventosInscritos || []
-      : this.estudiante?.eventosInscritos || [];
+        ? this.invitado?.eventosInscritos || []
+        : this.estudiante?.eventosInscritos || [];
 
     const qrDataObject = {
-      userId: this.isInvitado ? this.invitado?.id_Invitado : this.estudiante?.id_estudiante,
-      eventosInscritos: eventosInscritos,
-      nombreCompleto: this.isInvitado ? this.invitado?.Nombre_completo : this.estudiante?.Nombre_completo,
-      rut: this.isInvitado ? this.invitado?.Rut : this.estudiante?.Rut,
-      telefono: this.isInvitado ? this.invitado?.Telefono : this.estudiante?.Telefono,
+        userId: this.isInvitado ? this.invitado?.id_Invitado : this.estudiante?.id_estudiante,
+        tipoUsuario: this.isInvitado ? 'invitado' : 'estudiante', // Campo adicional para identificar el tipo de usuario
+        eventosInscritos: eventosInscritos,
+        nombreCompleto: this.isInvitado ? this.invitado?.Nombre_completo : this.estudiante?.Nombre_completo,
+        rut: this.isInvitado ? this.invitado?.Rut : this.estudiante?.Rut,
+        telefono: this.isInvitado ? this.invitado?.Telefono : this.estudiante?.Telefono,
     };
 
     // Convierte el JSON en una cadena
@@ -246,7 +247,8 @@ export class PerfilUsuarioPage implements OnInit {
 
     // Genera la imagen QR y guárdala en `this.qrData`
     this.qrData = await QRCode.toDataURL(qrString);
-  }
+}
+
   irAConsultas() {
     this.navCtrl.navigateForward('/consultas'); // Ruta de la página de consultas
   }

@@ -26,6 +26,7 @@ export interface Evento {
   verificado?: boolean;
   isFavorite?: boolean;
   verificados?: number; // Agrega esta propiedad para contar los verificados
+  puntaje: number;
 }
 
 
