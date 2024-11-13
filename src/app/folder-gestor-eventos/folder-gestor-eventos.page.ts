@@ -5,6 +5,7 @@ import { Router } from '@angular/router';
 import { Evento } from '../interface/IEventos';
 import { MenuController } from '@ionic/angular';
 import Swal from 'sweetalert2';
+import { AngularFirestore, DocumentChangeAction } from '@angular/fire/compat/firestore';
 
 
 @Component({
@@ -22,7 +23,8 @@ export class FolderGestorEventosPage implements OnInit {
   constructor(
     private eventosService: EventosGestorService,
     private router: Router,
-    private menu: MenuController
+    private menu: MenuController,
+    private firestore: AngularFirestore
   ) {}
 
   ionViewWillEnter() {
@@ -31,32 +33,36 @@ export class FolderGestorEventosPage implements OnInit {
 
   ngOnInit() {
     this.cargarEventos();
+
   }
 
   cargarEventos() {
-    this.eventos$ = this.eventosService.getEventos().pipe(
-      map((eventos: Evento[]) => eventos.map((evento: Evento) => {
-        evento.fechaInicio = this.transformarFecha(evento.fecha);
-        evento.fechaFin = this.transformarFecha(evento.fecha_termino);
+    this.eventos$ = this.firestore.collection<Evento>('Eventos').snapshotChanges().pipe(
+      map(snapshots => snapshots.map(snapshot => {
+        const eventData = snapshot.payload.doc.data() as Evento;
+        const docId = snapshot.payload.doc.id; // ID del documento de Firestore
 
-        // Contar cuántas inscripciones tienen el campo verificado en true
-        if (evento.Inscripciones && Array.isArray(evento.Inscripciones)) {
-          evento.verificados = evento.Inscripciones.filter(inscripcion => {
-            // Verificar explícitamente si el campo verificado es booleano y true
-            return inscripcion.verificado === true;
-          }).length;
-        } else {
-          evento.verificados = 0;
-        }
+        // Asegúrate de usar la propiedad correcta para la fecha
+        eventData.fechaInicio = this.transformarFecha(eventData.fecha); // Ajusta 'fecha' si es necesario
+        eventData.fechaFin = this.transformarFecha(eventData.fecha_termino);
 
-        return evento;
+        return {
+          ...eventData,
+          id_evento: docId, // Utiliza el ID del documento de Firestore
+          verificado: false,
+          show: false,
+          estaInscrito: false,
+          enListaEspera: false
+        };
       }))
     );
 
+    // Filtrar eventos próximos
     this.eventosProximos$ = this.eventos$.pipe(
       map(eventos => eventos.filter(evento => evento.fechaInicio && evento.fechaInicio > new Date()))
     );
 
+    // Filtrar eventos pasados
     this.eventosPasados$ = this.eventos$.pipe(
       map(eventos => eventos.filter(evento => evento.fechaInicio && evento.fechaInicio <= new Date()))
     );
@@ -66,10 +72,13 @@ export class FolderGestorEventosPage implements OnInit {
 
   transformarFecha(fecha: any): Date | null {
     if (fecha && fecha.seconds) {
-      return new Date(fecha.seconds * 1000); // Convertimos de Firestore timestamp a Date
+      const fechaTransformada = new Date(fecha.seconds * 1000);
+      return fechaTransformada;
     }
     return null;
   }
+
+
 
   // Verificar si el botón "Comenzar Evento" debe mostrarse
   puedeMostrarComenzarEvento(fechaInicio: Date | null, estado: string): boolean {
@@ -77,8 +86,9 @@ export class FolderGestorEventosPage implements OnInit {
     return fechaInicio ? ahora >= fechaInicio && estado !== 'en_curso' && estado !== 'cancelado' : false;
   }
 
-  // Comenzar evento y mostrar alerta
-  comenzarEvento(eventoId: string) {
+  comenzarEvento(evento: Evento) {
+    const eventoId = evento.id_evento; // Usa el ID del documento, que ahora se llama `id_evento`
+
     this.eventosService.actualizarEvento(eventoId, { estado: 'en_curso' }).then(() => {
       console.log('Evento comenzado.');
       Swal.fire({
@@ -88,6 +98,9 @@ export class FolderGestorEventosPage implements OnInit {
         confirmButtonText: 'OK'
       });
       this.cargarEventos(); // Recargar la lista de eventos para reflejar el cambio de estado
+    }).catch(error => {
+      console.error('Error al comenzar el evento:', error);
+      Swal.fire('Error', 'No se pudo iniciar el evento: ' + error.message, 'error');
     });
   }
 
@@ -116,6 +129,7 @@ export class FolderGestorEventosPage implements OnInit {
       this.cargarEventos(); // Recargar la lista de eventos para reflejar el cambio de estado
     });
   }
+
   eliminarEvento(eventoId: string) {
     Swal.fire({
       title: '¿Estás seguro?',

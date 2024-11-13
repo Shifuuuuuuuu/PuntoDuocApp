@@ -214,8 +214,9 @@ export class DetallesEventoPage implements OnInit {
       const qrData = result.ScanResult;
       const parsedData = JSON.parse(qrData);
 
-      if ((parsedData.id_estudiante || parsedData.id_Invitado) && parsedData.Nombre_completo) {
-        return parsedData;
+      // Ajusta la validación para que busque `userId`
+      if (parsedData.userId && parsedData.nombreCompleto) {
+        return parsedData; // Retorna los datos escaneados si son válidos
       } else {
         throw new Error('Los datos del QR no son válidos');
       }

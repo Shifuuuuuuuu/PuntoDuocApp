@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { AngularFirestore } from '@angular/fire/compat/firestore';
 import {  Observable } from 'rxjs';
-import {  filter} from 'rxjs/operators';
+import {  filter, map} from 'rxjs/operators';
 import { Evento } from '../interface/IEventos';
 import { Inscripcion, Inscripcion2 } from '../interface/IInscripcion';
 import {  getDoc } from '@angular/fire/firestore';
@@ -13,7 +13,13 @@ export class EventosGestorService {
 
   // Obtener lista de eventos
   getEventos(): Observable<Evento[]> {
-    return this.firestore.collection<Evento>('Eventos').valueChanges({ idField: 'id' });
+    return this.firestore.collection<Evento>('Eventos').snapshotChanges().pipe(
+      map(actions => actions.map(a => {
+        const data = a.payload.doc.data() as Evento;
+        const id = a.payload.doc.id; // Obtiene el ID del documento
+        return { id, ...data }; // Retorna el evento con el ID del documento incluido
+      }))
+    );
   }
 
   getEventoById(id: string): Observable<Evento> {
@@ -54,8 +60,7 @@ export class EventosGestorService {
     return this.firestore.collection('Inscripciones').add(inscripcion);
   }
 
-  // Actualizar evento (ej. para cancelar)
-  actualizarEvento(id: string, data: Partial<Evento>) {
-    return this.firestore.collection('Eventos').doc(id).update(data);
+  actualizarEvento(eventoId: string, data: Partial<Evento>): Promise<void> {
+    return this.firestore.collection('Eventos').doc(eventoId).update(data);
   }
 }
