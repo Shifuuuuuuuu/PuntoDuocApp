@@ -1,0 +1,48 @@
+<ion-header [translucent]="true" class="custom-header">
+  <ion-toolbar class="custom-toolbar">
+    <ion-title style="color: white;">Dashboard</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true" class="ion-padding">
+  <!-- Resumen de Ventas y Recompensas -->
+  <ion-card>
+    <ion-card-header>
+      <ion-card-title>Resumen de Ventas y Recompensas</ion-card-title>
+    </ion-card-header>
+    <ion-card-content>
+      <p>Total de ventas: {{ totalVentas }}</p>
+      <p>Recompensas entregadas: {{ recompensasEntregadas }}</p>
+      <p>Recompensas pendientes: {{ recompensasPendientes }}</p>
+    </ion-card-content>
+  </ion-card>
+
+  <!-- Recompensas Más Populares -->
+  <ion-card>
+    <ion-card-header>
+      <ion-card-title>Top Recompensas</ion-card-title>
+    </ion-card-header>
+    <ion-card-content>
+      <ion-list>
+        <ion-item *ngFor="let recompensa of topRecompensas">
+          <ion-label>{{ recompensa.descripcion }} </ion-label>
+        </ion-item>
+      </ion-list>
+    </ion-card-content>
+  </ion-card>
+
+  <!-- Estudiantes Activos -->
+  <ion-card>
+    <ion-card-header>
+      <ion-card-title>Estudiantes Activos</ion-card-title>
+    </ion-card-header>
+    <ion-card-content>
+      <ion-list>
+        <ion-item *ngFor="let estudiante of topEstudiantes">
+          <ion-label>{{ estudiante.nombre_completo }} - {{ estudiante.total }} recompensas reclamadas</ion-label>
+        </ion-item>
+      </ion-list>      
+    </ion-card-content>
+  </ion-card>
+</ion-content>
+<app-tab-bar></app-tab-bar>

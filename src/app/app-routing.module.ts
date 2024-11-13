@@ -91,6 +91,10 @@ const routes: Routes = [
     path: 'perfil-ventas',
     loadChildren: () => import('./perfil-ventas/perfil-ventas.module').then( m => m.PerfilVentasPageModule)
   },
+  {
+    path: 'dashboard-vendedor',
+    loadChildren: () => import('./dashboard-vendedor/dashboard-vendedor.module').then( m => m.DashboardVendedorPageModule)
+  },
 
 
 

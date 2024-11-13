@@ -41,6 +41,10 @@ export class FolderVentasPage {
     this.router.navigate(['/subir-recompensa']);
   }
 
+  verDashboard() {
+    this.router.navigate(['/dashboard-vendedor']);
+  }
+
   async verRecompensas() {
     const modal = await this.modalController.create({
       component: RecompensasModalComponent,
