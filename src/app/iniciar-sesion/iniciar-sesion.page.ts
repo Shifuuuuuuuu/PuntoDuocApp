@@ -78,8 +78,6 @@ export class IniciarSesionPage implements OnInit {
             Swal.fire('Error', 'Primero debes verificar tu correo electrónico.', 'error');
             return;
           }
-
-          console.log('Inicio de sesión como estudiante exitoso:', estudianteData);
           this.authService.setCurrentUserEmail(this.user.email);
           localStorage.setItem('userType', 'estudiante');
           localStorage.setItem('id', estudianteData.id_estudiante || '');
@@ -90,7 +88,6 @@ export class IniciarSesionPage implements OnInit {
               const tokenFCM = await this.estudianteService.solicitarPermisosYObtenerToken(estudianteData.id_estudiante);
               if (tokenFCM) {
                 await this.estudianteService.updateEstudiante({ ...estudianteData, tokenFCM });
-                console.log('Token FCM actualizado:', tokenFCM);
               }
             } catch (error) {
               console.error('No se pudo obtener el token FCM al iniciar sesión:', error);
@@ -174,8 +171,6 @@ export class IniciarSesionPage implements OnInit {
           invitadoData.verificado = true;
           await this.invitadoService.updateInvitado(invitadoData);
         }
-
-        console.log('Verificación de correo actualizada en Firestore.');
       } catch (error) {
         console.error('Error al actualizar la verificación en Firestore:', error);
       }
@@ -190,10 +185,10 @@ export class IniciarSesionPage implements OnInit {
         if (ventasData) {
           console.log('Inicio de sesión como usuario de ventas exitoso:', ventasData);
           this.uventasService.setCurrentUserEmail(email);
-  
+
           // Use nullish coalescing to provide a default string in case id_Uventas is undefined
           const ventasUserId = ventasData.id_Uventas ?? 'default_id'; // 'default_id' is a fallback value
-  
+
           localStorage.setItem('ventasUserId', ventasUserId);
           this.router.navigate(['/folder-ventas']);
         } else {

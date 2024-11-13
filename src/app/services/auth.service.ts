@@ -31,7 +31,6 @@ export class AuthService {
   }
 
   setCurrentUserEmail(email: string): void {
-    console.log('AuthService: Estableciendo currentUserEmail a', email);
     this.currentUserEmailSubject.next(email);
     localStorage.setItem('currentUserEmail', email);
   }
