@@ -34,10 +34,14 @@
       <p *ngIf="event.estaInscrito && !event.verificado" style="color: black;">¡Ya estás inscrito en este evento!</p>
       <p *ngIf="event.enListaEspera" style="color: black">¡Ya estás en la lista de espera!</p>
 
-      <!-- Botón de inscripción y cancelación -->
-      <ion-button [color]="event.estaInscrito ? 'danger' : 'primary'" expand="block" (click)="handleEventButtonClick(event)">
-        {{ event.estaInscrito ? 'Cancelar inscripción' : 'Inscribirse' }}
+      <ion-button
+        [color]="event.enListaEspera ? 'danger' : (event.estaInscrito ? 'danger' : 'primary')"
+        expand="block"
+        (click)="handleEventButtonClick(event)">
+        {{ event.enListaEspera ? 'Salir de la lista de espera' : (event.estaInscrito ? 'Cancelar inscripción' : 'Inscribirse') }}
       </ion-button>
+
+
     </ion-card-content>
   </ion-card>
 </ion-content>

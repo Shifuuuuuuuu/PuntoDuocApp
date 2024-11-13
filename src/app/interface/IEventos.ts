@@ -18,7 +18,7 @@ export interface Evento {
   titulo: string;
   show?: boolean;
   estaInscrito?: boolean;
-  listaEspera?: { userId: string; userName: string; rut: string }[];
+  listaEspera?: { userId: string; userName: string; rut: string, id_Invitado?: string; id_estudiante?: string;  Nombre_completo?: string; Rut?: string; }[];
   enListaEspera?: boolean;
   timestamp: any;
   categoria: string;

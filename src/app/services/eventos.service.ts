@@ -222,29 +222,45 @@ export class EventosService {
     }
   }
 
-// Eliminar usuario de lista de espera (maneja estudiante o invitado)
-async eliminarUsuarioDeListaEspera(eventoId: string, userId: string): Promise<void> {
-  try {
-    const eventoDocRef = doc(this.firestore.firestore, 'Eventos', eventoId);
-    const eventoSnapshot = await getDoc(eventoDocRef);
 
-    if (eventoSnapshot.exists()) {
-      const eventoData = eventoSnapshot.data() as Evento;
+  async eliminarUsuarioDeListaEspera(eventoId: string, userId: string): Promise<void> {
+    try {
+      const eventoDocRef = doc(this.firestore.firestore, 'Eventos', eventoId);
+      const eventoSnapshot = await getDoc(eventoDocRef);
 
-      // Filtrar la lista de espera para excluir el usuario con el ID correspondiente a id_estudiante o id_invitado
-      const listaEsperaActualizada = eventoData.listaEspera?.filter((user) => {
-        const isEstudiante = (user as { id_estudiante?: string }).id_estudiante !== userId;
-        const isInvitado = (user as { id_invitado?: string }).id_invitado !== userId;
-        return isEstudiante && isInvitado;
-      });
+      if (eventoSnapshot.exists()) {
+        const eventoData = eventoSnapshot.data() as Evento;
 
-      await updateDoc(eventoDocRef, { listaEspera: listaEsperaActualizada });
+        // Asegúrate de que listaEspera sea un array vacío si es undefined
+        const listaEspera = eventoData.listaEspera || [];
+
+
+        // Filtrar la lista de espera para excluir al usuario con el ID correspondiente
+        const listaEsperaActualizada = listaEspera.filter((user: any) => {
+          return user.id_estudiante !== userId && user.id_Invitado !== userId; // Excluir al usuario basado en id_Invitado
+        });
+
+        // Verificar si la lista se actualizó correctamente
+        if (listaEsperaActualizada.length !== listaEspera.length) {
+          // Actualizar la lista de espera en Firestore
+          await updateDoc(eventoDocRef, { listaEspera: listaEsperaActualizada });
+
+        } else {
+          console.log('No se encontró el usuario en la lista de espera para eliminar.');
+        }
+      } else {
+        console.log('El documento del evento no existe.');
+      }
+    } catch (error) {
+      console.error('Error al eliminar usuario de la lista de espera o al actualizar Firestore:', error);
+      throw error;
     }
-  } catch (error) {
-    console.error('Error al eliminar usuario de la lista de espera:', error);
-    throw error;
   }
-}
+
+
+
+
+
 
 // Verificar lista de espera y añadir usuario si hay cupos
 async verificarListaEspera(eventoId: string): Promise<void> {
@@ -292,6 +308,7 @@ async verificarListaEspera(eventoId: string): Promise<void> {
 
 async isUserInWaitList(eventoId: string, userId: string): Promise<boolean> {
   try {
+    console.log('Verificando lista de espera para:', userId, 'en evento:', eventoId); // Depuración
     const eventoDocRef = doc(this.firestore.firestore, 'Eventos', eventoId);
     const eventoSnapshot = await getDoc(eventoDocRef);
 
@@ -299,12 +316,15 @@ async isUserInWaitList(eventoId: string, userId: string): Promise<boolean> {
       const eventoData = eventoSnapshot.data() as Evento;
       const listaEspera = eventoData.listaEspera || [];
 
-      // Verificar si el usuario está en la lista de espera como estudiante o invitado
-      return listaEspera.some((user) => {
-        const estudiante = user as { id_estudiante?: string };
-        const invitado = user as { id_invitado?: string };
-        return estudiante.id_estudiante === userId || invitado.id_invitado === userId;
+      console.log('Lista de espera obtenida:', listaEspera); // Depuración
+
+      // Verificar si el usuario está en la lista de espera buscando por id_Invitado
+      const enListaEspera = listaEspera.some((user: any) => {
+        return user.id_Invitado === userId || user.id_estudiante === userId; // Comparar con la propiedad id_Invitado
       });
+
+      console.log('Usuario está en lista de espera:', enListaEspera); // Depuración
+      return enListaEspera;
     }
     return false;
   } catch (error) {
@@ -312,6 +332,9 @@ async isUserInWaitList(eventoId: string, userId: string): Promise<boolean> {
     return false;
   }
 }
+
+
+
 
 
 // Eliminar usuario de inscripciones (maneja estudiante o invitado)
