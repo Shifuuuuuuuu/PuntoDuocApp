@@ -1,6 +1,11 @@
 <ion-tab-bar slot="bottom" class="custom-tab-bar">
-  <!-- Botones de navegación -->
-  <ion-tab-button *ngFor="let page of appPages" (click)="navigateTo(page.url)" [title]="page.title">
-    <ion-icon [name]="page.icon"></ion-icon>
-  </ion-tab-button>
+  <ng-container *ngFor="let page of appPages">
+    <ion-tab-button
+      *ngIf="isEstudiante || (!isEstudiante && !page.isVisibleForEstudiante)"
+      (click)="navigateTo(page.url)"
+      [title]="page.title">
+      <ion-icon [name]="page.icon"></ion-icon>
+    </ion-tab-button>
+  </ng-container>
 </ion-tab-bar>
+

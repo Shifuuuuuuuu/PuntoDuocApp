@@ -93,7 +93,6 @@ export class IniciarSesionPage implements OnInit {
               console.error('No se pudo obtener el token FCM al iniciar sesión:', error);
             }
           }
-
           this.router.navigate(['/folder/Inicio']);
         } else {
           await this.iniciarSesionComoInvitado();
