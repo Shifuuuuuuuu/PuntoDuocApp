@@ -9,7 +9,7 @@ import { IonSelect, MenuController } from '@ionic/angular';
 import { register } from 'swiper/element/bundle';
 import {  addDays, startOfWeek, endOfWeek, startOfMonth, endOfMonth } from 'date-fns';
 import { NotificationService } from '../services/notification.service';
-
+import firebase from 'firebase/compat/app';
 register();
 
 @Component({
@@ -27,6 +27,8 @@ export class FolderPage implements OnInit {
   showFilters: boolean = false;
   folder: string = '';
   userId: string = '';
+  userName: string = '';
+  userEmail: string = '';
   isInvitado: boolean = false;
   loading: boolean = false;
   selectedCategory: string = 'all';
@@ -115,32 +117,36 @@ export class FolderPage implements OnInit {
 
   determinarTipoUsuarioYObtenerId() {
     this.authService.getCurrentUserEmail().subscribe(async emailEstudiante => {
-      if (emailEstudiante) {
-        const estudiante = await this.authService.getEstudianteByEmail(emailEstudiante);
-        if (estudiante) {
-          this.userId = estudiante.id_estudiante!;
-          this.isInvitado = false;
-          this.loadEvents(); // Cargar eventos para el estudiante
-          return;
+        if (emailEstudiante) {
+            const estudiante = await this.authService.getEstudianteByEmail(emailEstudiante);
+            if (estudiante) {
+                this.userId = estudiante.id_estudiante!;
+                this.userName = estudiante.Nombre_completo; // Asigna el nombre completo del estudiante
+                this.userEmail = estudiante.email; // Asigna el email del estudiante
+                this.isInvitado = false;
+                this.loadEvents(); // Cargar eventos para el estudiante
+                return;
+            }
         }
-      }
 
-      // Si no es estudiante, verificar si es invitado
-      this.invitadoService.getCurrentUserEmail().subscribe(async emailInvitado => {
-        if (emailInvitado) {
-          const invitado = await this.invitadoService.getInvitadoByEmail(emailInvitado);
-          if (invitado) {
-            this.userId = invitado.id_Invitado!;
-            this.isInvitado = true;
-            this.loadEvents(); // Cargar eventos para el invitado
-            return;
-          }
-        } else {
-          this.router.navigate(['/iniciar-sesion']);
-        }
-      });
+        // Si no es estudiante, verificar si es invitado
+        this.invitadoService.getCurrentUserEmail().subscribe(async emailInvitado => {
+            if (emailInvitado) {
+                const invitado = await this.invitadoService.getInvitadoByEmail(emailInvitado);
+                if (invitado) {
+                    this.userId = invitado.id_Invitado!;
+                    this.userName = invitado.Nombre_completo; // Asigna el nombre completo del invitado
+                    this.userEmail = invitado.email; // Asigna el email del invitado
+                    this.isInvitado = true;
+                    this.loadEvents(); // Cargar eventos para el invitado
+                    return;
+                }
+            } else {
+                this.router.navigate(['/iniciar-sesion']);
+            }
+        });
     });
-  }
+}
 
 
 
@@ -171,10 +177,15 @@ export class FolderPage implements OnInit {
           const eventData = snapshot.payload.doc.data() as Evento;
           const docId = snapshot.payload.doc.id; // ID del documento de Firestore
 
+          // Verificar si el usuario actual ya ha marcado este evento como favorito
+          const isFavorite = Array.isArray(eventData.favoritos) &&
+          eventData.favoritos.some((fav: any) => fav.id === this.userId);
+
           return {
             ...eventData,
             id_evento: docId, // Utiliza el ID del documento de Firestore
             verificado: false,
+            isFavorite: isFavorite || false,
             show: false,
             estaInscrito: false,
             enListaEspera: false
@@ -206,9 +217,41 @@ export class FolderPage implements OnInit {
     });
   }
 
-  toggleFavorite(event: Evento) {
-    event.isFavorite = !event.isFavorite;
-  }
+  async toggleFavorite(event: Evento) {
+    if (!this.userName || !this.userEmail) {
+        console.error('El nombre o el email del usuario no están definidos.');
+        return; // Salir de la función si los datos del usuario no están completos
+    }
+
+    const userType = this.isInvitado ? 'Invitado' : 'Estudiante';
+    const userFavorite = {
+        id: this.userId,
+        nombre: this.userName,
+        email: this.userEmail,
+        tipoUsuario: userType
+    };
+
+    try {
+        if (!event.isFavorite) {
+            event.isFavorite = true;
+            await this.firestore.collection('Eventos').doc(event.id_evento).update({
+                favoritos: firebase.firestore.FieldValue.arrayUnion(userFavorite)
+            });
+            console.log('Evento añadido a favoritos');
+        } else {
+            event.isFavorite = false;
+            await this.firestore.collection('Eventos').doc(event.id_evento).update({
+                favoritos: firebase.firestore.FieldValue.arrayRemove(userFavorite)
+            });
+            console.log('Evento eliminado de favoritos');
+        }
+    } catch (error) {
+        console.error('Error al actualizar favoritos:', error);
+        event.isFavorite = !event.isFavorite;
+    }
+}
+
+
 
   filterEventsByDate() {
     const today = new Date();
