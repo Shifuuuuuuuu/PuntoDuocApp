@@ -229,9 +229,16 @@ export class EstudianteService {
   }
 
   // Actualizar puntaje de estudiante
-  updateEstudiantePuntaje(id_estudiante: string, puntaje: number) {
-    return this.firestore.collection('Estudiantes').doc(id_estudiante).update({ puntaje });
+  async updateEstudiantePuntaje(id_estudiante: string, nuevoPuntaje: number) {
+    try {
+      await this.firestore.collection('Estudiantes').doc(id_estudiante).update({ puntaje: nuevoPuntaje });
+      console.log('Puntaje actualizado con éxito');
+    } catch (error) {
+      console.error('Error al actualizar el puntaje:', error);
+      throw error;
+    }
   }
+
 
   // Actualizar puntaje con fecha
   async actualizarPuntajeConFecha(estudianteId: string, puntos: number): Promise<void> {

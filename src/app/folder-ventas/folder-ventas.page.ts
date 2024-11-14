@@ -9,7 +9,7 @@ import { RecompensasModalComponent } from '../recompensas-modal-component/recomp
 import { RecompensasReclamadasModalComponent } from '../recompensas-reclamadas-modal-component/recompensas-reclamadas-modal-component.component';
 import { AngularFirestore } from '@angular/fire/compat/firestore';
 import { Recompensa } from '../interface/IRecompensa';
-import { Estudiante } from '../interface/IEstudiante';
+
 
 RecompensasModalComponent
 @Component({
@@ -27,15 +27,31 @@ export class FolderVentasPage {
   constructor(private firestore: AngularFirestore,private router: Router, private ventasAuthService: VentasAuthService,private modalController: ModalController, private recompensaService: RecompensaService) {}
 
   async ngOnInit() {
-    this.recompensas = await this.recompensaService.getRecompensas();
-    this.recompensasReclamadas = this.recompensas
-      .filter(r => Array.isArray(r.estudiantesReclamaron))
-      .map(r => ({
-        ...r,
-        estudiantesReclamaron: r.estudiantesReclamaron.filter((e: { reclamado: boolean; }) => e.reclamado === true)
-      }))
-      .filter(r => r.estudiantesReclamaron.length > 0);
+    try {
+      // Obtener todas las recompensas desde Firestore
+      this.recompensas = await this.recompensaService.getRecompensas();
+
+      // Filtrar recompensas que tienen estudiantes reclamados y que el estado es "activo"
+      this.recompensasReclamadas = this.recompensas
+        .filter(r => {
+          return Array.isArray(r.estudiantesReclamaron);
+        })
+        .map(r => {
+          const estudiantesReclamados = r.estudiantesReclamaron.filter((e: { reclamado: boolean; estado: string }) => {
+            return e.reclamado && e.estado === 'activo';
+          });
+          return {
+            ...r,
+            estudiantesReclamaron: estudiantesReclamados
+          };
+        })
+        .filter(r => r.estudiantesReclamaron.length > 0);
+
+    } catch (error) {
+      this.errorMessage = 'Hubo un problema al cargar las recompensas.';
+    }
   }
+
 
   subirRecompensa() {
     this.router.navigate(['/subir-recompensa']);
@@ -55,7 +71,7 @@ export class FolderVentasPage {
     });
     return await modal.present();
   }
-  
+
   async verRecompensasReclamadas() {
     // Obtener recompensas con nombres de estudiantes
     const recompensasConNombres: Recompensa[] = await Promise.all(
@@ -64,34 +80,34 @@ export class FolderVentasPage {
         const estudiantesConNombres = await Promise.all(
           recompensa.estudiantesReclamaron.map(async (estudiante: { id_estudiante: string | undefined; }) => {
             const estudianteDoc = await this.firestore.collection('Estudiantes').doc(estudiante.id_estudiante).get().toPromise();
-  
-            
+
+
             // Verificar si el documento existe y obtener el nombre
             if (estudianteDoc && estudianteDoc.exists) {
               const estudianteData = estudianteDoc.data() as { nombre_completo: string }; // Usar tipo anónimo aquí
-              
+
               return {
                 id_estudiante: estudiante.id_estudiante,
                 nombre_completo: estudianteData.nombre_completo,
-                
+
               };
             } else {
               return {
                 id_estudiante: estudiante.id_estudiante,
                 nombre_completo: 'No encontrado', // Valor predeterminado si no se encuentra
               };
-              
+
             }
           })
         );
-  
+
         return {
           ...recompensa,
           estudiantesReclamaron: estudiantesConNombres, // Mantener el array de estudiantes con sus nombres
         };
       })
     );
-  
+
     // Crear el modal y pasar las recompensas con los nombres de estudiantes
     const modal = await this.modalController.create({
       component: RecompensasReclamadasModalComponent,
@@ -102,11 +118,12 @@ export class FolderVentasPage {
     });
     return await modal.present();
   }
-  
-  
-  
-  
-  
+
+  calcularFechaCaducidad(fechaReclamacion: string): string {
+    const date = new Date(fechaReclamacion);
+    date.setFullYear(date.getFullYear() + 1);
+    return date.toISOString().split('T')[0]; // Formato YYYY-MM-DD
+  }
 
 
 
@@ -139,7 +156,7 @@ export class FolderVentasPage {
         console.error('Error al escanear el código:', e);
         throw e;
     }
-    
+
 }
 
 }

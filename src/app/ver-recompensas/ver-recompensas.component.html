@@ -27,7 +27,7 @@
     <ion-item *ngFor="let item of recompensasConQR" style="--background: transparent;">
       <ion-label style="color: black;">
         <h2>{{ item.recompensa.descripcion }}</h2>
-        <p>Fecha de creación: {{ item.recompensa.fecha_creacion }}</p>
+        <p>Fecha de caducidad: {{ item.fechaCaducidad }}</p>
       </ion-label>
       <ion-button (click)="verQRConSweetAlert(item.qrCode)">Ver QR</ion-button>
     </ion-item>

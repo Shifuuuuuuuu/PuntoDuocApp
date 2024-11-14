@@ -96,8 +96,8 @@ import { AngularFirestore } from '@angular/fire/compat/firestore';
         --width: 90%; /* Mantener ancho al 90% */
         --max-width: 600px; /* Máximo ancho del modal */
         --max-height: 80%; /* Máxima altura del modal */
-        --border-radius: 16px; 
-        --background: white; 
+        --border-radius: 16px;
+        --background: white;
         margin: auto; /* Centrar el modal */
       }
 
