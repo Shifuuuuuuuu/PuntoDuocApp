@@ -10,6 +10,7 @@ import { register } from 'swiper/element/bundle';
 import {  addDays, startOfWeek, endOfWeek, startOfMonth, endOfMonth } from 'date-fns';
 import { NotificationService } from '../services/notification.service';
 import firebase from 'firebase/compat/app';
+import { MessagingService } from '../services/messaging.service';
 register();
 
 @Component({
@@ -41,6 +42,7 @@ export class FolderPage implements OnInit {
   sedeFilteredEvents: Evento[] = [];
   recentEvents: Evento[] = [];
   unreadNotificationsCount: number = 0;
+  eventsTerminados: Evento[] = [];
   categories = [
     { name: 'Administración y Negocios', image: 'assets/img/Administracion.png' },
     { name: 'Comunicación', image: 'assets/img/Comunicacion.png' },
@@ -75,7 +77,8 @@ export class FolderPage implements OnInit {
     private authService: AuthService,
     private invitadoService: InvitadoService,
     private menu: MenuController,
-    private notificationService: NotificationService
+    private notificationService: NotificationService,
+    private messagingService: MessagingService
   ) {}
   getPopularEvents() {
     // Filtrar eventos con más de 20 inscritos y ordenar de mayor a menor cantidad de inscritos
@@ -92,6 +95,10 @@ export class FolderPage implements OnInit {
 
 
   ngOnInit() {
+    this.verificarEventosTerminados();
+    setInterval(() => {
+      this.verificarEventosTerminados();
+    }, 3600000);
     // Mantén la lógica existente
     this.folder = this.activatedRoute.snapshot.paramMap.get('id') as string;
 
@@ -172,21 +179,16 @@ export class FolderPage implements OnInit {
       (snapshots) => {
         this.loading = false;
 
-        if (snapshots.length === 0) {
-        }
-
-        // Mapear los snapshots para incluir el `id` del documento
         this.allEvents = snapshots.map(snapshot => {
           const eventData = snapshot.payload.doc.data() as Evento;
-          const docId = snapshot.payload.doc.id; // ID del documento de Firestore
+          const docId = snapshot.payload.doc.id;
 
-          // Verificar si el usuario actual ya ha marcado este evento como favorito
           const isFavorite = Array.isArray(eventData.favoritos) &&
           eventData.favoritos.some((fav: any) => fav.id === this.userId);
 
           return {
             ...eventData,
-            id_evento: docId, // Utiliza el ID del documento de Firestore
+            id_evento: docId,
             verificado: false,
             isFavorite: isFavorite || false,
             show: false,
@@ -195,8 +197,11 @@ export class FolderPage implements OnInit {
           };
         });
 
+        // Filtrar eventos terminados
         this.filteredEvents = [...this.allEvents];
         this.events = [...this.allEvents];
+        this.eventsTerminados = this.allEvents.filter(event => event.estado === 'Terminado');
+
         this.filterEvents();
         this.filterEventsByDate();
         this.getPopularEvents();
@@ -368,5 +373,110 @@ export class FolderPage implements OnInit {
     if (fecha.seconds) return new Date(fecha.seconds * 1000);
     return new Date();
   }
+  async verificarEventosTerminados() {
+    const now = new Date();
 
+    // Obtener todos los eventos de Firestore
+    this.firestore.collection<Evento>('Eventos').get().toPromise().then(snapshot => {
+      if (snapshot && !snapshot.empty) {
+        snapshot.docs.forEach(async doc => {
+          const evento = doc.data() as Evento;
+          evento.id_evento = doc.id;
+
+          if (evento.fecha_termino && this.convertToDate(evento.fecha_termino) <= now && evento.estado !== 'Terminado') {
+            console.log(`El evento "${evento.titulo}" ha terminado.`);
+
+            // Actualizar el estado del evento a "Terminado"
+            await this.firestore.collection('Eventos').doc(evento.id_evento).update({ estado: 'Terminado' });
+
+            // Enviar notificación por Cloud Messaging y agregar a Firestore
+            if (evento.Inscripciones && evento.Inscripciones.length > 0) {
+              for (const inscrito of evento.Inscripciones) {
+                const userId = inscrito.id_estudiante || inscrito.id_invitado;
+
+                if (inscrito.verificado) {
+                  // Notificación para usuarios verificados
+                  const notificacionVerificado = {
+                    id: evento.id_evento,
+                    titulo: `¿Disfrutaste el evento "${evento.titulo}"?`,
+                    descripcion: 'Deja tu comentario y calificación en el evento.',
+                    imagen: evento.imagen || '', // Agrega la imagen del evento
+                    url: `/event-details/${evento.id_evento}`,
+                    fecha: new Date(),
+                    usuarioIds: [{ userId, leido: false }]
+                  };
+                  await this.enviarNotificacion(notificacionVerificado);
+                }
+              }
+            }
+          }
+        });
+      } else {
+        console.log('No hay eventos en la colección.');
+      }
+    }).catch(error => {
+      console.error('Error al verificar eventos terminados:', error);
+    });
+  }
+
+  async restarPuntosYNotificar(evento: Evento) {
+    if (evento.Inscripciones && evento.Inscripciones.length > 0) {
+      const inscritosSinVerificar = evento.Inscripciones.filter(inscrito => !inscrito.verificado);
+      for (const inscrito of inscritosSinVerificar) {
+        const userId = inscrito.id_estudiante || inscrito.id_invitado;
+
+        if (userId && inscrito.id_estudiante) {
+          // Restar puntos al estudiante
+          const estudianteDocRef = this.firestore.collection('Estudiantes').doc(userId);
+          const estudianteDoc = await estudianteDocRef.get().toPromise();
+          if (estudianteDoc && estudianteDoc.exists) {
+            const estudianteData = estudianteDoc.data() as { puntaje?: number };
+            const nuevoPuntaje = (estudianteData.puntaje || 0) - 200;
+
+            await estudianteDocRef.update({ puntaje: nuevoPuntaje });
+            console.log(`Puntaje actualizado a ${nuevoPuntaje} para el estudiante ${userId}`);
+
+            // Notificación al estudiante
+            const notificacionEstudiante = {
+              id: evento.id_evento,
+              titulo: `Puntos restados por no verificar asistencia al evento "${evento.titulo}"`,
+              descripcion: 'No verificaste tu asistencia y se te ha restado 200 puntos.',
+              imagen: evento.imagen || '', // Agrega la imagen del evento
+              fecha: new Date(),
+              usuarioIds: [{ userId, leido: false }]
+            };
+            await this.enviarNotificacion(notificacionEstudiante);
+          } else {
+            console.log(`No se encontró el documento del estudiante ${userId}`);
+          }
+        } else if (userId && inscrito.id_invitado) {
+          // Notificación al invitado
+          const notificacionInvitado = {
+            id: evento.id_evento,
+            titulo: `Te perdiste el evento "${evento.titulo}"`,
+            descripcion: 'No pudiste asistir al evento. Esperamos verte en futuros eventos.',
+            imagen: evento.imagen || '', // Agrega la imagen del evento
+            fecha: new Date(),
+            usuarioIds: [{ userId, leido: false }]
+          };
+          await this.enviarNotificacion(notificacionInvitado);
+        }
+      }
+    } else {
+      console.log(`El evento "${evento.titulo}" no tiene inscripciones para verificar.`);
+    }
+  }
+
+  async enviarNotificacion(notificationData: any) {
+    try {
+      // Agregar la notificación a Firestore
+      await this.firestore.collection('Notificaciones').add(notificationData);
+
+      // Enviar notificación por Cloud Messaging
+      await this.messagingService.sendNotification(notificationData);
+      console.log(`Notificación enviada a los usuarios del evento "${notificationData.titulo}"`);
+    } catch (error) {
+      console.error('Error al enviar la notificación:', error);
+    }
+  }
 }

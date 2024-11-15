@@ -10,6 +10,7 @@ import { EstudianteService } from '../services/estudiante.service';
 import { Evento } from '../interface/IEventos';
 import { firstValueFrom } from 'rxjs';
 import { NotificationService } from '../services/notification.service';
+import { Comentario } from '../interface/IComentario';
 
 @Component({
   selector: 'app-event-details',
@@ -19,10 +20,13 @@ import { NotificationService } from '../services/notification.service';
 export class EventDetailsPage implements OnInit {
   event: Evento | undefined;
   userId: string = '';
+  userName: string = '';
   isInvitado: boolean = false;
   loading: boolean = false;
   unreadNotificationsCount: number = 0;
-
+  comentarios: Comentario[] = []; // Si no está ya definida, añádela
+  comentario: string = ''; // Añadir propiedad para el texto del comentario
+  calificacion: number = 0; // Añadir propiedad para la calificación
   constructor(
     private route: ActivatedRoute,
     private firestore: AngularFirestore,
@@ -39,8 +43,8 @@ export class EventDetailsPage implements OnInit {
     if (eventId) {
       await this.identificarUsuario();
       await this.loadEventDetails(eventId);
+      this.loadComentarios(eventId);
     }
-    // Suscríbete al observable para actualizar el contador de notificaciones en la interfaz
     this.notificationService.unreadCount$.subscribe((count) => {
       this.unreadNotificationsCount = count;
     });
@@ -53,6 +57,7 @@ export class EventDetailsPage implements OnInit {
         const invitado = await this.invitadoService.getInvitadoByEmail(emailInvitado);
         if (invitado) {
           this.userId = invitado.id_Invitado!;
+          this.userName = invitado.Nombre_completo;
           this.isInvitado = true;
           return;
         }
@@ -63,6 +68,7 @@ export class EventDetailsPage implements OnInit {
         const estudiante = await this.estudianteService.getEstudianteByEmail(emailEstudiante);
         if (estudiante) {
           this.userId = estudiante.id_estudiante!;
+          this.userName = estudiante.Nombre_completo;
           this.isInvitado = false;
         }
       }
@@ -71,36 +77,27 @@ export class EventDetailsPage implements OnInit {
     }
   }
 
-
   async loadEventDetails(eventId: string) {
-
     this.loading = true;
 
-    // Usa el `id` del documento directamente sin depender de un campo `id_evento`
     this.firestore.collection<Evento>('Eventos').doc(eventId).snapshotChanges().subscribe(
       async (snapshot) => {
         if (snapshot.payload.exists) {
-          const documentId = snapshot.payload.id; // ID del documento de Firestore
+          const documentId = snapshot.payload.id;
           const eventData = snapshot.payload.data() as Evento;
 
-
-
-          // Crea el objeto `event` sin depender del campo `id_evento` dentro del documento
           this.event = {
             ...eventData,
-            id_evento: documentId, // Aquí el `id` es el del documento de Firestore
-            verificado: false // Agrega cualquier otra propiedad necesaria
+            id_evento: documentId,
+            verificado: false
           };
 
-
-          if (this.userId && documentId) {
-            await this.actualizarEstadoInscripcion();
-          }
+          this.loading = false;
+          this.cdr.detectChanges();
         } else {
           console.log('El evento con el ID especificado no existe.');
+          this.loading = false;
         }
-
-        this.loading = false;
       },
       (error) => {
         console.error('Error al obtener detalles del evento:', error);
@@ -108,7 +105,65 @@ export class EventDetailsPage implements OnInit {
       }
     );
   }
+  async guardarComentario() {
+    if (!this.comentario.trim()) {
+      Swal.fire('Error', 'El comentario no puede estar vacío.', 'error');
+      return;
+    }
 
+    try {
+      const comentarioData = {
+        id_comentario: this.firestore.createId(),
+        id_evento: this.event?.id_evento || '',
+        titulo_evento: this.event?.titulo || '',
+        id_usuario: this.userId,
+        nombre_completo: this.userName,
+        descripcion: this.comentario,
+        fecha: new Date(),
+        calificacion: this.calificacion
+      };
+
+      await this.firestore.collection('Comentarios').doc(comentarioData.id_comentario).set(comentarioData);
+      this.comentario = ''; // Limpia el campo de comentario
+      this.calificacion = 0; // Limpia la calificación
+      Swal.fire('Éxito', 'Comentario guardado exitosamente.', 'success');
+      this.loadComentarios(this.event?.id_evento || '');
+    } catch (error) {
+      console.error('Error al guardar el comentario:', error);
+      Swal.fire('Error', 'No se pudo guardar el comentario. Inténtalo más tarde.', 'error');
+    }
+  }
+  async loadComentarios(eventId: string) {
+    this.firestore.collection<Comentario>('Comentarios', ref => ref.where('id_evento', '==', eventId))
+      .valueChanges().subscribe(comentarios => {
+        this.comentarios = comentarios;
+      });
+  }
+  async guardarCalificacion() {
+    if (this.calificacion < 1 || this.calificacion > 5) {
+      Swal.fire('Error', 'La calificación debe estar entre 1 y 5.', 'error');
+      return;
+    }
+
+    try {
+      const calificacionData = {
+        id_puntacion: this.firestore.createId(),
+        id_evento: this.event?.id_evento || '',
+        titulo_evento: this.event?.titulo || '',
+        id_usuario: this.userId,
+        nombre_completo: this.userName,
+        calificacion: this.calificacion,
+        fecha: new Date()
+      };
+
+      await this.firestore.collection('Puntaciones').doc(calificacionData.id_puntacion).set(calificacionData);
+      this.calificacion = 0; // Limpia la calificación
+      Swal.fire('Éxito', 'Calificación guardada exitosamente.', 'success');
+    } catch (error) {
+      console.error('Error al guardar la calificación:', error);
+      Swal.fire('Error', 'No se pudo guardar la calificación. Inténtalo más tarde.', 'error');
+    }
+  }
   async actualizarEstadoInscripcion() {
     if (!this.event) return;
 

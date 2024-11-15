@@ -3,11 +3,10 @@
     <ion-buttons slot="start">
       <ion-back-button defaultHref="/events-category/:category" style="color: white;"></ion-back-button>
     </ion-buttons>
-    <ion-title style="color:  white">Detalle del evento</ion-title>
+    <ion-title style="color: white">Detalle del evento</ion-title>
     <ion-buttons slot="end">
       <ion-button [routerLink]="['/notifications']" style="position: relative;">
         <ion-icon slot="icon-only" name="notifications-outline" style="color: white;"></ion-icon>
-        <!-- Badge para mostrar el número de notificaciones -->
         <ion-badge *ngIf="unreadNotificationsCount > 0" color="danger" style="position: absolute; top: -5px; right: -5px;">
           {{ unreadNotificationsCount }}
         </ion-badge>
@@ -17,30 +16,79 @@
 </ion-header>
 
 <ion-content *ngIf="event" [fullscreen]="true" class="content-center">
-  <ion-card style="background-color:  white;">
+  <ion-card style="background-color: white;">
     <img [src]="event.imagen" alt="Imagen del evento" />
     <ion-card-header>
       <ion-card-title style="color: black;">{{ event.titulo }}</ion-card-title>
       <p style="color: black;">Lugar: {{ event.lugar }}</p>
-      <p style="color: black;">Fecha: {{ transformarFecha(event.fecha) | date: 'dd/MM/yyyy' }}</p>
-    </ion-card-header>
 
+      <!-- Mostrar fecha de término si el evento está terminado -->
+      <p *ngIf="event.estado === 'Terminado'" style="color: black;">
+        Este evento ha finalizado el {{ transformarFecha(event.fecha_termino) | date: 'dd/MM/yyyy' }}
+      </p>
+      <!-- Mostrar fecha de inicio si el evento no ha terminado -->
+      <p *ngIf="event.estado !== 'Terminado'" style="color: black;">
+        Fecha: {{ transformarFecha(event.fecha) | date: 'dd/MM/yyyy' }}
+      </p>
+    </ion-card-header>
     <ion-card-content>
       <p style="color: black;">{{ event.descripcion }}</p>
-      <p style="color: black;">Cupos disponibles: {{ event.Cupos }}</p>
+
+      <!-- Ocultar cupos si el evento ha terminado -->
+      <p *ngIf="event.estado !== 'Terminado'" style="color: black;">Cupos disponibles: {{ event.Cupos }}</p>
 
       <!-- Estado de inscripción y verificación -->
       <p *ngIf="event.estaInscrito && event.verificado" style="color: black;">¡Estás verificado en este evento!</p>
       <p *ngIf="event.estaInscrito && !event.verificado" style="color: black;">¡Ya estás inscrito en este evento!</p>
-      <p *ngIf="event.enListaEspera" style="color: black">¡Ya estás en la lista de espera!</p>
+      <p *ngIf="event.enListaEspera" style="color: black;">¡Ya estás en la lista de espera!</p>
 
+      <!-- Ocultar el botón si el evento está terminado -->
       <ion-button
+        *ngIf="event.estado !== 'Terminado'"
         [color]="event.enListaEspera ? 'danger' : (event.estaInscrito ? 'danger' : 'primary')"
         expand="block"
         (click)="handleEventButtonClick(event)">
         {{ event.enListaEspera ? 'Salir de la lista de espera' : (event.estaInscrito ? 'Cancelar inscripción' : 'Inscribirse') }}
       </ion-button>
+
+      <!-- Formulario de comentarios y calificaciones (solo si el evento está terminado) -->
+      <div *ngIf="event.estado === 'Terminado'" style="margin-top: 20px;">
+        <!-- Selector de calificación con estrellas -->
+        <div class="stars" style="margin-bottom: 10px;">
+          <ion-icon *ngFor="let star of [1, 2, 3, 4, 5]"
+                    name="star"
+                    [color]="calificacion >= star ? 'warning' : 'medium'"
+                    (click)="calificacion = star"></ion-icon>
+        </div>
+        <div style="display: flex; align-items: center;">
+          <ion-textarea [(ngModel)]="comentario" placeholder="Escribe tu comentario" style="flex: 1;"></ion-textarea>
+          <ion-button fill="clear" (click)="guardarComentario()">
+            <ion-icon name="send" color="primary"></ion-icon>
+          </ion-button>
+        </div>
+      </div>
+
+      <!-- Mostrar comentarios -->
+      <ion-list style="background-color: white;" *ngIf="comentarios.length > 0">
+        <ion-item style="--background: transparent; --border-width: 0px; --inner-border-width: 0px;" *ngFor="let comentario of comentarios">
+          <ion-label>
+            <h3 style="color: black;">{{ comentario.nombre_completo }}</h3>
+            <p>
+              <ion-icon *ngFor="let star of [1, 2, 3, 4, 5]"
+                        name="star"
+                        [color]="comentario.calificacion >= star ? 'warning' : 'medium'"></ion-icon>
+            </p>
+            <p style="color: black;">{{ comentario.descripcion }}</p>
+          </ion-label>
+        </ion-item>
+      </ion-list>
+
+      <!-- Mostrar mensaje "No hay comentarios" solo si el evento ha terminado -->
+      <ion-text *ngIf="event.estado === 'Terminado' && comentarios.length === 0" style="color: gray;">
+        No hay comentarios aún.
+      </ion-text>
     </ion-card-content>
   </ion-card>
 </ion-content>
+
 <app-tab-usuario></app-tab-usuario>

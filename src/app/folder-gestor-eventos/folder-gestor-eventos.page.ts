@@ -100,7 +100,7 @@ export class FolderGestorEventosPage implements OnInit {
       const notificationData = {
         id: eventoId,
         titulo: `El evento "${evento.titulo}" ha comenzado`,
-        descripcion: 'Recuerda verificar tu asistencia antes de 10 minutos para evitar penalización.',
+        descripcion: 'Recuerda acreditarte, para evitar penalización.',
         imagen: evento.imagen || '',
         url: `/perfil-usuario`,
         fecha: new Date()
@@ -108,9 +108,7 @@ export class FolderGestorEventosPage implements OnInit {
 
       await this.enviarNotificacion(notificationData);
 
-      setTimeout(() => {
-        this.verificarAsistencia(evento);
-      }, 600000);
+
 
       this.cargarEventos();
     } catch (error) {
@@ -125,20 +123,7 @@ export class FolderGestorEventosPage implements OnInit {
   }
 
 
-  verificarAsistencia(evento: Evento) {
-    this.firestore.collection('Eventos').doc(evento.id_evento).get().toPromise().then((doc) => {
-      if (doc && doc.exists) {
-        const data = doc.data() as { verificado?: boolean };
-        if (data && !data.verificado) {
-          this.restarPuntos(evento);
-        }
-      } else {
-        console.error('El documento no existe o es inválido.');
-      }
-    }).catch(error => {
-      console.error('Error al verificar asistencia:', error);
-    });
-  }
+
 
 
   // Verificar si el evento está en curso
@@ -169,7 +154,6 @@ export class FolderGestorEventosPage implements OnInit {
         titulo: `El evento "${evento.titulo}" ha sido cancelado`,
         descripcion: 'El evento ha sido cancelado por el organizador.',
         imagen: evento.imagen || '',
-        url: `/detalles-evento/${evento.id_evento}`,
         fecha: new Date()
       };
 
@@ -232,32 +216,7 @@ export class FolderGestorEventosPage implements OnInit {
   }
 
 
-  restarPuntos(evento: Evento) {
-    this.firestore.collection('Estudiantes').ref.where('eventosInscritos', 'array-contains', evento.id_evento)
-      .get().then(snapshot => {
-        snapshot.forEach(doc => {
-          const estudianteData = doc.data() as { puntaje?: number };
-          const nuevoPuntaje = (estudianteData.puntaje || 0) - 200;
 
-          this.firestore.collection('Estudiantes').doc(doc.id).update({ puntaje: nuevoPuntaje }).then(() => {
-            console.log(`Puntaje actualizado: ${nuevoPuntaje} para el estudiante ${doc.id}`);
-
-            const notificacionVerificacion = {
-              id: evento.id_evento,
-              titulo: `Puntos restados por no verificar asistencia al evento "${evento.titulo}"`,
-              descripcion: 'No verificaste tu asistencia y se te ha restado 200 puntos.',
-              fecha: new Date()
-            };
-
-            this.enviarNotificacion(notificacionVerificacion);
-          }).catch(error => {
-            console.error('Error al actualizar puntaje:', error);
-          });
-        });
-      }).catch(error => {
-        console.error('Error al buscar estudiantes:', error);
-      });
-  }
 
   calcularFechaTermino(): Date {
     const fechaActual = new Date();

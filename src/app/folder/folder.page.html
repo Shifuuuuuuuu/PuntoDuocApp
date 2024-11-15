@@ -230,7 +230,36 @@
     <ion-spinner name="crescent" style="color: black"></ion-spinner>
     <p style="color: black">Cargando...</p>
   </div>
+  <ion-text color="dark">
+    <h2 style="color: black;">Eventos Terminados</h2>
+  </ion-text>
 
+  <ion-grid *ngIf="eventsTerminados.length > 0">
+    <ion-row>
+      <ion-col size="12" size-md="6" *ngFor="let event of eventsTerminados" (click)="goToEventDetails(event)">
+        <ion-card class="event-card">
+          <img alt="Imagen del evento" [src]="event.imagen" class="event-image" />
+          <!-- Mostrar la fecha de término -->
+          <p style="color: black; font-weight: bold; padding: 0 16px;">
+            {{ transformarFecha(event.fecha_termino) | date: 'EEEE, d \'de\' MMMM \'de\' yyyy, HH:mm' }}
+          </p>
+
+          <ion-card-header>
+            <ion-card-title class="centered-text" style="color: black;">
+              {{ event.titulo }}
+            </ion-card-title>
+          </ion-card-header>
+          <ion-card-content class="centered-content">
+            <p style="color: black;">El evento ha terminado.</p>
+          </ion-card-content>
+        </ion-card>
+      </ion-col>
+    </ion-row>
+  </ion-grid>
+
+  <ion-text *ngIf="eventsTerminados.length === 0" style="color: black;">
+    No hay eventos terminados.
+  </ion-text>
 
 </ion-content>
 
