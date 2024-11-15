@@ -6,6 +6,7 @@ import { Evento } from '../interface/IEventos';
 import { MenuController } from '@ionic/angular';
 import Swal from 'sweetalert2';
 import { AngularFirestore, DocumentChangeAction } from '@angular/fire/compat/firestore';
+import { MessagingService } from '../services/messaging.service';
 
 
 @Component({
@@ -24,7 +25,8 @@ export class FolderGestorEventosPage implements OnInit {
     private eventosService: EventosGestorService,
     private router: Router,
     private menu: MenuController,
-    private firestore: AngularFirestore
+    private firestore: AngularFirestore,
+    private messagingService: MessagingService
   ) {}
 
   ionViewWillEnter() {
@@ -40,15 +42,14 @@ export class FolderGestorEventosPage implements OnInit {
     this.eventos$ = this.firestore.collection<Evento>('Eventos').snapshotChanges().pipe(
       map(snapshots => snapshots.map(snapshot => {
         const eventData = snapshot.payload.doc.data() as Evento;
-        const docId = snapshot.payload.doc.id; // ID del documento de Firestore
+        const docId = snapshot.payload.doc.id;
 
-        // Asegúrate de usar la propiedad correcta para la fecha
-        eventData.fechaInicio = this.transformarFecha(eventData.fecha); // Ajusta 'fecha' si es necesario
+        eventData.fechaInicio = this.transformarFecha(eventData.fecha);
         eventData.fechaFin = this.transformarFecha(eventData.fecha_termino);
 
         return {
           ...eventData,
-          id_evento: docId, // Utiliza el ID del documento de Firestore
+          id_evento: docId,
           verificado: false,
           show: false,
           estaInscrito: false,
@@ -57,12 +58,10 @@ export class FolderGestorEventosPage implements OnInit {
       }))
     );
 
-    // Filtrar eventos próximos
     this.eventosProximos$ = this.eventos$.pipe(
       map(eventos => eventos.filter(evento => evento.fechaInicio && evento.fechaInicio > new Date()))
     );
 
-    // Filtrar eventos pasados
     this.eventosPasados$ = this.eventos$.pipe(
       map(eventos => eventos.filter(evento => evento.fechaInicio && evento.fechaInicio <= new Date()))
     );
@@ -86,10 +85,10 @@ export class FolderGestorEventosPage implements OnInit {
     return fechaInicio ? ahora >= fechaInicio && estado !== 'en_curso' && estado !== 'cancelado' : false;
   }
 
-  comenzarEvento(evento: Evento) {
-    const eventoId = evento.id_evento; // Usa el ID del documento, que ahora se llama `id_evento`
-
-    this.eventosService.actualizarEvento(eventoId, { estado: 'en_curso' }).then(() => {
+  async comenzarEvento(evento: Evento) {
+    const eventoId = evento.id_evento;
+    try {
+      await this.eventosService.actualizarEvento(eventoId, { estado: 'en_curso' });
       console.log('Evento comenzado.');
       Swal.fire({
         icon: 'success',
@@ -97,12 +96,50 @@ export class FolderGestorEventosPage implements OnInit {
         text: 'El evento ha comenzado. Ahora puedes ver el detalle del evento.',
         confirmButtonText: 'OK'
       });
-      this.cargarEventos(); // Recargar la lista de eventos para reflejar el cambio de estado
+
+      const notificationData = {
+        id: eventoId,
+        titulo: `El evento "${evento.titulo}" ha comenzado`,
+        descripcion: 'Recuerda verificar tu asistencia antes de 10 minutos para evitar penalización.',
+        imagen: evento.imagen || '',
+        url: `/perfil-usuario`,
+        fecha: new Date()
+      };
+
+      await this.enviarNotificacion(notificationData);
+
+      setTimeout(() => {
+        this.verificarAsistencia(evento);
+      }, 600000);
+
+      this.cargarEventos();
+    } catch (error) {
+      if (error instanceof Error) {
+        console.error('Error al comenzar el evento:', error.message);
+        Swal.fire('Error', 'No se pudo iniciar el evento: ' + error.message, 'error');
+      } else {
+        console.error('Error inesperado al comenzar el evento:', error);
+        Swal.fire('Error', 'Ocurrió un error inesperado.', 'error');
+      }
+    }
+  }
+
+
+  verificarAsistencia(evento: Evento) {
+    this.firestore.collection('Eventos').doc(evento.id_evento).get().toPromise().then((doc) => {
+      if (doc && doc.exists) {
+        const data = doc.data() as { verificado?: boolean };
+        if (data && !data.verificado) {
+          this.restarPuntos(evento);
+        }
+      } else {
+        console.error('El documento no existe o es inválido.');
+      }
     }).catch(error => {
-      console.error('Error al comenzar el evento:', error);
-      Swal.fire('Error', 'No se pudo iniciar el evento: ' + error.message, 'error');
+      console.error('Error al verificar asistencia:', error);
     });
   }
+
 
   // Verificar si el evento está en curso
   eventoEnCurso(evento: Evento): boolean {
@@ -116,19 +153,33 @@ export class FolderGestorEventosPage implements OnInit {
     }
   }
 
-  // Cancelar evento y mostrar alerta
-  cancelarEvento(eventoId: string) {
-    this.eventosService.actualizarEvento(eventoId, { estado: 'cancelado' }).then(() => {
-      console.log('Evento cancelado.');
+  async cancelarEvento(evento: Evento) {
+    try {
+      await this.eventosService.actualizarEvento(evento.id_evento, { estado: 'cancelado' });
+      console.log(`Evento "${evento.titulo}" cancelado.`);
       Swal.fire({
         icon: 'error',
         title: 'Evento cancelado',
-        text: 'El evento ha sido cancelado exitosamente.',
+        text: `El evento "${evento.titulo}" ha sido cancelado exitosamente.`,
         confirmButtonText: 'OK'
       });
-      this.cargarEventos(); // Recargar la lista de eventos para reflejar el cambio de estado
-    });
+
+      const notificationData = {
+        id: evento.id_evento,
+        titulo: `El evento "${evento.titulo}" ha sido cancelado`,
+        descripcion: 'El evento ha sido cancelado por el organizador.',
+        imagen: evento.imagen || '',
+        url: `/detalles-evento/${evento.id_evento}`,
+        fecha: new Date()
+      };
+
+      await this.enviarNotificacion(notificationData);
+      this.cargarEventos(); // Recargar eventos después de la cancelación
+    } catch (error) {
+      console.error('Error al cancelar el evento:', error);
+    }
   }
+
 
   eliminarEvento(eventoId: string) {
     Swal.fire({
@@ -149,4 +200,70 @@ export class FolderGestorEventosPage implements OnInit {
       }
     });
   }
+  async enviarNotificacion(notification: any) {
+    // Obtén el evento desde Firestore para acceder a la lista de inscritos
+    const eventoRef = await this.firestore.collection('Eventos').doc(notification.id).get().toPromise();
+    if (eventoRef && eventoRef.exists) {
+      const eventoData = eventoRef.data() as Evento;
+      if (eventoData && eventoData.Inscripciones) {
+        const usuariosNotificados = new Set<string>();
+
+        for (const inscrito of eventoData.Inscripciones) {
+          const usuarioId = inscrito.id_estudiante || inscrito.id_invitado;
+          if (usuarioId && !usuariosNotificados.has(usuarioId)) {
+            usuariosNotificados.add(usuarioId);
+
+            const personalizedNotification = {
+              ...notification,
+              usuarioIds: [{ userId: usuarioId, leido: false }], // Guarda el ID y el estado de lectura
+              fechaTermino: this.calcularFechaTermino()
+            };
+
+            await this.messagingService.sendNotification(personalizedNotification);
+            console.log(`Notificación enviada a usuario ${usuarioId}`);
+          }
+        }
+      } else {
+        console.log('No hay usuarios inscritos para este evento.');
+      }
+    } else {
+      console.error('El evento no existe o no se pudo obtener la información.');
+    }
+  }
+
+
+  restarPuntos(evento: Evento) {
+    this.firestore.collection('Estudiantes').ref.where('eventosInscritos', 'array-contains', evento.id_evento)
+      .get().then(snapshot => {
+        snapshot.forEach(doc => {
+          const estudianteData = doc.data() as { puntaje?: number };
+          const nuevoPuntaje = (estudianteData.puntaje || 0) - 200;
+
+          this.firestore.collection('Estudiantes').doc(doc.id).update({ puntaje: nuevoPuntaje }).then(() => {
+            console.log(`Puntaje actualizado: ${nuevoPuntaje} para el estudiante ${doc.id}`);
+
+            const notificacionVerificacion = {
+              id: evento.id_evento,
+              titulo: `Puntos restados por no verificar asistencia al evento "${evento.titulo}"`,
+              descripcion: 'No verificaste tu asistencia y se te ha restado 200 puntos.',
+              fecha: new Date()
+            };
+
+            this.enviarNotificacion(notificacionVerificacion);
+          }).catch(error => {
+            console.error('Error al actualizar puntaje:', error);
+          });
+        });
+      }).catch(error => {
+        console.error('Error al buscar estudiantes:', error);
+      });
+  }
+
+  calcularFechaTermino(): Date {
+    const fechaActual = new Date();
+    fechaActual.setDate(fechaActual.getDate() + 7); // Ejemplo: agrega 7 días a la fecha actual
+    return fechaActual;
+  }
+
 }
+

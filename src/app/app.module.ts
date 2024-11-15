@@ -19,6 +19,7 @@ import { RecompensasReclamadasModalComponent } from './recompensas-reclamadas-mo
 import { registerLocaleData } from '@angular/common';
 import localeEs from '@angular/common/locales/es';
 import { AngularFireMessagingModule } from '@angular/fire/compat/messaging';
+import { AuthService } from './services/auth.service';
 
 
 registerLocaleData(localeEs);
@@ -29,7 +30,7 @@ registerLocaleData(localeEs);
     RecompensasReclamadasModalComponent],
   imports: [AngularFireModule.initializeApp(environment.firebaseConfig),
     AngularFireAuthModule ,BrowserModule, IonicModule.forRoot(), AppRoutingModule,FormsModule,AngularFirestoreModule,TabBarModule,TabBarAdminModule,TabUsuarioModule,AngularFireMessagingModule ],
-  providers: [{ provide: RouteReuseStrategy, useClass: IonicRouteStrategy },{ provide: LOCALE_ID, useValue: 'es' },InvitadoService,QRCodeModule ],
+  providers: [{ provide: RouteReuseStrategy, useClass: IonicRouteStrategy },{ provide: LOCALE_ID, useValue: 'es' },InvitadoService,QRCodeModule, AuthService ],
   bootstrap: [AppComponent],
 
 

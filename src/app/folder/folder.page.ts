@@ -108,12 +108,15 @@ export class FolderPage implements OnInit {
       this.router.navigate(['/iniciar-sesion']);
     });
 
-    // Agrega la suscripción al servicio de notificaciones
-    this.notificationService.unreadCount$.subscribe((count) => {
+     // Suscribirse al contador de notificaciones no leídas
+     this.notificationService.unreadCount$.subscribe(count => {
       this.unreadNotificationsCount = count;
     });
   }
-
+  // Método que se llama al hacer clic en el botón de notificaciones
+  onNotificationsOpened() {
+    this.notificationService.markAllAsRead();
+  }
 
   determinarTipoUsuarioYObtenerId() {
     this.authService.getCurrentUserEmail().subscribe(async emailEstudiante => {

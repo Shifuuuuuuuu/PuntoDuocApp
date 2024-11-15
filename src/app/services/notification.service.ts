@@ -1,7 +1,11 @@
 import { Injectable } from '@angular/core';
 import { AngularFirestore } from '@angular/fire/compat/firestore';
-import { BehaviorSubject, Observable } from 'rxjs';
+import { BehaviorSubject, firstValueFrom, Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
+import { Notificacion } from '../interface/INotificacion';
+import { AuthService } from './auth.service';
+import { EstudianteService } from './estudiante.service';
+import { InvitadoService } from './invitado.service';
 @Injectable({
   providedIn: 'root'
 })
@@ -9,37 +13,139 @@ export class NotificationService {
   private unreadCount = new BehaviorSubject<number>(0);
   unreadCount$ = this.unreadCount.asObservable();
 
-  constructor(private firestore: AngularFirestore) {}
+  constructor(
+    private firestore: AngularFirestore,
+    private estudianteService: EstudianteService,
+    private invitadoService: InvitadoService
+  ) {
+    this.loadUnreadNotificationsCount();
+  }
 
-  addNotification(notification: any) {
-    notification.isRead = false; // Marca la nueva notificación como no leída
-    this.firestore.collection('Notificaciones').add(notification); // Agrega la notificación a Firestore
+  addNotification(notification: Notificacion) {
+    if (!notification.usuarioIds) {
+      notification.usuarioIds = [];
+    }
+    notification.fechaTermino = notification.fechaTermino || this.calcularFechaTermino();
+    this.firestore.collection('Notificaciones').add(notification);
     this.updateUnreadCount();
   }
 
-  markAllAsRead() {
-    this.firestore.collection('Notificaciones').get().subscribe(snapshot => {
-      snapshot.docs.forEach(doc => {
-        this.firestore.collection('Notificaciones').doc(doc.id).update({ isRead: true });
+  private calcularFechaTermino(): Date {
+    const fechaActual = new Date();
+    fechaActual.setDate(fechaActual.getDate() + 7);
+    return fechaActual;
+  }
+
+  async markAllAsRead() {
+    const userId = await this.getCurrentUserId();
+    if (userId) {
+        return this.firestore.collection('Notificaciones').get().toPromise().then(snapshot => {
+            if (snapshot && !snapshot.empty) {
+                const batch = this.firestore.firestore.batch();
+                snapshot.docs.forEach(doc => {
+                    const notificationData = doc.data() as Notificacion;
+
+                    let hasChanges = false;
+                    const updatedUsuarioIds = notificationData.usuarioIds.map(user => {
+                        if (user.userId === userId && !user.leido) {
+                            console.log(`Marcando como leída la notificación ${doc.id} para el usuario ${userId}`);
+                            hasChanges = true;
+                            return { ...user, leido: true };
+                        }
+                        return user;
+                    });
+
+                    if (hasChanges) {
+                        console.log(`Actualizando la notificación ${doc.id} con los nuevos usuarioIds:`, updatedUsuarioIds);
+                        batch.update(doc.ref, { usuarioIds: updatedUsuarioIds });
+                    }
+                });
+
+                return batch.commit().then(() => {
+                    this.loadUnreadNotificationsCount(); // Actualiza el contador después de marcar como leídas
+                });
+            } else {
+                console.log('No hay notificaciones no leídas.');
+                return Promise.resolve();
+            }
+        }).catch(error => {
+            console.error('Error al marcar las notificaciones como leídas:', error);
+        });
+    } else {
+        console.error('No se pudo obtener el ID del usuario actual.');
+        return Promise.resolve();
+    }
+}
+
+
+  eliminarNotificacionesCaducadas() {
+    return this.firestore.collection('Notificaciones', ref => ref.where('fechaTermino', '<=', new Date()))
+      .get().toPromise().then(snapshot => {
+        if (snapshot && !snapshot.empty) {
+          const batch = this.firestore.firestore.batch();
+          snapshot.docs.forEach(doc => {
+            batch.delete(doc.ref);
+          });
+          return batch.commit();
+        } else {
+          return Promise.resolve();
+        }
+      }).then(() => {
+
+      }).catch(error => {
+        console.error('Error al eliminar notificaciones caducadas:', error);
       });
-    });
-    this.updateUnreadCount();
   }
 
-  updateUnreadCount() {
-    this.getNotifications().subscribe(notifications => {
-      const count = notifications.filter(notification => !notification.isRead).length;
-      this.unreadCount.next(count);
-    });
+  private async getCurrentUserId(): Promise<string | null> {
+    let userId = null;
+    if (localStorage.getItem('userType') === 'estudiante') {
+      userId = await firstValueFrom(this.estudianteService.getUserId());
+    } else if (localStorage.getItem('userType') === 'invitado') {
+      userId = await firstValueFrom(this.invitadoService.getUserId());
+    }
+    return userId;
   }
 
-  getNotifications(): Observable<any[]> {
+  async loadUnreadNotificationsCount() {
+    const userId = await this.getCurrentUserId();
+    if (userId) {
+      this.getNotifications().subscribe(notifications => {
+        const count = notifications.reduce((acc, notification) => {
+          return acc + notification.usuarioIds.filter(user => !user.leido && user.userId === userId).length;
+        }, 0);
+        this.unreadCount.next(count);
+      });
+    } else {
+      console.log('No se pudo obtener el ID del usuario actual.');
+    }
+  }
+
+  getNotifications(): Observable<Notificacion[]> {
     return this.firestore.collection('Notificaciones').snapshotChanges().pipe(
-      map(actions => actions.map(a => {
-        const data = a.payload.doc.data() as any;
-        const id = a.payload.doc.id;
-        return { id, ...data };
-      }))
+      map(actions => {
+        const notifications = actions.map(a => {
+          const data = a.payload.doc.data() as Notificacion;
+          const id = a.payload.doc.id;
+          return { ...data, id };
+        });
+        return notifications;
+      })
     );
   }
+  async updateUnreadCount() {
+    const userId = await this.getCurrentUserId(); // Usa await para resolver la promesa
+    if (userId) {
+      this.getNotifications().subscribe(notifications => {
+        const count = notifications.reduce((acc, notification) => {
+          return acc + notification.usuarioIds.filter(user => !user.leido && user.userId === userId).length;
+        }, 0);
+        this.unreadCount.next(count);
+        console.log(`Conteo actualizado de notificaciones no leídas: ${count}`);
+      });
+    } else {
+      console.error('No se pudo obtener el ID del usuario actual para actualizar el contador.');
+    }
+  }
+
 }
