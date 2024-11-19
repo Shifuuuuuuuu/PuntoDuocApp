@@ -18,6 +18,7 @@ export class FolderGestorEventosPage implements OnInit {
 
   eventos$: Observable<Evento[]> = new Observable<Evento[]>();
   eventosProximos$: Observable<Evento[]> = new Observable<Evento[]>();
+  eventosHoy$: Observable<Evento[]> = new Observable<Evento[]>();
   eventosPasados$: Observable<Evento[]> = new Observable<Evento[]>();
   segment: string = 'proximos';
 
@@ -35,7 +36,6 @@ export class FolderGestorEventosPage implements OnInit {
 
   ngOnInit() {
     this.cargarEventos();
-
   }
 
   cargarEventos() {
@@ -62,12 +62,17 @@ export class FolderGestorEventosPage implements OnInit {
       map(eventos => eventos.filter(evento => evento.fechaInicio && evento.fechaInicio > new Date()))
     );
 
+    this.eventosHoy$ = this.eventos$.pipe(
+      map(eventos => eventos.filter(evento => {
+        const hoy = new Date();
+        return evento.fechaInicio && evento.fechaInicio.toDateString() === hoy.toDateString();
+      }))
+    );
+
     this.eventosPasados$ = this.eventos$.pipe(
       map(eventos => eventos.filter(evento => evento.fechaInicio && evento.fechaInicio <= new Date()))
     );
   }
-
-
 
   transformarFecha(fecha: any): Date | null {
     if (fecha && fecha.seconds) {
@@ -77,9 +82,6 @@ export class FolderGestorEventosPage implements OnInit {
     return null;
   }
 
-
-
-  // Verificar si el botón "Comenzar Evento" debe mostrarse
   puedeMostrarComenzarEvento(fechaInicio: Date | null, estado: string): boolean {
     const ahora = new Date();
     return fechaInicio ? ahora >= fechaInicio && estado !== 'en_curso' && estado !== 'cancelado' : false;
@@ -89,7 +91,6 @@ export class FolderGestorEventosPage implements OnInit {
     const eventoId = evento.id_evento;
     try {
       await this.eventosService.actualizarEvento(eventoId, { estado: 'en_curso' });
-      console.log('Evento comenzado.');
       Swal.fire({
         icon: 'success',
         title: 'Evento iniciado',
@@ -108,40 +109,30 @@ export class FolderGestorEventosPage implements OnInit {
 
       await this.enviarNotificacion(notificationData);
 
-
-
+      // Actualizar la lista de eventos para reflejar el cambio de estado
       this.cargarEventos();
     } catch (error) {
-      if (error instanceof Error) {
-        console.error('Error al comenzar el evento:', error.message);
-        Swal.fire('Error', 'No se pudo iniciar el evento: ' + error.message, 'error');
-      } else {
-        console.error('Error inesperado al comenzar el evento:', error);
-        Swal.fire('Error', 'Ocurrió un error inesperado.', 'error');
-      }
+      console.error('Error al comenzar el evento:', error);
+      Swal.fire('Error', 'No se pudo iniciar el evento: ' + (error instanceof Error ? error.message : 'Error desconocido'), 'error');
     }
   }
 
-
-
-
-
-  // Verificar si el evento está en curso
   eventoEnCurso(evento: Evento): boolean {
     return evento.estado === 'en_curso';
   }
 
-  // Ir a los detalles del evento
   verDetalles(evento: Evento) {
-    if (this.eventoEnCurso(evento)) {
+    console.log('Ver detalles del evento:', evento);
+    if (evento.estado === 'en_curso' || evento.estado === 'finalizado' || evento.estado === 'completado') {
       this.router.navigate(['/detalles-evento', evento.id_evento]);
+    } else {
+      Swal.fire('Aviso', 'Este evento no tiene detalles disponibles.', 'info');
     }
   }
 
   async cancelarEvento(evento: Evento) {
     try {
       await this.eventosService.actualizarEvento(evento.id_evento, { estado: 'cancelado' });
-      console.log(`Evento "${evento.titulo}" cancelado.`);
       Swal.fire({
         icon: 'error',
         title: 'Evento cancelado',
@@ -158,12 +149,11 @@ export class FolderGestorEventosPage implements OnInit {
       };
 
       await this.enviarNotificacion(notificationData);
-      this.cargarEventos(); // Recargar eventos después de la cancelación
+      this.cargarEventos();
     } catch (error) {
       console.error('Error al cancelar el evento:', error);
     }
   }
-
 
   eliminarEvento(eventoId: string) {
     Swal.fire({
@@ -177,52 +167,49 @@ export class FolderGestorEventosPage implements OnInit {
       if (result.isConfirmed) {
         this.eventosService.eliminarEvento(eventoId).then(() => {
           Swal.fire('Eliminado', 'El evento ha sido eliminado', 'success');
-          this.cargarEventos(); // Actualizar la lista de eventos
+          this.cargarEventos();
         }).catch(error => {
           Swal.fire('Error', 'Hubo un problema al eliminar el evento: ' + error.message, 'error');
         });
       }
     });
   }
+
   async enviarNotificacion(notification: any) {
-    // Obtén el evento desde Firestore para acceder a la lista de inscritos
-    const eventoRef = await this.firestore.collection('Eventos').doc(notification.id).get().toPromise();
-    if (eventoRef && eventoRef.exists) {
-      const eventoData = eventoRef.data() as Evento;
-      if (eventoData && eventoData.Inscripciones) {
-        const usuariosNotificados = new Set<string>();
-
-        for (const inscrito of eventoData.Inscripciones) {
-          const usuarioId = inscrito.id_estudiante || inscrito.id_invitado;
-          if (usuarioId && !usuariosNotificados.has(usuarioId)) {
-            usuariosNotificados.add(usuarioId);
-
-            const personalizedNotification = {
-              ...notification,
-              usuarioIds: [{ userId: usuarioId, leido: false }], // Guarda el ID y el estado de lectura
-              fechaTermino: this.calcularFechaTermino()
-            };
-
-            await this.messagingService.sendNotification(personalizedNotification);
-            console.log(`Notificación enviada a usuario ${usuarioId}`);
+    try {
+      const eventoRef = await this.firestore.collection('Eventos').doc(notification.id).get().toPromise();
+      if (eventoRef && eventoRef.exists) {
+        const eventoData = eventoRef.data() as Evento;
+        if (eventoData && eventoData.Inscripciones && eventoData.Inscripciones.length > 0) {
+          const usuariosNotificados = new Set<string>();
+          for (const inscrito of eventoData.Inscripciones) {
+            const usuarioId = inscrito.id_estudiante || inscrito.id_invitado;
+            if (usuarioId && !usuariosNotificados.has(usuarioId)) {
+              usuariosNotificados.add(usuarioId);
+              const personalizedNotification = {
+                ...notification,
+                usuarioIds: [{ userId: usuarioId, leido: false }],
+                fechaTermino: this.calcularFechaTermino()
+              };
+              await this.messagingService.sendNotification(personalizedNotification);
+              console.log(`Notificación enviada a usuario ${usuarioId}`);
+            }
           }
+        } else {
+          console.log('No hay usuarios inscritos para este evento.');
         }
       } else {
-        console.log('No hay usuarios inscritos para este evento.');
+        console.error('El evento no existe o no se pudo obtener la información.');
       }
-    } else {
-      console.error('El evento no existe o no se pudo obtener la información.');
+    } catch (error) {
+      console.error('Error al enviar notificación:', error);
+      Swal.fire('Error', 'Hubo un problema al enviar la notificación: ' + (error instanceof Error ? error.message : 'Error desconocido'), 'error');
     }
   }
 
-
-
-
   calcularFechaTermino(): Date {
     const fechaActual = new Date();
-    fechaActual.setDate(fechaActual.getDate() + 7); // Ejemplo: agrega 7 días a la fecha actual
+    fechaActual.setDate(fechaActual.getDate() + 7);
     return fechaActual;
   }
-
 }
-

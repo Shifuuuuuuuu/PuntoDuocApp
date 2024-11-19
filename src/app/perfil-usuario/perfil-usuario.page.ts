@@ -7,10 +7,10 @@ import { Router } from '@angular/router';
 import { firstValueFrom, Subscription } from 'rxjs';
 import { CartService } from '../services/cart.service';
 import Swal from 'sweetalert2';
-import { QRCodeData } from '../interface/IQR';
 import { MenuController, NavController } from '@ionic/angular';
 import * as QRCode from 'qrcode';
 import { NotificationService } from '../services/notification.service';
+import { MissionsAlertService } from '../services/missions-alert.service';
 @Component({
   selector: 'app-perfil-usuario',
   templateUrl: './perfil-usuario.page.html',
@@ -24,6 +24,7 @@ export class PerfilUsuarioPage implements OnInit {
   errorMessage: string | undefined;
   qrData: string = '';
   isInvitado: boolean = false;
+  isStudent: boolean = false;
   eventoId: string = '';
   tempNombreCompleto: string = '';
   tempEmail: string = '';
@@ -43,7 +44,8 @@ export class PerfilUsuarioPage implements OnInit {
     private router: Router,
     private navCtrl: NavController,
     private menu: MenuController,
-    private notificationService: NotificationService
+    private notificationService: NotificationService,
+    private missionsAlertService: MissionsAlertService
   ) {}
   ionViewWillEnter() {
     this.menu.enable(false);  // Deshabilita el menú en esta página
@@ -65,7 +67,7 @@ export class PerfilUsuarioPage implements OnInit {
         });
       }
     });
-    // Suscríbete al observable para actualizar el contador de notificaciones en la interfaz
+
     this.notificationService.unreadCount$.subscribe((count) => {
       this.unreadNotificationsCount = count;
     });
@@ -88,18 +90,19 @@ export class PerfilUsuarioPage implements OnInit {
         this.estudiante = estudianteResult;
         this.eventoId = this.estudiante.eventosInscritos?.[0] || '';
         this.isInvitado = false;
+        this.isStudent = true; // Es estudiante
       } else {
         const invitadoResult = await firstValueFrom(this.invitadoService.obtenerInvitadoPorEmail(this.userEmail));
         if (invitadoResult) {
           this.invitado = invitadoResult;
           this.eventoId = this.invitado.eventosInscritos?.[0] || '';
           this.isInvitado = true;
+          this.isStudent = false; // No es estudiante
         } else {
           this.errorMessage = 'No se encontró ningún invitado con ese email.';
         }
       }
 
-      // Generar el QR después de cargar los datos del usuario
       await this.generateQrData();
 
       if (this.userEmail && this.eventoId) {
@@ -109,6 +112,7 @@ export class PerfilUsuarioPage implements OnInit {
       console.error('Error al cargar los datos del usuario:', error);
     }
   }
+
 
   async verificarEstadoAcreditacion() {
     try {
@@ -205,7 +209,9 @@ export class PerfilUsuarioPage implements OnInit {
       this.errorMessage = 'Error al guardar el perfil.';
     }
   }
-
+  openMissionsModal() {
+    this.missionsAlertService.showMissionsAlert();
+  }
 
   cancelEdit() {
     this.isEditing = false;

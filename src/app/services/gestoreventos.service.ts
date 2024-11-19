@@ -1,9 +1,10 @@
 import { Injectable } from '@angular/core';
 import { AngularFirestore } from '@angular/fire/compat/firestore';
 import { BehaviorSubject, Observable } from 'rxjs';
-import { map } from 'rxjs/operators';
-import { GestorEventos } from '../interface/IGestorEventos';
 
+import { GestorEventos } from '../interface/IGestorEventos';
+import firebase from 'firebase/compat/app';
+import 'firebase/compat/auth';
 
 @Injectable({
   providedIn: 'root'
@@ -26,28 +27,28 @@ export class GestorEventosService {
   getCurrentUserEmail(): Observable<string | undefined> {
     return this.currentUserEmail$;
   }
-  async login(email: string, password: string): Promise<GestorEventos | null> {
+  async loginWithAuth(email: string, password: string): Promise<GestorEventos | null> {
     try {
-      const gestoresSnapshot = await this.firestore.collection<GestorEventos>('GestorEventos', ref => ref.where('email', '==', email)).get().toPromise();
-      if (gestoresSnapshot && !gestoresSnapshot.empty) {
-        const gestorDoc = gestoresSnapshot.docs[0];
-        const gestorData = gestorDoc.data() as GestorEventos;
+      // Iniciar sesión con Firebase Authentication
+      const userCredential = await firebase.auth().signInWithEmailAndPassword(email, password);
 
-        if (gestorData.password === password) {
-          gestorData.id_Geventos = gestorDoc.id;
+      if (userCredential.user) {
+        // Obtener datos adicionales desde Firestore después de la autenticación
+        const gestorData = await this.getGestorByEmail(email);
+        if (gestorData) {
+          console.log('Inicio de sesión como gestor de eventos exitoso:', gestorData);
           this.setCurrentUserEmail(email);
+          gestorData.id_Geventos = userCredential.user.uid;
           return gestorData;
-        } else {
-          return null;
         }
-      } else {
-        return null;
       }
+      return null;
     } catch (error) {
-      console.error('Error en GestorEventosService.login:', error);
+      console.error('Error en GestorEventosService.loginWithAuth:', error);
       throw error;
     }
   }
+
 
   // Método para obtener un gestor por correo electrónico
   async getGestorByEmail(email: string): Promise<GestorEventos | null> {

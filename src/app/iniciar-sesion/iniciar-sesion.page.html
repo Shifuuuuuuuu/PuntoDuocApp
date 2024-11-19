@@ -28,14 +28,14 @@
       </div>
 
       <div class="mb-3 remember-me">
-        <ion-checkbox slot="start" [(ngModel)]="rememberMe" name="rememberMe"></ion-checkbox>
+        <ion-checkbox slot="start" [(ngModel)]="rememberMe" name="rememberMe" aria-label="Recordar contraseña automáticamente"></ion-checkbox>
         <label for="rememberMe" class="remember-me-label">Recordar contraseña automáticamente</label>
       </div>
 
 
       <!-- ¿Olvidaste tu contraseña? -->
       <div class="forgot-password" style="text-align: right;">
-        <a [routerLink]="['/recuperar-contraseña']" class="forgot-password-link">Recuperar contraseña</a>
+        <a (click)="openForgotPasswordAlert()" class="forgot-password-link">Olvidé mi contraseña</a>
       </div>
 
       <!-- Botón de iniciar sesión -->
@@ -44,7 +44,7 @@
           Iniciar sesión
         </ion-button>
       </div>
-	<div class="button-group">
+      <div class="button-group">
         <ion-button expand="block" [routerLink]="['/registrar-usuarios']" type="submit" class="custom-button">
           Registrar Estudiante
         </ion-button>

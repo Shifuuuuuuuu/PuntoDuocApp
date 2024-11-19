@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { MenuController } from '@ionic/angular';
 import { NotificationService } from '../services/notification.service';
+import { MissionsAlertService } from '../services/missions-alert.service';
 
 @Component({
   selector: 'app-ver-recompensas-page',
@@ -11,7 +12,8 @@ export class VerRecompensasPage implements OnInit  {
   unreadNotificationsCount: number = 0;
   constructor(
   private menu: MenuController,
-  private notificationService: NotificationService
+  private notificationService: NotificationService,
+  private missionsAlertService: MissionsAlertService
   ) {}
   ionViewWillEnter() {
     this.menu.enable(false);  // Deshabilita el menú en esta página
@@ -21,6 +23,9 @@ export class VerRecompensasPage implements OnInit  {
     this.notificationService.unreadCount$.subscribe((count) => {
       this.unreadNotificationsCount = count;
     });
+  }
+  openMissionsModal() {
+    this.missionsAlertService.showMissionsAlert();
   }
 
 }

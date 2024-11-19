@@ -7,7 +7,8 @@ import { Evento } from '../interface/IEventos';
 import Swal from 'sweetalert2';
 import { Chart, registerables } from 'chart.js';
 import ChartDataLabels from 'chartjs-plugin-datalabels';
-import { EstudianteService } from '../services/estudiante.service';
+import { Notificacion } from '../interface/INotificacion';
+import { AngularFirestore } from '@angular/fire/compat/firestore';
 Chart.register(...registerables, ChartDataLabels);
 @Component({
   selector: 'app-detalles-evento',
@@ -32,7 +33,8 @@ export class DetallesEventoPage implements OnInit {
   constructor(
     private route: ActivatedRoute,
     private cartService: CartService,
-    private menu: MenuController
+    private menu: MenuController,
+    private firestore: AngularFirestore
   ) {}
 
   ionViewWillEnter() {
@@ -104,6 +106,9 @@ export class DetallesEventoPage implements OnInit {
           this.mensajePresencia = 'Inscripción verificada con éxito.';
           await this.presentSweetAlertAcreditacion(qrData.nombreCompleto, this.evento?.titulo || 'Evento', result.puntaje || 0, estado);
           this.cargarListas(); // Actualiza las listas después de la acreditación
+
+          // Enviar notificación a Firestore
+          await this.enviarNotificacionVerificacion(qrData, this.evento);
         } else {
           this.mensajePresencia = 'No se encontró inscripción.';
           await this.presentSweetAlertAcreditacion(qrData.nombreCompleto, this.evento?.titulo || 'Evento', 0, 'noInscrito');
@@ -118,7 +123,30 @@ export class DetallesEventoPage implements OnInit {
     }
   }
 
+  async enviarNotificacionVerificacion(qrData: any, evento: Evento | undefined) {
+    try {
+      const notificacion: Notificacion = {
+        id: this.firestore.createId(),
+        titulo: `Acreditación exitosa en el evento ${evento?.titulo}`,
+        descripcion: `Has sido acreditado exitosamente en el evento "${evento?.titulo}".`,
+        imagen: evento?.imagen || '',
+        fecha: new Date(),
+        fechaTermino: this.calcularFechaTermino(),
+        usuarioIds: [{ userId: qrData.userId, leido: false }]
+      };
 
+      await this.firestore.collection('Notificaciones').doc(notificacion.id).set(notificacion);
+      console.log(`Notificación enviada al usuario ${qrData.userId}`);
+    } catch (error) {
+      console.error('Error al enviar la notificación a Firestore:', error);
+    }
+  }
+
+  calcularFechaTermino(): Date {
+    const fechaActual = new Date();
+    fechaActual.setDate(fechaActual.getDate() + 7); // Ajusta la fecha de término a 7 días después de la fecha actual
+    return fechaActual;
+  }
 
   async startScan() {
     try {
@@ -141,6 +169,7 @@ export class DetallesEventoPage implements OnInit {
       throw e;
     }
   }
+
   createPieChart() {
     if (this.chart) {
       this.chart.destroy(); // Destruir el gráfico anterior si existe para evitar superposición
@@ -183,56 +212,59 @@ export class DetallesEventoPage implements OnInit {
       plugins: [ChartDataLabels], // Activar el plugin de etiquetas
     });
   }
+
   toggleDashboard() {
     this.mostrarDashboard = !this.mostrarDashboard;
     if (this.mostrarDashboard) {
       this.cargarListas(); // Cargar datos y mostrar el gráfico si mostrarDashboard es true
     }
   }
+
   toggleListas() {
     this.mostrarListas = !this.mostrarListas; // Alterna la visibilidad de las listas
     if (this.mostrarListas) {
       this.cargarListas(); // Cargar las listas solo si se van a mostrar
     }
   }
+
   toggleListaEspera() {
     this.mostrarListaEspera = !this.mostrarListaEspera; // Alterna la visibilidad de la lista de espera
     if (this.mostrarListaEspera && this.listaEspera.length === 0) {
       this.cargarListas(); // Cargar la lista de espera solo si aún no ha sido cargada
     }
   }
+
   async presentSweetAlertAcreditacion(nombreUsuario: string, nombreEvento: string, puntaje: number, estado: 'yaAcreditado' | 'acreditado' | 'acreditadoInvitado' | 'noInscrito') {
     let title = '';
     let text = '';
     let icon: 'success' | 'error' | 'info' = 'info';
 
     if (estado === 'yaAcreditado') {
-        title = 'Ya Acreditado';
-        text = `${nombreUsuario} ya está acreditado para el evento ${nombreEvento}.`;
-        icon = 'info';
+      title = 'Ya Acreditado';
+      text = `${nombreUsuario} ya está acreditado para el evento ${nombreEvento}.`;
+      icon = 'info';
     } else if (estado === 'acreditado') {
-        title = 'Acreditación Exitosa';
-        text = `${nombreUsuario} ha sido acreditado para el evento ${nombreEvento}. Tu puntaje total es de  ${puntaje}.`;
-        icon = 'success';
+      title = 'Acreditación Exitosa';
+      text = `${nombreUsuario} ha sido acreditado para el evento ${nombreEvento}. Tu puntaje total es de ${puntaje}.`;
+      icon = 'success';
     } else if (estado === 'acreditadoInvitado') {
-        title = 'Acreditación Exitosa';
-        text = `${nombreUsuario} ha sido acreditado para el evento ${nombreEvento}.`;
-        icon = 'success';
+      title = 'Acreditación Exitosa';
+      text = `${nombreUsuario} ha sido acreditado para el evento ${nombreEvento}.`;
+      icon = 'success';
     } else {
-        title = 'No Inscrito';
-        text = `${nombreUsuario} no está inscrito en el evento ${nombreEvento}.`;
-        icon = 'error';
+      title = 'No Inscrito';
+      text = `${nombreUsuario} no está inscrito en el evento ${nombreEvento}.`;
+      icon = 'error';
     }
 
     await Swal.fire({
-        title: title,
-        text: text,
-        icon: icon,
-        confirmButtonText: 'OK'
+      title: title,
+      text: text,
+      icon: icon,
+      confirmButtonText: 'OK'
     });
 
     // Recargar la página al confirmar el mensaje
     this.cargarListas();
-}
-
+  }
 }

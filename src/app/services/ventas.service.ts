@@ -3,11 +3,9 @@ import { AngularFirestore } from '@angular/fire/compat/firestore';
 import { BehaviorSubject, Observable } from 'rxjs';
 import { UsuarioVentas } from '../interface/IUVentas'; // Asegúrate de colocar la interfaz en la carpeta correcta
 import { Recompensa } from '../interface/IRecompensa';
-import { CapacitorBarcodeScanner } from '@capacitor/barcode-scanner';
 import Swal from 'sweetalert2';
-import { Estudiante } from '../interface/IEstudiante';
-
-
+import firebase from 'firebase/compat/app';
+import 'firebase/compat/auth';
 @Injectable({
   providedIn: 'root'
 })
@@ -38,37 +36,28 @@ export class VentasAuthService {
     return this.currentUserEmailSubject.getValue() || localStorage.getItem('currentUserEmail') || undefined;
   }
 
-  // Método de inicio de sesión para usuarios de ventas
-  async login(email: string, password: string): Promise<UsuarioVentas | null> {
+  async loginWithAuth(email: string, password: string): Promise<UsuarioVentas | null> {
     try {
-      // Buscar al usuario de ventas en la colección 'UVentas' con el email proporcionado
-      const ventasSnapshot = await this.firestore.collection<UsuarioVentas>('UVentas', ref => ref.where('email', '==', email)).get().toPromise();
+      // Iniciar sesión con Firebase Authentication
+      const userCredential = await firebase.auth().signInWithEmailAndPassword(email, password);
 
-      if (ventasSnapshot && !ventasSnapshot.empty) {
-        const ventasDoc = ventasSnapshot.docs[0];
-        const ventasData = ventasDoc.data() as UsuarioVentas;
-
-        // Verificar la contraseña (asegúrate de que las contraseñas estén almacenadas de forma segura, preferiblemente hasheadas)
-        if (ventasData.password === password) {
-          ventasData.id_Uventas = ventasDoc.id;
-
-          // Establecer el correo electrónico en el BehaviorSubject y localStorage
+      if (userCredential.user) {
+        // Obtener datos adicionales desde Firestore después de la autenticación
+        const ventasData = await this.getUsuarioVentasByEmail(email);
+        if (ventasData) {
+          console.log('Inicio de sesión como usuario de ventas exitoso:', ventasData);
           this.setCurrentUserEmail(email);
-
+          ventasData.id_Uventas = userCredential.user.uid;
           return ventasData;
-        } else {
-          // Contraseña incorrecta
-          return null;
         }
-      } else {
-        // No se encontró al usuario de ventas
-        return null;
       }
+      return null;
     } catch (error) {
-      console.error('Error en VentasAuthService.login:', error);
+      console.error('Error en VentasAuthService.loginWithAuth:', error);
       throw error;
     }
   }
+
 
   // Método para cerrar sesión
   async logout(): Promise<void> {

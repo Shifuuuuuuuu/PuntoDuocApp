@@ -1,4 +1,4 @@
-import { LOCALE_ID, NgModule } from '@angular/core';
+import { CUSTOM_ELEMENTS_SCHEMA, LOCALE_ID, NgModule } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
 import { RouteReuseStrategy } from '@angular/router';
 import { IonicModule, IonicRouteStrategy } from '@ionic/angular';
@@ -22,15 +22,17 @@ import { AngularFireMessagingModule } from '@angular/fire/compat/messaging';
 import { AuthService } from './services/auth.service';
 
 
+
 registerLocaleData(localeEs);
 
 
 @NgModule({
   declarations: [AppComponent, RecompensasModalComponent,
-    RecompensasReclamadasModalComponent],
+    RecompensasReclamadasModalComponent ],
   imports: [AngularFireModule.initializeApp(environment.firebaseConfig),
     AngularFireAuthModule ,BrowserModule, IonicModule.forRoot(), AppRoutingModule,FormsModule,AngularFirestoreModule,TabBarModule,TabBarAdminModule,TabUsuarioModule,AngularFireMessagingModule ],
   providers: [{ provide: RouteReuseStrategy, useClass: IonicRouteStrategy },{ provide: LOCALE_ID, useValue: 'es' },InvitadoService,QRCodeModule, AuthService ],
+  schemas: [CUSTOM_ELEMENTS_SCHEMA],
   bootstrap: [AppComponent],
 
 

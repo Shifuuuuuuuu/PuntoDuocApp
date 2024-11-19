@@ -24,9 +24,9 @@ export class EventDetailsPage implements OnInit {
   isInvitado: boolean = false;
   loading: boolean = false;
   unreadNotificationsCount: number = 0;
-  comentarios: Comentario[] = []; // Si no está ya definida, añádela
-  comentario: string = ''; // Añadir propiedad para el texto del comentario
-  calificacion: number = 0; // Añadir propiedad para la calificación
+  comentarios: Comentario[] = [];
+  comentario: string = '';
+  calificacion: number = 0;
   constructor(
     private route: ActivatedRoute,
     private firestore: AngularFirestore,
@@ -92,8 +92,9 @@ export class EventDetailsPage implements OnInit {
             verificado: false
           };
 
+          await this.actualizarEstadoInscripcion(); // Asegura que el estado de inscripción se actualice al cargar el evento
           this.loading = false;
-          this.cdr.detectChanges();
+          this.cdr.detectChanges(); // Forzar la detección de cambios
         } else {
           console.log('El evento con el ID especificado no existe.');
           this.loading = false;
@@ -104,7 +105,7 @@ export class EventDetailsPage implements OnInit {
         this.loading = false;
       }
     );
-  }
+}
   async guardarComentario() {
     if (!this.comentario.trim()) {
       Swal.fire('Error', 'El comentario no puede estar vacío.', 'error');
@@ -235,8 +236,8 @@ export class EventDetailsPage implements OnInit {
     const estaInscrito = !!usuarioInscripcion;
     const estaVerificado = usuarioInscripcion?.verificado === true;
 
+    // Si el usuario ya está en la lista de espera
     if (event.enListaEspera) {
-      // Lógica para salir de la lista de espera
       const result = await Swal.fire({
         title: '¿Quieres salir de la lista de espera?',
         showCancelButton: true,
@@ -248,7 +249,7 @@ export class EventDetailsPage implements OnInit {
         try {
           await this.eventosService.eliminarUsuarioDeListaEspera(event.id_evento, this.userId);
           event.enListaEspera = false;
-          this.event = { ...event }; // Actualiza la UI
+          await this.loadEventDetails(event.id_evento); // Recarga los detalles para actualizar la vista
           Swal.fire('Éxito', 'Has salido de la lista de espera.', 'success');
         } catch (error) {
           console.error('Error al salir de la lista de espera:', error);
@@ -258,6 +259,7 @@ export class EventDetailsPage implements OnInit {
       return;
     }
 
+    // Si el usuario ya está inscrito y el evento ha comenzado
     if (estaInscrito && event.estado === 'en_curso') {
       if (estaVerificado) {
         Swal.fire('Verificado', 'Ya estás verificado para este evento. No puedes cancelar tu inscripción.', 'success');
@@ -267,11 +269,10 @@ export class EventDetailsPage implements OnInit {
       return;
     }
 
+    // Si el usuario está inscrito y el evento no ha comenzado, permite cancelar
     if (estaInscrito) {
-      // Lógica para cancelar la inscripción
       await this.cancelarInscripcion(event.id_evento);
     } else {
-      // Lógica para inscribirse o unirse a la lista de espera
       await this.presentAlert(event);
     }
   }
@@ -334,35 +335,30 @@ export class EventDetailsPage implements OnInit {
     try {
       let userName = '';
       let rut = '';
-      let carrera = ''; // Nueva variable para la carrera
+      let carrera = '';
 
       if (this.isInvitado) {
         const invitado = await this.invitadoService.obtenerInvitadoPorId(this.userId);
         userName = invitado?.Nombre_completo || 'Invitado';
         rut = invitado?.Rut || '';
-
-        // Llamada con el argumento `verificado`
         await this.eventosService.inscribirInvitado(eventoId, this.userId, userName, rut, false);
       } else {
         const estudiante = await this.estudianteService.obtenerEstudiantePorId(this.userId);
         userName = estudiante?.Nombre_completo || 'Estudiante';
         rut = estudiante?.Rut || '';
-        carrera = estudiante?.carrera || ''; // Obtiene la carrera del estudiante
-
-        // Llamada con el argumento `verificado`
+        carrera = estudiante?.carrera || '';
         await this.eventosService.inscribirEstudiante(eventoId, this.userId, userName, rut, carrera, false);
       }
 
       Swal.fire('Éxito', 'Te has inscrito al evento correctamente.', 'success');
-
-      // Actualizar estado de inscripción
-      await this.loadEventDetails(eventoId);
+      await this.loadEventDetails(eventoId); // Recarga los detalles del evento
+      this.cdr.detectChanges(); // Actualiza la UI
     } catch (error) {
       Swal.fire('Error', 'No se pudo inscribir en el evento.', 'error');
     } finally {
       this.loading = false;
     }
-  }
+}
 
 
   async cancelarInscripcion(eventoId: string) {
@@ -391,7 +387,8 @@ export class EventDetailsPage implements OnInit {
           await this.eventosService.eliminarUsuarioDeInscripciones(eventoId, this.userId);
 
           Swal.fire('Cancelado', 'Has cancelado tu inscripción correctamente.', 'success');
-          await this.loadEventDetails(eventoId);
+          await this.loadEventDetails(eventoId); // Recarga los detalles del evento
+          this.cdr.detectChanges(); // Actualiza la UI
         } else {
           Swal.fire('No inscrito', 'No estás inscrito en este evento.', 'info');
         }
@@ -399,7 +396,7 @@ export class EventDetailsPage implements OnInit {
         Swal.fire('Error', 'No se pudo cancelar la inscripción. Inténtalo más tarde.', 'error');
       }
     }
-  }
+}
 
 
   async actualizarPerfilUsuario(eventoId: string, accion: 'agregar' | 'eliminar') {

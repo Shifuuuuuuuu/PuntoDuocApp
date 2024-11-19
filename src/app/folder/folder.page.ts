@@ -5,13 +5,14 @@ import { Observable, Subscription } from 'rxjs';
 import { Evento } from '../interface/IEventos';
 import { AuthService } from '../services/auth.service';
 import { InvitadoService } from '../services/invitado.service';
-import { IonSelect, MenuController } from '@ionic/angular';
+import { IonSelect, MenuController, ModalController } from '@ionic/angular';
 import { register } from 'swiper/element/bundle';
 import {  addDays, startOfWeek, endOfWeek, startOfMonth, endOfMonth } from 'date-fns';
 import { NotificationService } from '../services/notification.service';
 import firebase from 'firebase/compat/app';
 import { MessagingService } from '../services/messaging.service';
 register();
+import { MissionsAlertService } from '../services/missions-alert.service';
 
 @Component({
   selector: 'app-folder',
@@ -31,6 +32,7 @@ export class FolderPage implements OnInit {
   userName: string = '';
   userEmail: string = '';
   isInvitado: boolean = false;
+  isStudent: boolean = false;
   loading: boolean = false;
   selectedCategory: string = 'all';
   private authSubscription!: Subscription;
@@ -78,14 +80,18 @@ export class FolderPage implements OnInit {
     private invitadoService: InvitadoService,
     private menu: MenuController,
     private notificationService: NotificationService,
-    private messagingService: MessagingService
+    private messagingService: MessagingService,
+    private missionsAlertService: MissionsAlertService
   ) {}
+
+
+  openMissionsModal() {
+    this.missionsAlertService.showMissionsAlert();
+  }
   getPopularEvents() {
-    // Filtrar eventos con más de 20 inscritos y ordenar de mayor a menor cantidad de inscritos
-    this.popularEvents = this.events
-      .filter(event => {
-        return event.inscritos > 30;
-      })
+    // Filtrar eventos con más de 30 inscritos en la lista de eventos filtrados por sede
+    this.popularEvents = this.sedeFilteredEvents
+      .filter(event => event.inscritos > 30)
       .sort((a, b) => b.inscritos - a.inscritos)
       .slice(0, 5); // Obtener los primeros 5 eventos más populares
   }
@@ -99,15 +105,13 @@ export class FolderPage implements OnInit {
     setInterval(() => {
       this.verificarEventosTerminados();
     }, 3600000);
-    // Mantén la lógica existente
+
     this.folder = this.activatedRoute.snapshot.paramMap.get('id') as string;
 
-    // Verificar si el usuario está autenticado antes de cargar la página
     this.authService.getCurrentUserEmail().subscribe(emailEstudiante => {
       if (emailEstudiante) {
         this.determinarTipoUsuarioYObtenerId();
       } else {
-        // Redirigir a la página de inicio de sesión si no está autenticado
         this.router.navigate(['/iniciar-sesion']);
       }
     }, error => {
@@ -115,8 +119,7 @@ export class FolderPage implements OnInit {
       this.router.navigate(['/iniciar-sesion']);
     });
 
-     // Suscribirse al contador de notificaciones no leídas
-     this.notificationService.unreadCount$.subscribe(count => {
+    this.notificationService.unreadCount$.subscribe(count => {
       this.unreadNotificationsCount = count;
     });
   }
@@ -127,36 +130,37 @@ export class FolderPage implements OnInit {
 
   determinarTipoUsuarioYObtenerId() {
     this.authService.getCurrentUserEmail().subscribe(async emailEstudiante => {
-        if (emailEstudiante) {
-            const estudiante = await this.authService.getEstudianteByEmail(emailEstudiante);
-            if (estudiante) {
-                this.userId = estudiante.id_estudiante!;
-                this.userName = estudiante.Nombre_completo; // Asigna el nombre completo del estudiante
-                this.userEmail = estudiante.email; // Asigna el email del estudiante
-                this.isInvitado = false;
-                this.loadEvents(); // Cargar eventos para el estudiante
-                return;
-            }
+      if (emailEstudiante) {
+        const estudiante = await this.authService.getEstudianteByEmail(emailEstudiante);
+        if (estudiante) {
+          this.userId = estudiante.id_estudiante!;
+          this.userName = estudiante.Nombre_completo;
+          this.userEmail = estudiante.email;
+          this.isInvitado = false;
+          this.isStudent = true; // Es estudiante
+          this.loadEvents();
+          return;
         }
+      }
 
-        // Si no es estudiante, verificar si es invitado
-        this.invitadoService.getCurrentUserEmail().subscribe(async emailInvitado => {
-            if (emailInvitado) {
-                const invitado = await this.invitadoService.getInvitadoByEmail(emailInvitado);
-                if (invitado) {
-                    this.userId = invitado.id_Invitado!;
-                    this.userName = invitado.Nombre_completo; // Asigna el nombre completo del invitado
-                    this.userEmail = invitado.email; // Asigna el email del invitado
-                    this.isInvitado = true;
-                    this.loadEvents(); // Cargar eventos para el invitado
-                    return;
-                }
-            } else {
-                this.router.navigate(['/iniciar-sesion']);
-            }
-        });
+      this.invitadoService.getCurrentUserEmail().subscribe(async emailInvitado => {
+        if (emailInvitado) {
+          const invitado = await this.invitadoService.getInvitadoByEmail(emailInvitado);
+          if (invitado) {
+            this.userId = invitado.id_Invitado!;
+            this.userName = invitado.Nombre_completo;
+            this.userEmail = invitado.email;
+            this.isInvitado = true;
+            this.isStudent = false; // No es estudiante
+            this.loadEvents();
+            return;
+          }
+        } else {
+          this.router.navigate(['/iniciar-sesion']);
+        }
+      });
     });
-}
+  }
 
 
 
@@ -184,7 +188,7 @@ export class FolderPage implements OnInit {
           const docId = snapshot.payload.doc.id;
 
           const isFavorite = Array.isArray(eventData.favoritos) &&
-          eventData.favoritos.some((fav: any) => fav.id === this.userId);
+            eventData.favoritos.some((fav: any) => fav.id === this.userId);
 
           return {
             ...eventData,
@@ -197,10 +201,12 @@ export class FolderPage implements OnInit {
           };
         });
 
-        // Filtrar eventos terminados
         this.filteredEvents = [...this.allEvents];
-        this.events = [...this.allEvents];
-        this.eventsTerminados = this.allEvents.filter(event => event.estado === 'Terminado');
+        this.sedeFilteredEvents = [...this.allEvents];
+        this.events = [...this.sedeFilteredEvents];
+
+        // Filtrar eventos terminados usando la lista de eventos filtrados por sede
+        this.eventsTerminados = this.sedeFilteredEvents.filter(event => event.estado === 'Terminado');
 
         this.filterEvents();
         this.filterEventsByDate();
@@ -215,11 +221,13 @@ export class FolderPage implements OnInit {
   }
 
 
+
+
   getRecentEvents() {
     const oneWeekAgo = new Date();
     oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
 
-    this.recentEvents = this.events.filter(event => {
+    this.recentEvents = this.sedeFilteredEvents.filter(event => {
       const eventCreationDate = this.convertToDate(event.fecha_creacion);
       return eventCreationDate >= oneWeekAgo;
     });
@@ -352,14 +360,18 @@ export class FolderPage implements OnInit {
       const matchesSearchText = this.searchText
         ? evento.titulo.toLowerCase().includes(this.searchText.toLowerCase())
         : true;
-      const matchesCategory = this.selectedCategory === 'all'
-        ? true
-        : evento.categoria?.toLowerCase() === this.selectedCategory.toLowerCase();
-      const matchesSede = this.selectedSede === 'all'
+      const matchesSede = this.selectedSede === 'all' || this.selectedSede === ''
         ? true
         : evento.sede?.toLowerCase() === this.selectedSede.toLowerCase();
-      return matchesSearchText && matchesCategory && matchesSede;
+        console.log('Selected sede:', this.selectedSede);
+      return matchesSearchText && matchesSede;
     });
+
+    // Actualiza la lista de eventos visibles
+    this.segmentFilteredEvents = [...this.sedeFilteredEvents];
+    console.log('Eventos filtrados:', this.sedeFilteredEvents);
+
+    this.filterEventsByDate();
   }
 
   toggleFilters() {

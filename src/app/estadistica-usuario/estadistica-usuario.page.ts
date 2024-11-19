@@ -4,6 +4,7 @@ import { EstudianteService } from '../services/estudiante.service';
 import { firstValueFrom } from 'rxjs';
 import { MenuController } from '@ionic/angular';
 import { NotificationService } from '../services/notification.service';
+import { MissionsAlertService } from '../services/missions-alert.service';
 
 @Component({
   selector: 'app-estadistica-usuario',
@@ -26,7 +27,10 @@ export class EstadisticaUsuarioPage implements OnInit {
   totalEventosVerificados: number = 0;
   porcentajeVerificacion: number = 0;
   unreadNotificationsCount: number = 0;
-  constructor(private estudianteService: EstudianteService,private menu: MenuController, private notificationService: NotificationService) {}
+  constructor(private estudianteService: EstudianteService
+    ,private menu: MenuController
+    , private notificationService: NotificationService
+  ,private missionsAlertService: MissionsAlertService) {}
 
   ngOnInit() {
     this.cargarEstadisticas();
@@ -37,6 +41,9 @@ export class EstadisticaUsuarioPage implements OnInit {
   }
   ionViewWillEnter() {
     this.menu.enable(false);  // Deshabilita el menú en esta página
+  }
+  openMissionsModal() {
+    this.missionsAlertService.showMissionsAlert();
   }
 
   async cargarEstadisticas() {

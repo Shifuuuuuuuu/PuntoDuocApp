@@ -160,3 +160,22 @@ ion-content {
   color: #0A49A7;
   margin-left: 7px; /* Ajusta este valor según el espacio que desees */
 }
+.custom-loading {
+  .loading-wrapper {
+    background: rgba(255, 255, 255, 0.9);
+    border-radius: 15px;
+    padding: 20px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    text-align: center;
+  }
+
+  .loading-spinner {
+    color: #0a49a7;
+  }
+
+  .loading-content {
+    font-weight: bold;
+    color: #0a49a7;
+    font-size: 16px;
+  }
+}

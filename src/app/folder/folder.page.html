@@ -1,10 +1,14 @@
 <ion-header [translucent]="true" class="custom-header">
   <ion-toolbar class="custom-toolbar" style="background-color: black;">
+    <ion-buttons slot="start" *ngIf="isStudent">
+      <ion-button (click)="openMissionsModal()">
+        <ion-icon slot="icon-only" name="ribbon-outline" style="color: white;"></ion-icon>
+      </ion-button>
+    </ion-buttons>
     <ion-title style="color: white">PuntoDuoc</ion-title>
     <ion-buttons slot="end">
       <ion-button [routerLink]="['/notifications']" style="position: relative;">
         <ion-icon slot="icon-only" name="notifications-outline" style="color: white;"></ion-icon>
-        <!-- Badge para mostrar el número de notificaciones -->
         <ion-badge *ngIf="unreadNotificationsCount > 0" color="danger" style="position: absolute; top: -5px; right: -5px;">
           {{ unreadNotificationsCount }}
         </ion-badge>
@@ -12,9 +16,6 @@
     </ion-buttons>
   </ion-toolbar>
 </ion-header>
-
-
-
 
 <ion-content [fullscreen]="true" class="content-center">
   <!-- Barra de búsqueda y botón de filtros -->
@@ -92,46 +93,45 @@
 
   <!-- Carrusel de eventos filtrados en Swiper -->
   <swiper-container
-  [slidesPerView]="1.35"
-  [spaceBetween]="10"
-  [centeredSlides]="true"
-  *ngIf="!loading && segmentFilteredEvents.length > 0"
-  class="swiper-container"
->
-  <swiper-slide *ngFor="let event of segmentFilteredEvents" (click)="goToEventDetails(event)">
-    <ion-card class="event-card">
-      <img alt="Imagen del evento" [src]="event.imagen" class="event-image" />
-      <p style="color: black; font-weight: bold; padding: 0 16px;">
-        {{ transformarFecha(event.fecha) | date: 'EEEE, d \'de\' MMMM \'de\' yyyy, HH:mm' }}
-      </p>
-      <ion-icon
-        name="star"
-        (click)="toggleFavorite(event); $event.stopPropagation()"
-        [style.color]="event.isFavorite ? '#FFD700' : 'gray'"
-        style="position: absolute; top: 10px; right: 10px; font-size: 24px; cursor: pointer;"
-      ></ion-icon>
-      <ion-card-header>
-        <ion-card-title class="centered-text" style="color: black;">
-          {{ event.titulo }}
-        </ion-card-title>
-      </ion-card-header>
-      <ion-card-content class="centered-content">
-        <p *ngIf="event.show" style="color: black;">{{ event.descripcion }}</p>
-        <p style="color: black;">Cupos disponibles: {{ event.Cupos }}</p>
-        <p *ngIf="event.estaInscrito && event.verificado" class="verificado-text" style="color: black;">
-          ¡Estás verificado en este evento!
+    [slidesPerView]="1.35"
+    [spaceBetween]="10"
+    [centeredSlides]="true"
+    *ngIf="!loading && segmentFilteredEvents.length > 0"
+    class="swiper-container"
+  >
+    <swiper-slide *ngFor="let event of segmentFilteredEvents" (click)="goToEventDetails(event)">
+      <ion-card class="event-card">
+        <img alt="Imagen del evento" [src]="event.imagen" class="event-image" />
+        <p style="color: black; font-weight: bold; padding: 0 16px;">
+          {{ transformarFecha(event.fecha) | date: 'EEEE, d \'de\' MMMM \'de\' yyyy, HH:mm' }}
         </p>
-        <p *ngIf="event.estaInscrito && !event.verificado" class="inscrito-text" style="color: black;">
-          ¡Ya estás inscrito en este evento!
-        </p>
-        <p *ngIf="event.enListaEspera" class="en-lista-espera-text" style="color: black;">
-          ¡Ya estás en la lista de espera!
-        </p>
-      </ion-card-content>
-    </ion-card>
-  </swiper-slide>
-</swiper-container>
-
+        <ion-icon
+          name="star"
+          (click)="toggleFavorite(event); $event.stopPropagation()"
+          [style.color]="event.isFavorite ? '#FFD700' : 'gray'"
+          style="position: absolute; top: 10px; right: 10px; font-size: 24px; cursor: pointer;"
+        ></ion-icon>
+        <ion-card-header>
+          <ion-card-title class="centered-text" style="color: black;">
+            {{ event.titulo }}
+          </ion-card-title>
+        </ion-card-header>
+        <ion-card-content class="centered-content">
+          <p *ngIf="event.show" style="color: black;">{{ event.descripcion }}</p>
+          <p style="color: black;">Cupos disponibles: {{ event.Cupos }}</p>
+          <p *ngIf="event.estaInscrito && event.verificado" class="verificado-text" style="color: black;">
+            ¡Estás verificado en este evento!
+          </p>
+          <p *ngIf="event.estaInscrito && !event.verificado" class="inscrito-text" style="color: black;">
+            ¡Ya estás inscrito en este evento!
+          </p>
+          <p *ngIf="event.enListaEspera" class="en-lista-espera-text" style="color: black;">
+            ¡Ya estás en la lista de espera!
+          </p>
+        </ion-card-content>
+      </ion-card>
+    </swiper-slide>
+  </swiper-container>
 
   <ion-text color="dark">
     <h2 style="color: black;">Eventos Recientes</h2>
@@ -143,17 +143,17 @@
         <ion-card class="event-card">
           <img alt="Imagen del evento" [src]="event.imagen" class="event-image" />
           <!-- Fecha del evento en español -->
-        <p style="color: black; font-weight: bold; padding: 0 16px;">
-          {{ transformarFecha(event.fecha) | date: 'EEEE, d \'de\' MMMM \'de\' yyyy, HH:mm' }}
-        </p>
+          <p style="color: black; font-weight: bold; padding: 0 16px;">
+            {{ transformarFecha(event.fecha) | date: 'EEEE, d \'de\' MMMM \'de\' yyyy, HH:mm' }}
+          </p>
 
-        <!-- Icono de estrella para marcar como favorito -->
-        <ion-icon
-          name="star"
-          (click)="toggleFavorite(event); $event.stopPropagation()"
-          [style.color]="event.isFavorite ? '#FFD700' : 'gray'"
-          style="position: absolute; top: 10px; right: 10px; font-size: 24px; cursor: pointer;"
-        ></ion-icon>
+          <!-- Icono de estrella para marcar como favorito -->
+          <ion-icon
+            name="star"
+            (click)="toggleFavorite(event); $event.stopPropagation()"
+            [style.color]="event.isFavorite ? '#FFD700' : 'gray'"
+            style="position: absolute; top: 10px; right: 10px; font-size: 24px; cursor: pointer;"
+          ></ion-icon>
           <ion-card-header>
             <ion-card-title class="centered-text" style="color: black;">
               {{ event.titulo }}
@@ -260,7 +260,6 @@
   <ion-text *ngIf="eventsTerminados.length === 0" style="color: black;">
     No hay eventos terminados.
   </ion-text>
-
 </ion-content>
 
 <app-tab-usuario></app-tab-usuario>
