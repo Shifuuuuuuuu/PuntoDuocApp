@@ -14,46 +14,48 @@ export class DashboardVendedorPage implements OnInit {
   topRecompensas: any[] = [];
   topEstudiantes: any[] = [];
 
-  constructor(private firestoreService: FirestoreService) { }
+  constructor(private firestoreService: FirestoreService) {}
 
   ngOnInit() {
     this.loadDashboardData();
   }
 
+  ngAfterViewInit() {
+    this.loadActividadRecompensasChart();
+  }
+
   async loadDashboardData() {
-    // Lógica para cargar datos desde Firestore y asignar a las variables
     this.totalVentas = await this.firestoreService.getTotalVentas();
     this.recompensasEntregadas = await this.firestoreService.getRecompensasEntregadas();
     this.recompensasPendientes = await this.firestoreService.getRecompensasPendientes();
     this.topRecompensas = await this.firestoreService.getTopRecompensas();
     this.topEstudiantes = await this.firestoreService.getTopEstudiantes();
-
-    // Lógica para cargar y mostrar el gráfico de actividad de recompensas
-    this.loadActividadRecompensasChart();
   }
 
   loadActividadRecompensasChart() {
     const ctx = document.getElementById('actividadRecompensasChart') as HTMLCanvasElement;
-    const chart = new Chart(ctx, {
-      type: 'line',
-      data: {
-        labels: [], // Fechas
-        datasets: [{
-          label: 'Recompensas',
-          data: [], // Datos de recompensas por día
-          borderColor: 'rgba(75, 192, 192, 1)',
-          borderWidth: 1
-        }]
-      },
-      options: {
-        scales: {
-          y: {
-            beginAtZero: true
+    if (ctx) {
+      const chart = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: ['Enero', 'Febrero', 'Marzo', 'Abril'], // Ejemplo de etiquetas
+          datasets: [{
+            label: 'Recompensas',
+            data: [10, 20, 15, 30], // Datos de ejemplo
+            borderColor: 'rgba(75, 192, 192, 1)',
+            borderWidth: 1
+          }]
+        },
+        options: {
+          scales: {
+            y: {
+              beginAtZero: true
+            }
           }
         }
-      }
-    });
-
-
+      });
+    } else {
+      console.error('El elemento del gráfico no se encontró en el DOM.');
+    }
   }
 }

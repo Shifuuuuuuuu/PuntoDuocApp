@@ -1,6 +1,6 @@
 import { Component, OnInit, ViewChild, ElementRef } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
-import { CapacitorBarcodeScanner } from '@capacitor/barcode-scanner';
+import { CapacitorBarcodeScanner, type CapacitorBarcodeScannerScanResult } from '@capacitor/barcode-scanner';
 import { CartService } from '../services/cart.service';
 import { MenuController } from '@ionic/angular';
 import { Evento } from '../interface/IEventos';
@@ -9,6 +9,8 @@ import { Chart, registerables } from 'chart.js';
 import ChartDataLabels from 'chartjs-plugin-datalabels';
 import { Notificacion } from '../interface/INotificacion';
 import { AngularFirestore } from '@angular/fire/compat/firestore';
+import { Camera } from '@capacitor/camera';
+
 Chart.register(...registerables, ChartDataLabels);
 @Component({
   selector: 'app-detalles-evento',
@@ -150,23 +152,49 @@ export class DetallesEventoPage implements OnInit {
 
   async startScan() {
     try {
-      const result = await CapacitorBarcodeScanner.scanBarcode({
+      // Verificar y solicitar permisos de cámara
+      const permiso = await this.verificarPermisoCamara();
+      if (!permiso) {
+        console.error('Permiso de cámara denegado');
+        return;
+      }
+
+      // Iniciar el escaneo
+      const result: CapacitorBarcodeScannerScanResult = await CapacitorBarcodeScanner.scanBarcode({
         hint: 17,
         cameraDirection: 1,
       });
 
-      const qrData = result.ScanResult;
-      const parsedData = JSON.parse(qrData);
+      if (result && result.ScanResult) {
+        const qrData = JSON.parse(result.ScanResult);
 
-      // Ajusta la validación para que busque `userId`
-      if (parsedData.userId && parsedData.nombreCompleto) {
-        return parsedData; // Retorna los datos escaneados si son válidos
+        if (qrData.userId && qrData.nombreCompleto) {
+          console.log('Datos del QR escaneado:', qrData);
+          return qrData; // Retorna los datos escaneados si son válidos
+        } else {
+          throw new Error('Los datos del QR no son válidos');
+        }
       } else {
-        throw new Error('Los datos del QR no son válidos');
+        throw new Error('No se encontró contenido en el escaneo');
       }
-    } catch (e) {
-      console.error('Error al escanear el código:', e);
-      throw e;
+    } catch (error) {
+      console.error('Error al escanear el código:', error);
+      throw error;
+    }
+  }
+
+  async verificarPermisoCamara(): Promise<boolean> {
+    try {
+      const status = await Camera.checkPermissions();
+      if (status.camera === 'granted') {
+        return true; // Permiso concedido
+      } else {
+        const requestStatus = await Camera.requestPermissions({ permissions: ['camera'] });
+        return requestStatus.camera === 'granted';
+      }
+    } catch (error) {
+      console.error('Error al verificar los permisos de cámara:', error);
+      return false;
     }
   }
 

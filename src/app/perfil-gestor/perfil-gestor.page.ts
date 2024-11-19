@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { GestorEventosService } from '../services/gestoreventos.service';
 import { GestorEventos } from '../interface/IGestorEventos';
 import { Router } from '@angular/router';
-
+import Swal from 'sweetalert2';
 @Component({
   selector: 'app-perfil-gestor',
   templateUrl: './perfil-gestor.page.html',
@@ -26,11 +26,9 @@ export class PerfilGestorPage implements OnInit {
     this.loadGestorInfo();
   }
 
-  // Cargar la información del gestor desde el servicio
   loadGestorInfo() {
     this.gestorEventosService.getCurrentUserEmail().subscribe((email) => {
       if (email) {
-        console.log('Cargando gestor con email:', email); // Verificación
         this.gestorEventosService
           .getGestorByEmail(email)
           .then((gestor: GestorEventos | null) => {
@@ -39,7 +37,6 @@ export class PerfilGestorPage implements OnInit {
               this.tempNombreCompleto = gestor.Nombre_completo;
               this.tempEmail = gestor.email;
               this.tempRut = gestor.rut;
-              console.log('Datos del gestor cargados:', this.gestor); // Verifica los datos cargados
             } else {
               this.errorMessage = 'Gestor no encontrado.';
             }
@@ -53,36 +50,46 @@ export class PerfilGestorPage implements OnInit {
     });
   }
 
-  // Activar el modo de edición
   editProfile() {
     this.isEditing = true;
+    this.tempNombreCompleto = this.gestor?.Nombre_completo || '';
+    this.tempEmail = this.gestor?.email || '';
+    this.tempRut = this.gestor?.rut || '';
   }
 
-  // Guardar los cambios en el perfil
   saveProfile() {
     if (this.gestor) {
       this.gestor.Nombre_completo = this.tempNombreCompleto;
-      this.gestor.email = this.tempEmail;
       this.gestor.rut = this.tempRut;
 
-      console.log('Guardando cambios del gestor:', this.gestor); // Verificación
       this.gestorEventosService.updateGestor(this.gestor).then(() => {
         this.isEditing = false;
-        console.log('Perfil actualizado exitosamente'); // Verificación de éxito
+        Swal.fire({
+          title: 'Perfil Actualizado',
+          text: 'Los cambios en tu perfil se han guardado correctamente.',
+          icon: 'success',
+          confirmButtonText: 'OK'
+        });
       }).catch(() => {
         this.errorMessage = 'Error al guardar los cambios.';
       });
     }
   }
 
-  // Cancelar la edición del perfil
   cancelEdit() {
     this.isEditing = false;
     this.loadGestorInfo();
   }
 
-  // Confirmar cierre de sesión
   confirmLogout() {
+    if (!this.isEditing) {
+      this.logout();
+    } else {
+      this.errorMessage = 'Por favor, guarda los cambios antes de cerrar sesión.';
+    }
+  }
+
+  logout() {
     this.gestorEventosService.logout();
     this.router.navigate(['/login']);
   }

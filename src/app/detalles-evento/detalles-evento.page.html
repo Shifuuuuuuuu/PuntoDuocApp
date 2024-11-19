@@ -8,7 +8,6 @@
 </ion-header>
 
 <ion-content [fullscreen]="true" class="content-center">
-  <h1 class="ion-text-center">Detalles del Evento</h1>
 
   <ion-row class="ion-margin">
     <!-- Escanear Código QR -->
@@ -32,22 +31,12 @@
     </ion-col>
 
     <!-- Botón de Lista de Espera -->
-    <ion-col size="6" class="ion-text-center">
+    <ion-col size="12" class="ion-text-center">
       <ion-card class="custom-card" (click)="toggleListaEspera()">
         <ion-thumbnail [style.background]="'rgba(255,204,0,0.2)'">
           <ion-icon name="time-outline" color="warning"></ion-icon>
         </ion-thumbnail>
         <ion-label>Lista de Espera</ion-label>
-      </ion-card>
-    </ion-col>
-
-    <!-- Botón de Dashboard para mostrar el gráfico de pastel -->
-    <ion-col size="6" class="ion-text-center">
-      <ion-card class="custom-card" (click)="toggleDashboard()">
-        <ion-thumbnail [style.background]="'rgba(76,175,80,0.2)'">
-          <ion-icon name="pie-chart-outline" color="success"></ion-icon>
-        </ion-thumbnail>
-        <ion-label>Graficos</ion-label>
       </ion-card>
     </ion-col>
   </ion-row>

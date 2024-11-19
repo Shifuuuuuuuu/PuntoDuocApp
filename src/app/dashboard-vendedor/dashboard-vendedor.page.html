@@ -1,47 +1,59 @@
 <ion-header [translucent]="true" class="custom-header">
-  <ion-toolbar class="custom-toolbar">
-    <ion-title style="color: white;">Dashboard</ion-title>
+  <ion-toolbar class="custom-toolbar" style="background-color: black;">
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/folder-ventas" style="color: white;"></ion-back-button>
+    </ion-buttons>
+    <ion-title style="color:  white">Centro de ayuda</ion-title>
   </ion-toolbar>
 </ion-header>
-
-<ion-content [fullscreen]="true" class="ion-padding">
+<ion-content [fullscreen]="true" class="content-center">
   <!-- Resumen de Ventas y Recompensas -->
-  <ion-card>
+  <ion-card style="background-color: white;">
     <ion-card-header>
-      <ion-card-title>Resumen de Ventas y Recompensas</ion-card-title>
+      <ion-card-title style="color: black;">Resumen de Ventas y Recompensas</ion-card-title>
     </ion-card-header>
     <ion-card-content>
-      <p>Total de ventas: {{ totalVentas }}</p>
-      <p>Recompensas entregadas: {{ recompensasEntregadas }}</p>
-      <p>Recompensas pendientes: {{ recompensasPendientes }}</p>
+      <p style="color: black;">Total de ventas: {{ totalVentas }}</p>
+      <p style="color: black;">Recompensas entregadas: {{ recompensasEntregadas }}</p>
+      <p style="color: black;">Recompensas pendientes: {{ recompensasPendientes }}</p>
     </ion-card-content>
   </ion-card>
 
   <!-- Recompensas Más Populares -->
-  <ion-card>
+  <ion-card style="background-color: white;">
     <ion-card-header>
-      <ion-card-title>Top Recompensas</ion-card-title>
+      <ion-card-title style="color: black;">Top Recompensas</ion-card-title>
     </ion-card-header>
     <ion-card-content>
-      <ion-list>
-        <ion-item *ngFor="let recompensa of topRecompensas">
-          <ion-label>{{ recompensa.descripcion }} </ion-label>
+      <ion-list style="background-color: white;">
+        <ion-item style="--background: transparent; --border-width: 0px; --inner-border-width: 0px;" *ngFor="let recompensa of topRecompensas">
+          <ion-label style="color: black;">{{ recompensa.descripcion }} </ion-label>
         </ion-item>
       </ion-list>
     </ion-card-content>
   </ion-card>
 
   <!-- Estudiantes Activos -->
-  <ion-card>
+  <ion-card style="background-color: white;">
     <ion-card-header>
-      <ion-card-title>Estudiantes Activos</ion-card-title>
+      <ion-card-title style="color: black;">Estudiantes Activos</ion-card-title>
     </ion-card-header>
     <ion-card-content>
-      <ion-list>
-        <ion-item *ngFor="let estudiante of topEstudiantes">
-          <ion-label>{{ estudiante.nombre_completo }} - {{ estudiante.total }} recompensas reclamadas</ion-label>
+      <ion-list style="background-color: white;">
+        <ion-item style="--background: transparent; --border-width: 0px; --inner-border-width: 0px;" *ngFor="let estudiante of topEstudiantes">
+          <ion-label style="color: black;">{{ estudiante.nombre_completo }} - {{ estudiante.total }} recompensas reclamadas</ion-label>
         </ion-item>
-      </ion-list>      
+      </ion-list>
+    </ion-card-content>
+  </ion-card>
+
+  <!-- Gráfico de actividad de recompensas -->
+  <ion-card style="background-color: white;">
+    <ion-card-header>
+      <ion-card-title style="color: black;">Actividad de Recompensas</ion-card-title>
+    </ion-card-header>
+    <ion-card-content>
+      <canvas id="actividadRecompensasChart"></canvas>
     </ion-card-content>
   </ion-card>
 </ion-content>

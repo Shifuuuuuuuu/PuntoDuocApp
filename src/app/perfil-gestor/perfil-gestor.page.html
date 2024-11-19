@@ -17,48 +17,48 @@
     </ion-card-content>
   </ion-card>
 
+  <!-- Información personal -->
   <div class="form-container">
-    <h1 class="center" style="color: #0A49A7; text-align: center;">Información personal</h1>
-    <div class="profile-icon-container">
-      <ion-icon name="person-circle-outline" size="large"></ion-icon>
+    <div class="header-container">
+      <h1>Información personal</h1>
+      <div class="icon-container">
+        <ion-icon style="color: black;" *ngIf="!isEditing" name="create-outline" (click)="editProfile()"></ion-icon>
+        <ion-icon *ngIf="isEditing" name="checkmark-outline" (click)="saveProfile()"></ion-icon>
+        <ion-icon *ngIf="isEditing" name="close-outline" (click)="cancelEdit()"></ion-icon>
+      </div>
     </div>
 
     <form *ngIf="gestor">
+      <!-- Nombre Completo -->
       <div class="mb-3 position-relative">
         <ion-item class="custom-item">
           <ion-label>
             <h2 style="color: black;">Nombre Completo</h2>
             <p *ngIf="!isEditing">{{ gestor.Nombre_completo }}</p>
-            <ion-input *ngIf="isEditing" [(ngModel)]="tempNombreCompleto" [placeholder]="gestor.Nombre_completo"></ion-input>
+            <ion-input *ngIf="isEditing" [(ngModel)]="tempNombreCompleto" [placeholder]="gestor.Nombre_completo" [ngModelOptions]="{ standalone: true }"></ion-input>
           </ion-label>
         </ion-item>
       </div>
 
+      <!-- Correo Electrónico -->
       <div class="mb-3 position-relative">
         <ion-item class="custom-item">
           <ion-label>
             <h2 style="color: black;">Correo Electrónico</h2>
-            <p *ngIf="!isEditing">{{ gestor.email }}</p>
-            <ion-input *ngIf="isEditing" [(ngModel)]="tempEmail" [placeholder]="gestor.email"></ion-input>
+            <p>{{ gestor.email }}</p> <!-- Siempre muestra el correo como texto -->
           </ion-label>
         </ion-item>
       </div>
 
+      <!-- RUT -->
       <div class="mb-3 position-relative">
         <ion-item class="custom-item">
           <ion-label>
             <h2 style="color: black;">RUT</h2>
             <p *ngIf="!isEditing">{{ gestor.rut }}</p>
-            <ion-input *ngIf="isEditing" [(ngModel)]="tempRut" [placeholder]="gestor.rut"></ion-input>
+            <ion-input *ngIf="isEditing" [(ngModel)]="tempRut" [placeholder]="gestor.rut" [ngModelOptions]="{ standalone: true }"></ion-input>
           </ion-label>
         </ion-item>
-      </div>
-
-      <div class="button-container">
-        <ion-button class="button-inline" *ngIf="!isEditing" (click)="editProfile()">Editar Perfil</ion-button>
-        <ion-button class="button-inline" color="success" *ngIf="isEditing" (click)="saveProfile()">Guardar Cambios</ion-button>
-        <ion-button class="button-inline" color="danger" *ngIf="isEditing" (click)="cancelEdit()">Cancelar</ion-button>
-        <ion-button class="button-inline" color="danger" (click)="confirmLogout()" *ngIf="!isEditing">Cerrar Sesión</ion-button>
       </div>
     </form>
   </div>

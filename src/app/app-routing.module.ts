@@ -65,6 +65,14 @@ const routes: Routes = [
     loadChildren: () => import('./perfil-gestor/perfil-gestor.module').then( m => m.PerfilGestorPageModule),canActivate: [AuthGuard]
   },
   {
+    path: 'perfil-ventas',
+    loadChildren: () => import('./perfil-ventas/perfil-ventas.module').then(m => m.PerfilVentasPageModule),canActivate: [AuthGuard]
+  },
+  {
+    path: 'dashboard-vendedor',
+    loadChildren: () => import('./dashboard-vendedor/dashboard-vendedor.module').then(m => m.DashboardVendedorPageModule),canActivate: [AuthGuard]
+  },
+  {
     path: 'events-category/:category',
     loadChildren: () => import('./events-category/events-category.module').then( m => m.EventsCategoryPageModule),canActivate: [AuthGuard]
   },

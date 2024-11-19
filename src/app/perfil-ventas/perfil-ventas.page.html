@@ -14,9 +14,14 @@
     </ion-card-content>
   </ion-card>
 
-  <div *ngIf="usuarioVentas" class="form-container" style="max-width: 380px; margin: auto; padding: 25px; background-color: white; border-radius: 20px;">
+  <div *ngIf="usuarioVentas" class="form-container">
     <div class="header-container">
-      <h1 class="center">Información personal</h1>
+      <h1>Información personal</h1>
+      <div class="icon-container">
+        <ion-icon *ngIf="!isEditing" name="create-outline" (click)="editProfile()"></ion-icon>
+        <ion-icon *ngIf="isEditing" name="checkmark-outline" (click)="saveProfile()"></ion-icon>
+        <ion-icon *ngIf="isEditing" name="close-outline" (click)="cancelEdit()"></ion-icon>
+      </div>
     </div>
     <form>
       <!-- Nombre Completo -->
@@ -24,7 +29,8 @@
         <ion-item class="custom-item">
           <ion-label>
             <h2 style="color: black;">Nombre Completo</h2>
-            <p>{{ usuarioVentas.nombre_completo }}</p>
+            <p *ngIf="!isEditing">{{ usuarioVentas.nombre_completo }}</p>
+            <ion-input *ngIf="isEditing" [(ngModel)]="tempNombreCompleto" [placeholder]="usuarioVentas.nombre_completo" [ngModelOptions]="{ standalone: true }"></ion-input>
           </ion-label>
         </ion-item>
       </div>
@@ -44,25 +50,12 @@
         <ion-item class="custom-item">
           <ion-label>
             <h2 style="color: black;">RUT</h2>
-            <p>{{ usuarioVentas.rut }}</p>
+            <p *ngIf="!isEditing">{{ usuarioVentas.rut }}</p>
+            <ion-input *ngIf="isEditing" [(ngModel)]="tempRut" [placeholder]="usuarioVentas.rut" [ngModelOptions]="{ standalone: true }"></ion-input>
           </ion-label>
         </ion-item>
       </div>
     </form>
   </div>
-
-  <div class="spacer"></div>
-
-
-  <!-- Footer -->
-  <ion-footer collapse="fade" class="footer">
-    <p>Síguenos en nuestras redes sociales:</p>
-    <div class="social-icons">
-      <ion-icon name="logo-facebook" class="social-icon"></ion-icon>
-      <ion-icon name="logo-twitter" class="social-icon"></ion-icon>
-      <ion-icon name="logo-instagram" class="social-icon"></ion-icon>
-    </div>
-    <p>&copy; 2024 Punto Duoc. Todos los derechos reservados.</p>
-  </ion-footer>
 </ion-content>
 <app-tab-bar></app-tab-bar>
