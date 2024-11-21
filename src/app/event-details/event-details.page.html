@@ -55,9 +55,10 @@
       <div *ngIf="event.estado === 'Terminado'" style="margin-top: 20px;">
         <!-- Selector de calificación con estrellas -->
         <div class="stars" style="margin-bottom: 10px;">
-          <ion-icon *ngFor="let star of [1, 2, 3, 4, 5]"
+          <ion-icon *ngFor="let star of [1, 2, 3, 4, 5]; let i = index"
                     name="star"
                     [color]="calificacion >= star ? 'warning' : 'medium'"
+                    [ngClass]="{'animate-star': calificacion >= star}"
                     (click)="calificacion = star"></ion-icon>
         </div>
         <div style="display: flex; align-items: center;">

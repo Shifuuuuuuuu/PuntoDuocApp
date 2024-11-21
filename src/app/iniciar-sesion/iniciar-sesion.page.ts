@@ -9,7 +9,7 @@ import { LoadingController, MenuController } from '@ionic/angular';
 import { EstudianteService } from '../services/estudiante.service';
 import Swal from 'sweetalert2';
 import { firstValueFrom } from 'rxjs';
-import { PushNotifications } from '@capacitor/push-notifications';
+
 
 
 
@@ -46,24 +46,8 @@ export class IniciarSesionPage implements OnInit {
   }
 
   ngOnInit() {
-    this.solicitarPermisosDeNotificaciones();
+    // Cargar credenciales si la opción está habilitada
     this.cargarCredenciales();
-  }
-  async solicitarPermisosDeNotificaciones() {
-    // Solicita permisos de notificación
-    let permStatus = await PushNotifications.checkPermissions();
-
-    if (permStatus.receive !== 'granted') {
-      permStatus = await PushNotifications.requestPermissions();
-    }
-
-    if (permStatus.receive === 'granted') {
-      console.log('Permisos de notificaciones concedidos');
-      // Registra el dispositivo para recibir notificaciones
-      await PushNotifications.register();
-    } else {
-      console.error('Permisos de notificaciones denegados');
-    }
   }
 
   // Método para iniciar sesión

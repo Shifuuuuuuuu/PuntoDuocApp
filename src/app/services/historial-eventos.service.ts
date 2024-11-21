@@ -51,23 +51,37 @@ getEventosVerificados(userId: string, userType: 'estudiante' | 'invitado'): Obse
       map(actions => actions
         .map(a => {
           const data = a.payload.doc.data() as any;
+
           const inscripcionEncontrada = data.Inscripciones.find((inscripcion: any) =>
             (inscripcion.id_estudiante === userId || inscripcion.id_invitado === userId)
           );
 
           if (inscripcionEncontrada) {
-            // Convertir el Timestamp de Firestore a Date si existe
-            const fechaVerificacion = inscripcionEncontrada.fechaVerificacion?.toDate ? inscripcionEncontrada.fechaVerificacion.toDate() : null;
-            const estadoVerificacion = inscripcionEncontrada.verificado ? 'Acreditado' : 'No Acreditado';
-            return { ...data, fechaVerificacion: fechaVerificacion, estadoVerificacion: estadoVerificacion };
+            // Convertir Timestamp de Firestore a Date
+            const fechaVerificacion = inscripcionEncontrada.fechaVerificacion?.toDate?.() || null;
+            const fechaTermino = data.fecha_termino?.toDate?.() || null;
+            const currentDate = new Date(); // Fecha actual
+
+            let estadoVerificacion = 'No Acreditado';
+            if (inscripcionEncontrada.verificado) {
+              estadoVerificacion = 'Acreditado';
+            } else if (fechaTermino && currentDate > fechaTermino) {
+              estadoVerificacion = 'Penalizado';
+            }
+
+            return {
+              ...data,
+              fechaVerificacion,
+              fechaTermino,
+              estadoVerificacion,
+            };
           } else {
-            return null; // No se devuelve si no hay inscripción
+            return null; // Excluir eventos sin inscripción
           }
         })
-        .filter(evento => evento !== null) // Filtrar eventos que no tienen inscripción
+        .filter(evento => evento !== null) // Filtrar eventos no válidos
       )
     );
 }
-
 
 }

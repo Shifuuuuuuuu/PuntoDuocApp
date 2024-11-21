@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { HistorialEventosService } from '../services/historial-eventos.service';
 import { NotificationService } from '../services/notification.service';
 import { MissionsAlertService } from '../services/missions-alert.service';
+import { Timestamp } from 'firebase/firestore';
 
 @Component({
   selector: 'app-historial-eventos',
@@ -11,9 +12,11 @@ import { MissionsAlertService } from '../services/missions-alert.service';
 export class HistorialEventosPage implements OnInit {
   userId: string = '';
   userType: 'estudiante' | 'invitado' | null = null;
-  eventosVerificados: any[] = [];
   loading: boolean = true;
   unreadNotificationsCount: number = 0;
+  eventosAcreditados: any[] = [];
+  eventosNoAcreditados: any[] = [];
+  eventosPenalizados: any[] = [];
 
   constructor(
     private historialEventosService: HistorialEventosService,
@@ -49,7 +52,18 @@ export class HistorialEventosPage implements OnInit {
     if (this.userId && this.userType) {
       this.historialEventosService.getEventosVerificados(this.userId, this.userType).subscribe(
         (eventos) => {
-          this.eventosVerificados = eventos;
+          eventos.forEach(evento => {
+            if (evento.fechaVerificacion instanceof Timestamp) {
+              evento.fechaVerificacion = evento.fechaVerificacion.toDate();
+            }
+            if (evento.fecha_termino instanceof Timestamp) {
+              evento.fecha_termino = evento.fecha_termino.toDate();
+            }
+          });
+
+          this.eventosAcreditados = eventos.filter(evento => evento.estadoVerificacion === 'Acreditado');
+          this.eventosNoAcreditados = eventos.filter(evento => evento.estadoVerificacion === 'No Acreditado');
+          this.eventosPenalizados = eventos.filter(evento => evento.estadoVerificacion === 'Penalizado');
           this.loading = false;
         },
         (error) => {
@@ -62,4 +76,5 @@ export class HistorialEventosPage implements OnInit {
       this.loading = false;
     }
   }
+
 }

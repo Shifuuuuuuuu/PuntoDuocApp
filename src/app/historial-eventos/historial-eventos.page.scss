@@ -1,16 +1,15 @@
-
 /* Header */
 .custom-header {
   position: relative;
-  z-index: 10; /* Asegura que el header esté siempre al frente */
+  z-index: 10;
 }
 
 .custom-toolbar {
-  height: 120px; /* Aumenta la altura del toolbar */
+  height: 120px;
   display: flex;
-  justify-content: center; /* Centra horizontalmente */
-  align-items: center; /* Centra verticalmente */
-  border-bottom-left-radius: 50px; /* Bordes redondeados */
+  justify-content: center;
+  align-items: center;
+  border-bottom-left-radius: 50px;
   border-bottom-right-radius: 50px;
   background-color: black;
   --background: transparent;
@@ -19,95 +18,165 @@
 .custom-toolbar ion-title {
   font-size: 24px;
   font-weight: bold;
-  color: white; /* Texto en blanco */
+  color: white;
   text-align: center;
 }
 
 /* Para crear una curva en el borde inferior */
 .custom-header::after {
   position: absolute;
-  bottom: -30px; /* Ajusta la altura de la curva */
+  bottom: -30px;
   left: 0;
   width: 100%;
-  height: 60px; /* Altura de la curva */
+  height: 60px;
   background-color: white;
   border-top-left-radius: 50%;
   border-top-right-radius: 50%;
 }
 
-/* Ajustes del contenido */
+/* Contenido */
 .content-center {
   --background: #ffffff;
   display: flex;
   flex-direction: column;
   align-items: center;
-  height: 100%; /* Asegura que ocupe toda la pantalla */
+  height: 100%;
 }
 
-/* Estilo para los iconos de redes sociales */
-.social-icons {
-  display: flex;
-  justify-content: center;
-  gap: 15px;
-  margin: 10px 0;
-}
-
-.social-icon {
-  font-size: 24px;
-  color: #0A49A7;
-  transition: transform 0.3s ease;
-}
-
-.social-icon:hover {
-  transform: scale(1.2);
-}
-
-/* Pie de página */
-.footer {
-  text-align: center;
-  margin-top: 20px;
-  padding: 20px;
-  background-color: #f2f2f2;
-  border-radius: 15px; /* Bordes redondeados */
-  color: #0A49A7;
-}
-
-/* Texto de derechos reservados */
-.footer p {
-  margin: 5px 0;
-  font-size: 14px;
-}
-/* Ajustes de las tarjetas */
+/* Tarjetas de eventos */
 .event-card {
-  background-color: #ffffff; /* Fondo blanco */
-  border-radius: 15px; /* Bordes redondeados */
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-  transition: transform 0.3s ease; /* Transición suave para el efecto de escala */
-}
-.no-events {
-  text-align: center;
-  margin-top: 20px;
-}
-/* Ajustes de los ítems de la lista */
-.event-item {
-  --background: white;
-  color: black;
-  margin: 10px 0;
-  padding: 15px;
+  background-color: #ffffff;
   border-radius: 15px;
-  box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  margin: 10px 20px;
+  padding: 10px;
+  position: relative;
   display: flex;
   align-items: center;
   gap: 10px;
-  justify-content: space-between;
-  flex-wrap: wrap;
-  --border-width: 0px; /* Quita la línea inferior */
-  --inner-border-width: 0px; /* Quita cualquier borde interno */
+  overflow: hidden; /* Evita que la imagen sobresalga */
 }
-.event-image {
-  width: 50px;
-  height: 50px;
+
+/* Contenedor de contenido en la tarjeta */
+.event-container {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  width: 100%;
+  position: relative;
+}
+
+/* Imágenes dentro de las tarjetas */
+.event-thumbnail {
+  flex-shrink: 0;
+  width: 80px;
+  height: 80px;
   border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.2);
+}
+
+.event-thumbnail .event-image {
+  width: 100%;
+  height: 100%;
   object-fit: cover;
 }
 
+/* Detalles del evento */
+.event-details {
+  flex: 1;
+  padding-left: 15px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+/* Títulos en los detalles */
+.event-details h2 {
+  color: #333333; /* Gris oscuro */
+  font-size: 13px; /* Reducir el tamaño del texto */
+  font-weight: 600; /* Grosor ajustado */
+  margin: 0; /* Elimina márgenes */
+  line-height: 1.2; /* Reduce el espacio entre líneas */
+  white-space: normal; /* Permite que el texto ocupe varias líneas */
+  overflow: hidden; /* Evita que el contenido se salga del contenedor */
+  text-overflow: ellipsis; /* Añade "..." si el contenido es demasiado largo */
+  display: -webkit-box; /* Controla el número de líneas visibles */
+
+  -webkit-box-orient: vertical; /* Orienta el contenido verticalmente */
+}
+
+.event-details p {
+  font-size: 11px; /* Reducir el tamaño del subtítulo */
+  color: #666666; /* Subtítulo en gris claro */
+  margin: 2px 0; /* Márgenes más compactos */
+}
+
+/* Ajustes para las tarjetas */
+.event-card {
+  background-color: #ffffff;
+  border-radius: 15px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  margin: 10px 20px;
+  padding: 10px;
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  overflow: hidden; /* Evita que cualquier contenido sobresalga */
+}
+
+/* Imágenes */
+.event-thumbnail {
+  flex-shrink: 0;
+  width: 60px; /* Reduce el tamaño de la imagen */
+  height: 60px; /* Reduce el tamaño de la imagen */
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.2);
+}
+
+.event-thumbnail .event-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* Badges */
+.event-badge {
+  position: absolute;
+  top: 40px;
+  right: 10px;
+  padding: 3px 10px; /* Más compacto */
+  border-radius: 12px;
+  font-size: 12px; /* Ajusta el tamaño del texto */
+  font-weight: bold;
+  color: white;
+  white-space: nowrap;
+  z-index: 10;
+}
+
+.badge-acreditado {
+  background-color: #4caf50; /* Verde */
+}
+
+.badge-no-acreditado {
+  background-color: #9e9e9e; /* Gris */
+}
+
+.badge-penalizado {
+  background-color: #f44336; /* Rojo */
+}
+
+/* Dividers */
+ion-item-divider {
+  font-weight: bold;
+  margin: 10px 20px;
+  padding: 10px 15px;
+  background-color: #f4f4f4; /* Blanco medio gris */
+  border-radius: 15px;
+  color: #757575; /* Gris oscuro */
+  width: calc(100% - 40px);
+  box-sizing: border-box;
+
+}

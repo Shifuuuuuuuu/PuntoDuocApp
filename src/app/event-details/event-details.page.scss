@@ -42,3 +42,22 @@
   align-items: center;
   height: 100%; /* Asegura que ocupe toda la pantalla */
 }
+.stars ion-icon {
+  transition: transform 0.3s ease-in-out, color 0.3s ease-in-out;
+}
+
+.stars ion-icon.animate-star {
+  animation: bounce 0.5s ease-in-out;
+}
+
+@keyframes bounce {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.5);
+  }
+  100% {
+    transform: scale(1);
+  }
+}

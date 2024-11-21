@@ -363,13 +363,13 @@ export class FolderPage implements OnInit {
       const matchesSede = this.selectedSede === 'all' || this.selectedSede === ''
         ? true
         : evento.sede?.toLowerCase() === this.selectedSede.toLowerCase();
-        console.log('Selected sede:', this.selectedSede);
+
       return matchesSearchText && matchesSede;
     });
 
     // Actualiza la lista de eventos visibles
     this.segmentFilteredEvents = [...this.sedeFilteredEvents];
-    console.log('Eventos filtrados:', this.sedeFilteredEvents);
+
 
     this.filterEventsByDate();
   }

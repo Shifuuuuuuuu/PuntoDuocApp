@@ -27,6 +27,7 @@ export class EventDetailsPage implements OnInit {
   comentarios: Comentario[] = [];
   comentario: string = '';
   calificacion: number = 0;
+  tempCalificacion: number = 0;
   constructor(
     private route: ActivatedRoute,
     private firestore: AngularFirestore,
@@ -49,6 +50,15 @@ export class EventDetailsPage implements OnInit {
       this.unreadNotificationsCount = count;
     });
   }
+    // Función para mostrar la calificación temporal al pasar el mouse
+    mostrarCalificacion(temporaria: number) {
+      this.tempCalificacion = temporaria;
+    }
+
+    // Función para restablecer la calificación temporal al quitar el mouse
+    ocultarCalificacion() {
+      this.tempCalificacion = 0;
+    }
 
   async identificarUsuario() {
     try {

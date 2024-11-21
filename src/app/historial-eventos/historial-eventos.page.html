@@ -19,17 +19,55 @@
 </ion-header>
 
 <ion-content [fullscreen]="true" class="content-center">
-  <ion-list style="background-color: white;" *ngIf="eventosVerificados.length > 0">
-    <ion-item class="event-item" *ngFor="let evento of eventosVerificados">
-      <ion-thumbnail slot="start" class="event-thumbnail">
-        <img [src]="evento.imagen" alt="Imagen del evento" class="event-image">
-      </ion-thumbnail>
-      <ion-label>
-        <h2>{{ evento.titulo }}</h2>
-        <p>Estado: {{ evento.estadoVerificacion }}</p>
-        <p *ngIf="evento.fechaVerificacion">Fecha de acreditación: {{ evento.fechaVerificacion | date:'dd/MM/yyyy' }}</p>
-      </ion-label>
-    </ion-item>
+  <!-- Sección: Acreditados -->
+  <ion-list style="background-color: white;" *ngIf="eventosAcreditados.length > 0">
+    <ion-item-divider class="divider">Eventos Acreditados</ion-item-divider>
+    <div *ngFor="let evento of eventosAcreditados" class="event-card">
+      <div class="event-container">
+        <ion-thumbnail class="event-thumbnail">
+          <img [src]="evento.imagen" alt="Imagen del evento" class="event-image">
+        </ion-thumbnail>
+        <div class="event-details">
+          <h2>{{ evento.titulo }}</h2>
+          <p>Fecha de acreditación: {{ evento.fechaVerificacion | date:'dd/MM/yyyy' }}</p>
+        </div>
+        <div class="event-badge badge-acreditado">Acreditado</div>
+      </div>
+    </div>
+  </ion-list>
+
+  <!-- Sección: No Acreditados -->
+  <ion-list style="background-color: white;" *ngIf="eventosNoAcreditados.length > 0">
+    <ion-item-divider class="divider">Eventos No Acreditados</ion-item-divider>
+    <div *ngFor="let evento of eventosNoAcreditados" class="event-card">
+      <div class="event-container">
+        <ion-thumbnail class="event-thumbnail">
+          <img [src]="evento.imagen" alt="Imagen del evento" class="event-image">
+        </ion-thumbnail>
+        <div class="event-details">
+          <h2>{{ evento.titulo }}</h2>
+          <p>Fecha de término: {{ evento.fecha_termino | date:'dd/MM/yyyy' }}</p>
+        </div>
+        <div class="event-badge badge-no-acreditado">No Acreditado</div>
+      </div>
+    </div>
+  </ion-list>
+
+  <!-- Sección: Penalizados -->
+  <ion-list style="background-color: white;" *ngIf="eventosPenalizados.length > 0">
+    <ion-item-divider class="divider">Eventos Penalizados</ion-item-divider>
+    <div *ngFor="let evento of eventosPenalizados" class="event-card">
+      <div class="event-container">
+        <ion-thumbnail class="event-thumbnail">
+          <img [src]="evento.imagen" alt="Imagen del evento" class="event-image">
+        </ion-thumbnail>
+        <div class="event-details">
+          <h2>{{ evento.titulo }}</h2>
+          <p>Fecha de término: {{ evento.fecha_termino | date:'dd/MM/yyyy' }}</p>
+        </div>
+        <div class="event-badge badge-penalizado">Penalizado</div>
+      </div>
+    </div>
   </ion-list>
 </ion-content>
 
