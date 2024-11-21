@@ -9,7 +9,6 @@ import 'firebase/compat/firestore';
 export class MissionsAlertService {
   constructor(private firestore: AngularFirestore) {}
 
-  // Mostrar misiones
   async showMissionsAlert() {
     const userId = await this.getCurrentUserId();
     if (!userId) {
@@ -31,13 +30,14 @@ export class MissionsAlertService {
     }
 
     const missionHtml = topMissions
-      .map((mission) => `
+      .map((mission, index) => `
         <div style="margin-bottom: 20px; padding: 10px; border: 1px solid #e0e0e0; border-radius: 8px;">
           <h4 style="margin: 0 0 8px;">${mission.titulo}</h4>
           <p style="margin: 0 0 10px; font-size: 14px; color: #666;">${mission.descripcion}</p>
           <p style="margin: 0 0 10px; font-size: 14px; color: #333;">Objetivo: ${mission.objetivo}</p>
           <progress value="${mission.progress}" max="1" style="width: 100%; height: 10px; margin-bottom: 10px; border-radius: 5px;"></progress>
           <button
+            id="claim-button-${index}"
             style="
               display: block;
               width: 100%;
@@ -51,7 +51,7 @@ export class MissionsAlertService {
               text-transform: uppercase;
             "
             ${mission.progress < 1 ? 'disabled' : ''}
-            onclick="window.claimReward('${mission.id}', ${mission.puntaje})">
+          >
             Reclamar ${mission.puntaje} puntos
           </button>
         </div>
@@ -67,9 +67,68 @@ export class MissionsAlertService {
         popup: 'missions-popup',
       },
     });
+
+    // Agregar manejadores de eventos a los botones generados
+    topMissions.forEach((mission, index) => {
+      const button = document.getElementById(`claim-button-${index}`);
+      if (button) {
+        button.addEventListener('click', async () => {
+          try {
+            console.log(`Intentando reclamar misión: ${mission.titulo}`);
+            await this.claimReward(mission.id, mission.puntaje, userId);
+          } catch (error) {
+            console.error(`Error al reclamar misión "${mission.titulo}":`, error);
+          }
+        });
+      }
+    });
   }
 
-  // Obtener misiones desde Firestore
+  async claimReward(missionId: string, puntaje: number, userId: string) {
+    try {
+      const studentDoc = await this.firestore.collection('Estudiantes').doc(userId).get().toPromise();
+
+      if (!studentDoc || !studentDoc.exists) {
+        Swal.fire('Error', 'No se encontró información del estudiante.', 'error');
+        return;
+      }
+
+      const studentData = studentDoc.data() as {
+        id_estudiante?: string;
+        email: string;
+        Nombre_completo: string;
+      };
+
+      const { id_estudiante, Nombre_completo, email } = studentData;
+
+      await this.firestore.collection('Estudiantes').doc(userId).update({
+        puntaje: firebase.firestore.FieldValue.increment(puntaje),
+        misionesCompletadas: firebase.firestore.FieldValue.arrayUnion(missionId),
+      });
+
+      await this.firestore.collection('Misiones').doc(missionId).update({
+        misionesCompletadas: firebase.firestore.FieldValue.arrayUnion({
+          id_estudiante: id_estudiante || userId,
+          Nombre_completo,
+          email,
+          missionId,
+        }),
+      });
+
+      Swal.fire({
+        title: '¡Recompensa reclamada!',
+        text: `Has ganado ${puntaje} puntos por completar la misión.`,
+        icon: 'success',
+        confirmButtonText: '¡Genial!',
+      });
+
+      this.showMissionsAlert();
+    } catch (error) {
+      console.error('Error al reclamar recompensa:', error);
+      Swal.fire('Error', 'No se pudo reclamar la recompensa. Inténtalo nuevamente.', 'error');
+    }
+  }
+
   private async getMissionsFromDatabase(userId: string): Promise<any[]> {
     try {
       const missionsSnapshot = await this.firestore.collection('Misiones').get().toPromise();
@@ -82,113 +141,168 @@ export class MissionsAlertService {
       const completedMissions = await this.getCompletedMissions(userId);
 
       return missionsSnapshot.docs
-        .map((doc) => {
-          const data = doc.data() as any;
-          console.log('Misión obtenida:', data);
-          return {
-            id: doc.id,
-            ...data,
-          };
+        .map(doc => {
+          const data = doc.data() || {};
+          return { id: doc.id, ...data };
         })
-        .filter((mission) => !completedMissions.includes(mission.id));
+        .filter(mission => !completedMissions.includes(mission.id));
     } catch (error) {
       console.error('Error al obtener misiones:', error);
       return [];
     }
   }
 
-  // Obtener misiones completadas del estudiante
   private async getCompletedMissions(userId: string): Promise<string[]> {
     try {
       const estudianteDoc = await this.firestore.collection('Estudiantes').doc(userId).get().toPromise();
-      const estudianteData = estudianteDoc?.data() as { misionesCompletadas?: string[] };
-      console.log('Misiones completadas:', estudianteData?.misionesCompletadas || []);
-      return estudianteData?.misionesCompletadas || [];
+
+      if (!estudianteDoc || !estudianteDoc.exists) {
+        console.warn('El estudiante no existe en la base de datos.');
+        return [];
+      }
+
+      const estudianteData = estudianteDoc.data() as { misionesCompletadas?: string[] } || {};
+      return estudianteData.misionesCompletadas || [];
     } catch (error) {
       console.error('Error al obtener misiones completadas:', error);
       return [];
     }
   }
 
-  // Reclamar recompensa con mensaje de éxito
-  async claimReward(missionId: string, points: number) {
-    const userId = await this.getCurrentUserId();
-    if (!userId) {
-      Swal.fire('Error', 'No se pudo identificar al usuario.', 'error');
-      return;
-    }
-
-    try {
-      console.log(`Reclamando recompensa para la misión: ${missionId}, puntos: ${points}`);
-      await this.firestore.collection('Estudiantes').doc(userId).update({
-        puntaje: firebase.firestore.FieldValue.increment(points),
-        misionesCompletadas: firebase.firestore.FieldValue.arrayUnion(missionId),
-      });
-
-      Swal.fire({
-        title: '¡Recompensa reclamada!',
-        text: `Has ganado ${points} puntos por completar la misión.`,
-        icon: 'success',
-        confirmButtonText: '¡Genial!',
-      });
-
-      this.showMissionsAlert(); // Refresca las misiones
-    } catch (error) {
-      console.error('Error al reclamar recompensa:', error);
-      Swal.fire('Error', 'No se pudo reclamar la recompensa. Inténtalo nuevamente.', 'error');
-    }
-  }
-
-  // Verificar progreso de cada misión
   private async checkMissionProgress(mission: any, userId: string): Promise<number> {
     try {
-      let progress = 0;
+        let progress = 0;
 
-      if (mission.objetivo.includes('evento inscrito')) {
-        const inscripcionesSnapshot = await this.firestore
-          .collection('Inscripciones', ref =>
-            ref.where('userId', '==', userId).where('tipoUsuario', '==', 'Estudiante')
-          )
-          .get()
-          .toPromise();
+        console.log(`Iniciando verificación de progreso para misión: "${mission.titulo}"`);
 
-        console.log(`Inscripciones encontradas:`, inscripcionesSnapshot?.docs.map(doc => doc.data()));
+        // Verificar inscripciones
+        if (mission.objetivo.includes('evento inscrito')) {
+            const inscripcionesSnapshot = await this.firestore
+                .collection('Inscripciones', ref => ref.where('userId', '==', userId))
+                .get()
+                .toPromise();
 
-        const totalInscritos = inscripcionesSnapshot?.size || 0;
-        const requiredInscritos = parseInt(mission.objetivo.match(/\d+/)?.[0] || '1', 10);
-        progress = Math.min(totalInscritos / requiredInscritos, 1);
+            if (inscripcionesSnapshot && !inscripcionesSnapshot.empty) {
+                console.log(`Inscripciones encontradas para usuario (${userId}):`, inscripcionesSnapshot.docs.length);
 
-        console.log(`Progreso para misión "${mission.titulo}":`, progress);
-      }
+                const requiredInscritos = parseInt(mission.objetivo.match(/\d+/)?.[0] || '0', 10);
 
-      return progress;
+                if (!isNaN(requiredInscritos) && requiredInscritos > 0) {
+                    const totalInscritos = inscripcionesSnapshot.size;
+                    progress = Math.min(totalInscritos / requiredInscritos, 1);
+                    console.log(`Progreso de inscripciones (${totalInscritos} / ${requiredInscritos}):`, progress);
+                } else {
+                    console.warn(`El objetivo de la misión no tiene un número válido.`);
+                }
+            } else {
+                console.log(`No se encontraron inscripciones para el usuario (${userId}).`);
+            }
+        }
+
+        // Verificar eventos verificados
+        if (mission.objetivo.includes('evento verificado')) {
+            const eventosSnapshot = await this.firestore
+                .collection('Inscripciones', ref =>
+                    ref.where('userId', '==', userId).where('verificado', '==', true)
+                )
+                .get()
+                .toPromise();
+
+            if (eventosSnapshot && !eventosSnapshot.empty) {
+                console.log(`Eventos verificados encontrados para usuario (${userId}):`, eventosSnapshot.docs.length);
+
+                const requiredVerificados = parseInt(mission.objetivo.match(/\d+/)?.[0] || '0', 10);
+
+                if (!isNaN(requiredVerificados) && requiredVerificados > 0) {
+                    const totalVerificados = eventosSnapshot.size;
+                    progress = Math.min(totalVerificados / requiredVerificados, 1);
+                    console.log(`Progreso de eventos verificados (${totalVerificados} / ${requiredVerificados}):`, progress);
+                } else {
+                    console.warn(`El objetivo de la misión no tiene un número válido.`);
+                }
+            } else {
+                console.log(`No se encontraron eventos verificados para el usuario (${userId}).`);
+            }
+        }
+
+        // Verificar comentarios
+        if (mission.objetivo.includes('comenta')) {
+            const eventosSnapshot = await this.firestore
+                .collection('Eventos', ref => ref.where('comentarios.userId', '==', userId))
+                .get()
+                .toPromise();
+
+            if (eventosSnapshot && !eventosSnapshot.empty) {
+                console.log(`Comentarios encontrados para usuario (${userId}):`, eventosSnapshot.docs.length);
+
+                const requiredComentarios = parseInt(mission.objetivo.match(/\d+/)?.[0] || '0', 10);
+
+                if (!isNaN(requiredComentarios) && requiredComentarios > 0) {
+                    const totalComentarios = eventosSnapshot.size;
+                    progress = Math.min(totalComentarios / requiredComentarios, 1);
+                    console.log(`Progreso de comentarios (${totalComentarios} / ${requiredComentarios}):`, progress);
+                } else {
+                    console.warn(`El objetivo de la misión no tiene un número válido.`);
+                }
+            } else {
+                console.log(`No se encontraron comentarios para el usuario (${userId}).`);
+            }
+        }
+
+        // Verificar favoritos
+        if (mission.objetivo.includes('favorito')) {
+            const favoritosSnapshot = await this.firestore
+                .collection('Eventos', ref => ref.where('favoritos', 'array-contains', userId))
+                .get()
+                .toPromise();
+
+            if (favoritosSnapshot && !favoritosSnapshot.empty) {
+                console.log(`Eventos favoritos encontrados para usuario (${userId}):`, favoritosSnapshot.docs.length);
+
+                const requiredFavoritos = parseInt(mission.objetivo.match(/\d+/)?.[0] || '0', 10);
+
+                if (!isNaN(requiredFavoritos) && requiredFavoritos > 0) {
+                    const totalFavoritos = favoritosSnapshot.size;
+                    progress = Math.min(totalFavoritos / requiredFavoritos, 1);
+                    console.log(`Progreso de favoritos (${totalFavoritos} / ${requiredFavoritos}):`, progress);
+                } else {
+                    console.warn(`El objetivo de la misión no tiene un número válido.`);
+                }
+            } else {
+                console.log(`No se encontraron eventos favoritos para el usuario (${userId}).`);
+            }
+        }
+
+        return progress;
     } catch (error) {
-      console.error('Error al calcular el progreso de la misión:', error);
-      return 0;
+        console.error('Error al calcular el progreso de la misión:', error);
+        return 0;
     }
-  }
+}
 
-  // Obtener el ID del usuario actual
   private async getCurrentUserId(): Promise<string | null> {
     try {
       const userEmail = localStorage.getItem('currentUserEmail');
-      if (userEmail) {
-        const studentSnapshot = await this.firestore
-          .collection('Estudiantes', ref => ref.where('email', '==', userEmail))
-          .get()
-          .toPromise();
-
-        if (studentSnapshot && !studentSnapshot.empty) {
-          console.log('Usuario encontrado:', studentSnapshot.docs[0].id);
-          return studentSnapshot.docs[0].id;
-        }
+      if (!userEmail) {
+        console.warn('No se encontró un correo de usuario actual en localStorage.');
+        return null;
       }
 
-      console.warn('No se encontró un usuario actual en localStorage.');
-      return null;
+      const studentSnapshot = await this.firestore
+        .collection('Estudiantes', ref => ref.where('email', '==', userEmail))
+        .get()
+        .toPromise();
+
+      if (!studentSnapshot || studentSnapshot.empty) {
+        console.warn('No se encontró un estudiante con el correo proporcionado.');
+        return null;
+      }
+
+      return studentSnapshot.docs[0]?.id || null;
     } catch (error) {
       console.error('Error al obtener el ID del usuario actual:', error);
       return null;
     }
   }
 }
+
