@@ -38,10 +38,6 @@ const routes: Routes = [
     loadChildren: () => import('./estadistica-usuario/estadistica-usuario.module').then( m => m.EstadisticaUsuarioPageModule),canActivate: [AuthGuard]
   },
   {
-    path: 'centro-ayuda',
-    loadChildren: () => import('./centro-ayuda/centro-ayuda.module').then( m => m.CentroAyudaPageModule),canActivate: [AuthGuard]
-  },
-  {
     path: 'folder-ventas',
     loadChildren: () => import('./folder-ventas/folder-ventas.module').then( m => m.FolderVentasPageModule),canActivate: [AuthGuard]
   },

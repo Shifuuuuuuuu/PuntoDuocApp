@@ -3,9 +3,8 @@ import { EventosGestorService } from '../services/eventos-gestor.service';
 import { map, Observable } from 'rxjs';
 import { Router } from '@angular/router';
 import { Evento } from '../interface/IEventos';
-import { MenuController } from '@ionic/angular';
 import Swal from 'sweetalert2';
-import { AngularFirestore, DocumentChangeAction } from '@angular/fire/compat/firestore';
+import { AngularFirestore } from '@angular/fire/compat/firestore';
 import { MessagingService } from '../services/messaging.service';
 
 
@@ -15,114 +14,169 @@ import { MessagingService } from '../services/messaging.service';
   styleUrls: ['./folder-gestor-eventos.page.scss'],
 })
 export class FolderGestorEventosPage implements OnInit {
-
-  eventos$: Observable<Evento[]> = new Observable<Evento[]>();
-  eventosProximos$: Observable<Evento[]> = new Observable<Evento[]>();
   eventosHoy$: Observable<Evento[]> = new Observable<Evento[]>();
-  eventosPasados$: Observable<Evento[]> = new Observable<Evento[]>();
-  segment: string = 'proximos';
-
+  private eventosHoy: Evento[] = [];
   constructor(
     private eventosService: EventosGestorService,
-    private router: Router,
-    private menu: MenuController,
     private firestore: AngularFirestore,
-    private messagingService: MessagingService
+    private messagingService: MessagingService,
+    private router: Router
   ) {}
 
-  ionViewWillEnter() {
-    this.menu.enable(false);
-  }
-
   ngOnInit() {
-    this.cargarEventos();
+    this.cargarEventosHoy();
+    this.enviarRecordatorios();
   }
 
-  cargarEventos() {
-    this.eventos$ = this.firestore.collection<Evento>('Eventos').snapshotChanges().pipe(
-      map(snapshots => snapshots.map(snapshot => {
-        const eventData = snapshot.payload.doc.data() as Evento;
-        const docId = snapshot.payload.doc.id;
+  enviarRecordatorios() {
+    this.eventosHoy$
+      .pipe(
+        map(eventos =>
+          eventos.filter(evento => {
+            const ahora = new Date();
+            const enUnaHora = new Date(ahora.getTime() + 60 * 60 * 1000); // Tiempo actual + 1 hora
+            return (
+              evento.fechaInicio &&
+              evento.fechaInicio > ahora &&
+              evento.fechaInicio <= enUnaHora
+            );
+          })
+        )
+      )
+      .subscribe(async eventos => {
+        for (const evento of eventos) {
+          const notificationData = {
+            id: evento.id_evento,
+            titulo: `Recordatorio: "${evento.titulo}" comienza en 1 hora`,
+            descripcion: 'No olvides prepararte para este evento.',
+            imagen: evento.imagen || '',
+            url: `/perfil-usuario`,
+            fecha: new Date(),
+          };
 
-        eventData.fechaInicio = this.transformarFecha(eventData.fecha);
-        eventData.fechaFin = this.transformarFecha(eventData.fecha_termino);
+          await this.enviarNotificacion(notificationData);
+        }
+      });
+  }
 
-        return {
-          ...eventData,
-          id_evento: docId,
-          verificado: false,
-          show: false,
-          estaInscrito: false,
-          enListaEspera: false
-        };
-      }))
-    );
+  cargarEventosHoy() {
+    this.eventosHoy$ = this.firestore
+      .collection<Evento>('Eventos', ref =>
+        ref.where('estado', 'in', ['Aprobado', 'en_curso']) // Incluir estados Aprobado y en_curso
+      )
+      .snapshotChanges()
+      .pipe(
+        map(snapshots => {
+          const eventosTransformados = snapshots.map(snapshot => {
+            const eventData = snapshot.payload.doc.data() as Evento;
+            const docId = snapshot.payload.doc.id;
 
-    this.eventosProximos$ = this.eventos$.pipe(
-      map(eventos => eventos.filter(evento => evento.fechaInicio && evento.fechaInicio > new Date()))
-    );
+            // Transformar fechas
+            const fechaInicio = this.transformarFecha(eventData.fecha);
+            const fechaFin = this.transformarFecha(eventData.fecha_termino);
 
-    this.eventosHoy$ = this.eventos$.pipe(
-      map(eventos => eventos.filter(evento => {
-        const hoy = new Date();
-        return evento.fechaInicio && evento.fechaInicio.toDateString() === hoy.toDateString();
-      }))
-    );
+            return {
+              ...eventData,
+              id_evento: docId,
+              fechaInicio,
+              fechaFin,
+            };
+          });
 
-    this.eventosPasados$ = this.eventos$.pipe(
-      map(eventos => eventos.filter(evento => evento.fechaInicio && evento.fechaInicio <= new Date()))
+          const ahora = new Date();
+          return eventosTransformados.filter(evento => {
+            const comienzoDia = this.comenzarDia(ahora);
+            const finDia = this.finalizarDia(ahora);
+
+            return (
+              evento.fechaInicio &&
+              evento.fechaInicio >= comienzoDia &&
+              evento.fechaInicio <= finDia
+            );
+          });
+        })
+      );
+  }
+
+  comenzarDia(fecha: Date): Date {
+    const inicio = new Date(fecha);
+    inicio.setHours(0, 0, 0, 0);
+    return inicio;
+  }
+
+  finalizarDia(fecha: Date): Date {
+    const fin = new Date(fecha);
+    fin.setHours(23, 59, 59, 999);
+    return fin;
+  }
+
+  puedeMostrarComenzar(evento: Evento): boolean {
+    const ahora = new Date();
+    const fechaInicio = this.transformarFecha(evento.fecha);
+    const fechaFin = this.transformarFecha(evento.fecha_termino);
+
+    if (!fechaInicio || !fechaFin) {
+      return false;
+    }
+
+    return (
+      ahora >= fechaInicio &&
+      ahora < fechaFin &&
+      evento.estado === 'Aprobado'
     );
   }
 
   transformarFecha(fecha: any): Date | null {
     if (fecha && fecha.seconds) {
-      const fechaTransformada = new Date(fecha.seconds * 1000);
-      return fechaTransformada;
+      return new Date(fecha.seconds * 1000); // Firestore Timestamp
+    }
+    if (typeof fecha === 'string' || fecha instanceof Date) {
+      return new Date(fecha); // String o Date válida
     }
     return null;
   }
 
-  puedeMostrarComenzarEvento(fechaInicio: Date | null, estado: string): boolean {
-    const ahora = new Date();
-    return fechaInicio ? ahora >= fechaInicio && estado !== 'en_curso' && estado !== 'cancelado' : false;
-  }
-
   async comenzarEvento(evento: Evento) {
-    const eventoId = evento.id_evento;
     try {
-      await this.eventosService.actualizarEvento(eventoId, { estado: 'en_curso' });
+      await this.eventosService.actualizarEvento(evento.id_evento, { estado: 'en_curso' });
       Swal.fire({
         icon: 'success',
         title: 'Evento iniciado',
-        text: 'El evento ha comenzado. Ahora puedes ver el detalle del evento.',
-        confirmButtonText: 'OK'
+        text: `El evento "${evento.titulo}" ha comenzado.`,
+        confirmButtonText: 'OK',
       });
 
       const notificationData = {
-        id: eventoId,
+        id: evento.id_evento,
         titulo: `El evento "${evento.titulo}" ha comenzado`,
-        descripcion: 'Recuerda acreditarte, para evitar penalización.',
+        descripcion: 'Recuerda acreditarte para evitar penalización.',
         imagen: evento.imagen || '',
         url: `/perfil-usuario`,
-        fecha: new Date()
+        fecha: new Date(),
       };
 
       await this.enviarNotificacion(notificationData);
 
-      // Actualizar la lista de eventos para reflejar el cambio de estado
-      this.cargarEventos();
+      // Actualizar el estado en la lista local
+      this.actualizarEstadoEventoLocal(evento.id_evento, 'en_curso');
     } catch (error) {
       console.error('Error al comenzar el evento:', error);
-      Swal.fire('Error', 'No se pudo iniciar el evento: ' + (error instanceof Error ? error.message : 'Error desconocido'), 'error');
+      Swal.fire('Error', 'No se pudo iniciar el evento.', 'error');
     }
   }
+
+  actualizarEstadoEventoLocal(eventoId: string, nuevoEstado: string) {
+    this.eventosHoy = this.eventosHoy.map(evento =>
+      evento.id_evento === eventoId ? { ...evento, estado: nuevoEstado } : evento
+    );
+  }
+
 
   eventoEnCurso(evento: Evento): boolean {
     return evento.estado === 'en_curso';
   }
 
   verDetalles(evento: Evento) {
-    console.log('Ver detalles del evento:', evento);
     if (evento.estado === 'en_curso' || evento.estado === 'finalizado' || evento.estado === 'completado') {
       this.router.navigate(['/detalles-evento', evento.id_evento]);
     } else {
@@ -132,12 +186,24 @@ export class FolderGestorEventosPage implements OnInit {
 
   async cancelarEvento(evento: Evento) {
     try {
+      // Validar si el evento está en curso
+      if (evento.estado === 'en_curso') {
+        Swal.fire({
+          icon: 'warning',
+          title: 'No se puede cancelar',
+          text: `El evento "${evento.titulo}" ya ha comenzado y no puede ser cancelado.`,
+          confirmButtonText: 'OK',
+        });
+        return; // Salir sin realizar ninguna acción
+      }
+
+      // Proceder con la cancelación si no está en curso
       await this.eventosService.actualizarEvento(evento.id_evento, { estado: 'cancelado' });
       Swal.fire({
         icon: 'error',
         title: 'Evento cancelado',
-        text: `El evento "${evento.titulo}" ha sido cancelado exitosamente.`,
-        confirmButtonText: 'OK'
+        text: `El evento "${evento.titulo}" ha sido cancelado.`,
+        confirmButtonText: 'OK',
       });
 
       const notificationData = {
@@ -145,34 +211,14 @@ export class FolderGestorEventosPage implements OnInit {
         titulo: `El evento "${evento.titulo}" ha sido cancelado`,
         descripcion: 'El evento ha sido cancelado por el organizador.',
         imagen: evento.imagen || '',
-        fecha: new Date()
+        fecha: new Date(),
       };
 
       await this.enviarNotificacion(notificationData);
-      this.cargarEventos();
+      this.cargarEventosHoy();
     } catch (error) {
       console.error('Error al cancelar el evento:', error);
     }
-  }
-
-  eliminarEvento(eventoId: string) {
-    Swal.fire({
-      title: '¿Estás seguro?',
-      text: 'Este evento se eliminará permanentemente',
-      icon: 'warning',
-      showCancelButton: true,
-      confirmButtonText: 'Eliminar',
-      cancelButtonText: 'Cancelar'
-    }).then(result => {
-      if (result.isConfirmed) {
-        this.eventosService.eliminarEvento(eventoId).then(() => {
-          Swal.fire('Eliminado', 'El evento ha sido eliminado', 'success');
-          this.cargarEventos();
-        }).catch(error => {
-          Swal.fire('Error', 'Hubo un problema al eliminar el evento: ' + error.message, 'error');
-        });
-      }
-    });
   }
 
   async enviarNotificacion(notification: any) {

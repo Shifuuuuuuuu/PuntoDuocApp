@@ -1,6 +1,7 @@
 export interface UsuarioId {
   userId: string;
   leido: boolean;
+  token?: string;
 }
 
 export interface Notificacion {

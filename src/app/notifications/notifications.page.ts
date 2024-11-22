@@ -12,6 +12,7 @@ import { Notificacion } from '../interface/INotificacion';
 
 export class NotificationsPage implements OnInit, OnDestroy {
   currentNotifications: Notificacion[] = [];
+  private hiddenNotificationIds: string[] = []; // Lista de IDs ocultos
   private messageSubscription: Subscription;
 
   constructor(
@@ -20,31 +21,25 @@ export class NotificationsPage implements OnInit, OnDestroy {
   ) {}
 
   ngOnInit() {
-    // Llama a la eliminación de notificaciones caducadas al iniciar la página
+    this.hiddenNotificationIds = this.getHiddenNotificationIds();
+
     this.notificationService.eliminarNotificacionesCaducadas();
 
-    // Configura una verificación periódica cada 24 horas para eliminar notificaciones caducadas
     setInterval(() => {
       this.notificationService.eliminarNotificacionesCaducadas();
     }, 24 * 60 * 60 * 1000);
 
-    // Obtiene el ID del usuario actual y carga las notificaciones correspondientes
     const userId = this.getCurrentUserId();
     if (userId) {
       this.loadNotificationsFromFirestore(userId);
 
-      // Llama a markAllAsRead() al cargar la página
-
-      this.notificationService.markAllAsRead().then(() => {
-
-      }).catch((error) => {
+      this.notificationService.markAllAsRead().catch((error) => {
         console.error('Error al marcar las notificaciones como leídas:', error);
       });
     } else {
       console.error('No se pudo obtener el ID del usuario actual.');
     }
 
-    // Suscripción para notificaciones de Firebase Cloud Messaging
     if (!this.messageSubscription) {
       this.messageSubscription = this.messagingService.currentMessage.subscribe((message) => {
         if (message) {
@@ -69,24 +64,25 @@ export class NotificationsPage implements OnInit, OnDestroy {
     }
   }
 
-
   loadNotificationsFromFirestore(userId: string) {
     this.notificationService.getNotifications().subscribe(
       (notifications: Notificacion[]) => {
-        this.currentNotifications = notifications.filter(notification =>
-          notification.usuarioIds.some(user => user.userId === userId)
-        ).map(notification => {
-          if (notification.fecha && !(notification.fecha instanceof Date)) {
-            if ((notification.fecha as any).seconds) {
-              return {
-                ...notification,
-                fecha: new Date((notification.fecha as any).seconds * 1000)
-              };
+        this.currentNotifications = notifications
+          .filter(notification =>
+            notification.usuarioIds.some(user => user.userId === userId) &&
+            !this.hiddenNotificationIds.includes(notification.id) // Excluir las ocultas
+          )
+          .map(notification => {
+            if (notification.fecha && !(notification.fecha instanceof Date)) {
+              if ((notification.fecha as any).seconds) {
+                return {
+                  ...notification,
+                  fecha: new Date((notification.fecha as any).seconds * 1000)
+                };
+              }
             }
-          }
-          return notification;
-        });
-
+            return notification;
+          });
       },
       (error) => {
         console.error('Error al cargar las notificaciones:', error);
@@ -95,18 +91,31 @@ export class NotificationsPage implements OnInit, OnDestroy {
   }
 
   getCurrentUserId(): string {
-    // Implementa la lógica para obtener el ID del usuario actual (por ejemplo, desde un servicio de autenticación)
     const userId = localStorage.getItem('id');
-    return userId || 'usuarioEjemploId'; // Reemplaza esto con la lógica real
+    return userId || 'usuarioEjemploId';
   }
 
   openUrl(url: string) {
-    window.open(url, '_blank');
+    if (url) {
+      window.open(url, '_blank');
+    }
   }
 
-  markAllAsRead() {
-    this.notificationService.markAllAsRead();
-    this.loadNotificationsFromFirestore(this.getCurrentUserId());
+  ocultarNotificacion(notificacionId: string) {
+    this.currentNotifications = this.currentNotifications.filter(
+      (notif) => notif.id !== notificacionId
+    );
+    this.hiddenNotificationIds.push(notificacionId); // Agregar el ID a la lista de ocultos
+    this.saveHiddenNotificationIds();
+  }
+
+  getHiddenNotificationIds(): string[] {
+    const ids = localStorage.getItem('hiddenNotifications');
+    return ids ? JSON.parse(ids) : [];
+  }
+
+  saveHiddenNotificationIds() {
+    localStorage.setItem('hiddenNotifications', JSON.stringify(this.hiddenNotificationIds));
   }
 
   ngOnDestroy() {

@@ -7,7 +7,7 @@ import { Evento } from '../interface/IEventos';
 import Swal from 'sweetalert2';
 import { Chart, registerables } from 'chart.js';
 import ChartDataLabels from 'chartjs-plugin-datalabels';
-import { Notificacion } from '../interface/INotificacion';
+import { Notificacion, UsuarioId } from '../interface/INotificacion';
 import { AngularFirestore } from '@angular/fire/compat/firestore';
 import { Camera } from '@capacitor/camera';
 
@@ -143,6 +143,9 @@ export class DetallesEventoPage implements OnInit {
       console.error('Error al enviar la notificación a Firestore:', error);
     }
   }
+
+
+
 
   calcularFechaTermino(): Date {
     const fechaActual = new Date();
