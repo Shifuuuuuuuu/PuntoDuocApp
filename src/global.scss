@@ -34,30 +34,32 @@
 
 /* @import "@ionic/angular/css/palettes/dark.always.css"; */
 /* @import "@ionic/angular/css/palettes/dark.class.css"; */
-@import "@ionic/angular/css/palettes/dark.system.css";
+/* @import "@ionic/angular/css/palettes/dark.system.css"; */ /* deshabilitar */
 // src/styles.scss
 
-// Definición de variables de color
-$color-dark: #1A1A1A;
-$color-gray: #666666;
-$color-yellow: #FFB800;
-$color1: #1A1A1A; // Color inicial
-$color2: #666666; // Color final
 
-
-
-
-.highlight {
-  color: $color-yellow;
+* {font-family: 'Helvetica Neue', sans-serif;
+font-weight: 200;
 }
 
-.custom-modal {
-  --width: 100%; /* Cambiar a auto para que el ancho se ajuste al contenido */
-  --max-width: 100%; /* Máximo ancho del modal */
-  --max-height: 10%;
-  --min-height: 50%; /* Establecer una altura mínima para el modal */
-  --border-radius: 16px; 
-  --background: white; 
-  padding: 16px; /* Añadir padding para el contenido del modal */
-  margin: auto; /* Centrar el modal */
+
+.invert-color {
+  filter: invert(100%);
 }
+
+.social-icon {
+  text-decoration: none;
+  color: #fff;
+}
+
+.logo-style {
+  padding: 3rem 0 2rem 0;
+  text-align: center;
+  font-size:4rem;
+}
+
+ion-button{
+  --box-shadow:none;
+  text-transform: none;
+  --background: #336dcf;
+ }

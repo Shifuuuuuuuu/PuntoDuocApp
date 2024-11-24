@@ -1,93 +1,153 @@
-<ion-header [translucent]="true" class="custom-header">
-  <ion-toolbar class="custom-toolbar">
-    <!-- Botón de retroceso -->
+<ion-header>
+  <ion-toolbar>
     <ion-buttons slot="start">
-      <ion-back-button defaultHref="/iniciar-sesion" style="color: white;"></ion-back-button>
+      <ion-back-button default-href="/iniciar-sesion"></ion-back-button>
     </ion-buttons>
-    <ion-title class="centered-title">Registro de Usuario</ion-title>
+    <ion-title style="font-weight:500">Registro Estudiante</ion-title>
   </ion-toolbar>
 </ion-header>
 
-<ion-content [fullscreen]="true" class="ion-padding" style="--background: #ffffff;">
-  <div class="form-container">
-    <h2 class="centered-title" style="color: black;">Crea tu cuenta de Estudiante</h2>
+<ion-content>
+  <div>
+    <!--Logo PuntoDuoc-->  
+    <div class="logo-style">PuntoDuoc</div>
 
-    <form #registroForm="ngForm" (ngSubmit)="registrar()" novalidate>
-      <!-- Nombre completo -->
-      <ion-item class="custom-item">
-        <ion-label position="floating" style="color: black;">Nombre completo</ion-label>
-        <ion-input type="text" [(ngModel)]="estudiante.Nombre_completo" name="nombre" required></ion-input>
-        <div *ngIf="registroForm.submitted && !registroForm.controls['nombre']?.valid" class="error-message">
-          <p style="color: black;">El nombre completo es obligatorio.</p>
-        </div>
-      </ion-item>
+    <!--Formulario-->
+    <form #registroForm="ngForm" (ngSubmit)="registrar()" novalidate class="ion-padding">
 
-      <ion-item class="custom-item">
-        <ion-label position="floating" style="color: black;">RUT</ion-label>
-        <ion-input type="number" [(ngModel)]="estudiante.Rut" name="rut" required maxlength="10" (ionInput)="validarRUT($event)"></ion-input>
-        <ion-note style="color: black;" slot="error" *ngIf="registroForm.controls['rut']?.invalid && registroForm.controls['rut']?.touched" color="danger">
-          El RUT es obligatorio y debe tener un formato válido.
+      <h1>Crea tu cuenta</h1>
+
+      <!--Nombre completo-->
+      <div class="mb-3">
+        <ion-item>
+          <ion-input type="text" label="Nombre completo" labelPlacement="floating" [(ngModel)]="estudiante.Nombre_completo" name="nombre" placeholder="Ingrese nombre" required></ion-input>
+        </ion-item>
+        <!-- --error handlingOK-- -->
+        <ion-note *ngIf="registroForm.submitted && registroForm.controls['nombre']?.invalid"><!-- color="danger" -->
+          Campo obligatorio, input inválido.
         </ion-note>
-      </ion-item>
+      </div>
 
-      <ion-item class="custom-item">
-        <ion-label position="floating" style="color: black;">Teléfono</ion-label>
-        <ion-input type="tel" [(ngModel)]="estudiante.Telefono" name="telefono" required (ionInput)="validarTelefono($event)" maxlength="11"></ion-input>
-        <ion-note style="color: black;" slot="error" *ngIf="registroForm.controls['telefono']?.invalid && registroForm.controls['telefono']?.touched" color="danger">
+
+      <!--Rut-->
+      <div class="mb-3">
+        <ion-item>
+          <ion-input type="number" label="RUT" labelPlacement="floating" [(ngModel)]="estudiante.Rut" name="rut" maxlength="10" (ionInput)="validarRUT($event)" required></ion-input>
+        </ion-item>
+        <!-- --error handling-- -->
+        <ion-note *ngIf="registroForm.submitted && registroForm.controls['rut']?.invalid">
+          Campo obligatorio, input inválido.
+        </ion-note>
+      </div>
+
+
+      <!--Teléfono-->
+      <div class="mb-3">
+        <ion-item>
+          <ion-input type="tel" label="Teléfono" labelPlacement="floating" [(ngModel)]="estudiante.Telefono" name="telefono" (ionInput)="validarTelefono($event)" maxlength="11" required></ion-input>
+        </ion-item>
+        <!-- --error handling-- -->
+        <ion-note *ngIf="registroForm.submitted && registroForm.controls['telefono']?.invalid">
           El teléfono debe tener el prefijo 569 y 8 dígitos adicionales.
         </ion-note>
-      </ion-item>
-
+      </div>
 
       <!-- Correo electrónico -->
-      <ion-item class="custom-item">
-        <ion-label position="floating" style="color: black;">Correo electrónico</ion-label>
-        <ion-input type="email" [(ngModel)]="estudiante.email" name="correo" required></ion-input>
-        <div *ngIf="registroForm.submitted && !registroForm.controls['correo']?.valid" class="error-message">
-          <p style="color: black;">El correo es obligatorio y debe ser válido.</p>
-        </div>
-      </ion-item>
+      <div class="mb-3">
+        <ion-item>
+          <ion-input type="email" label="Correo" labelPlacement="floating" [(ngModel)]="estudiante.email" name="correo" required></ion-input>
+        </ion-item>
+        <!-- --error handling-- -->
+        <ion-note *ngIf="registroForm.submitted && registroForm.controls['correo']?.invalid">
+          Campo obligatorio, input inválido.
+        </ion-note>
+      </div>
+    
 
-      <!-- Carrera -->
-      <ion-item class="custom-item">
-        <ion-label position="floating" style="color: black;">Carrera</ion-label>
-        <ion-select style="color: black;" [(ngModel)]="estudiante.carrera" name="carrera" required>
-          <ion-select-option value="Ingeniería Civil">Ingeniería Civil</ion-select-option>
-          <ion-select-option value="Diseño Gráfico">Diseño Gráfico</ion-select-option>
-          <ion-select-option value="Técnico en Programación">Técnico en Programación</ion-select-option>
-        </ion-select>
-        <div *ngIf="registroForm.submitted && !registroForm.controls['carrera']?.valid" class="error-message">
-          <p style="color: black;">La carrera es obligatoria.</p>
-        </div>
-      </ion-item>
+      <!--Carrera-->
+      <div class="mb-3">
+        <ion-item>
+          <ion-select label="Carrera" label-placement="floating" [(ngModel)]="estudiante.carrera" name="carrera" required>
+            <ion-select-option disabled="true" value="Informática y Telecomunicaciones">Informática y Telecomunicaciones</ion-select-option>
+            <ion-select-option value="Analista Programador">Analista Programador</ion-select-option>
+            <ion-select-option value="Analista Programador Computacional">Analista Programador Computacional</ion-select-option>
+            <ion-select-option value="Desarrollo de Aplicaciones">Desarrollo de Aplicaciones</ion-select-option>
+            <ion-select-option value="Ingeniería en Desarrollo de Software">Ingeniería en Desarrollo de Software</ion-select-option>
+            <ion-select-option value="Ingeniería en Informática">Ingeniería en Informática</ion-select-option>
+            <ion-select-option value="Ingeniería en Infraestructura Tecnológica">Ingeniería en Infraestructura Tecnológica</ion-select-option>
+            <ion-select-option value="Ingeniería en Redes y Telecomunicaciones">Ingeniería en Redes y Telecomunicaciones</ion-select-option>
+            <ion-select-option value="Técnico en Redes y Telecomunicaciones">Técnico en Redes y Telecomunicaciones</ion-select-option>
+            <!--...agregar más...-->
 
+          </ion-select>
+        </ion-item>
+        <!-- --error handling-- -->
+        <ion-note *ngIf="registroForm.submitted && registroForm.controls['carrera']?.invalid">
+          Seleccione una opción.
+        </ion-note>
+      </div>
+
+      
       <!-- Contraseña -->
-      <ion-item class="custom-item">
-        <ion-label position="floating" style="color: black;">Contraseña</ion-label>
-        <ion-input type="password" [(ngModel)]="estudiante.password" name="password" required minlength="8"></ion-input>
-        <div *ngIf="registroForm.submitted && !registroForm.controls['password']?.valid" class="error-message">
-          <p style="color: black;">La contraseña es obligatoria y debe tener al menos 8 caracteres.</p>
-        </div>
-      </ion-item>
+      <div class="mb-3">
+        <ion-item>
+          <ion-input type="password" label="Contraseña" labelPlacement="floating" [(ngModel)]="estudiante.password" name="password" minlength="8" required></ion-input>
+        </ion-item>
+        <!-- --error handling-- -->
+        <ion-note *ngIf="registroForm.submitted && registroForm.controls['password']?.invalid">
+          Campo obligatorio, debe tener al menos 8 caracteres.
+        </ion-note>
+      </div>
+
 
       <!-- Botón de registro -->
-      <ion-button expand="block" type="submit"  class="custom-button">
-        Registrar
-      </ion-button>
+      <div class="mt-4 mb-2 px-3">
+        <ion-button expand="block" type="submit" color="primary">
+          Registrar
+        </ion-button>
+      </div>
 
-      <!-- Botón de volver -->
-      <ion-button expand="block" [routerLink]="['/iniciar-sesion']" class="custom-button">
-        Volver al inicio
-      </ion-button>
     </form>
   </div>
-</ion-content>
-<ion-footer collapse="fade" class="footer">
-  <p>Síguenos en nuestras redes sociales:</p>
-  <div class="social-icons">
-    <ion-icon name="logo-facebook" class="social-icon"></ion-icon>
-    <ion-icon name="logo-twitter" class="social-icon"></ion-icon>
-    <ion-icon name="logo-instagram" class="social-icon"></ion-icon>
+
+
+
+  <!--Contacto-->
+  <div>
+    <img src="../../assets/svg/layered-waves-haikei-reverse.svg" alt="Logo Duoc" style="padding:0; margin:0; width:100%;">
+
+    <div style="text-align:center; background:#0a49a8; outline:3px solid #0a49a8;">
+
+      <div style="padding: 1rem; color: #fff;">
+        <p class="p-0 m-0">Síguenos en nuestras redes sociales:</p>
+
+        <ion-grid class="w-75">
+          <ion-row class="ion-justify-content-evenly p-0 my-2">
+            <ion-col>
+              <div><a href="https://www.facebook.com/DuocUC" target="_blank" rel="noopener noreferrer" class="social-icon"><ion-icon name="logo-facebook"></ion-icon></a></div>
+            </ion-col>
+            <ion-col>
+              <div><a href="https://www.instagram.com/duocuc_cl" target="_blank" rel="noopener noreferrer" class="social-icon"><ion-icon name="logo-instagram"></ion-icon></a></div>
+            </ion-col>
+            <ion-col>
+              <div><a href="https://x.com/duocuc" target="_blank" rel="noopener noreferrer" class="social-icon"><ion-icon name="logo-x"></ion-icon></a></div>
+            </ion-col>
+            <ion-col>
+              <div><a href="https://www.youtube.com/DuocUCvideos" target="_blank" rel="noopener noreferrer" class="social-icon"><ion-icon name="logo-youtube"></ion-icon></a></div>
+            </ion-col>
+            <ion-col>
+              <div><a href="https://www.flickr.com/photos/duocuc" target="_blank" rel="noopener noreferrer" class="social-icon"><ion-icon name="logo-flickr"></ion-icon></a></div>
+            </ion-col>
+            <ion-col>
+              <div><a href="https://www.linkedin.com/school/duoc-uc" target="_blank" rel="noopener noreferrer" class="social-icon"><ion-icon name="logo-linkedin"></ion-icon></a></div>
+            </ion-col>
+          </ion-row>
+        </ion-grid>
+
+        <p style="padding:0; margin:0;">&copy; 2024 Punto Duoc. Todos los derechos reservados.</p>
+      </div>
+
+    </div>
+
   </div>
-  <p>&copy; 2024 Punto Duoc. Todos los derechos reservados.</p>
-</ion-footer>
+</ion-content>

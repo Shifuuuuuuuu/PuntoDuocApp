@@ -1,74 +1,136 @@
-<ion-header [translucent]="true" class="custom-header">
-  <ion-toolbar class="custom-toolbar" style="background-color: black;">
-    <ion-title style="color: white">PuntoDuoc</ion-title>
-  </ion-toolbar>
-</ion-header>
+<ion-content>
+  <div>
+    <img src="../../assets/svg/layered-waves-haikei.svg" alt="Logo Duoc" style="padding:0; margin:0; width:100%">
+  </div>
+  
+  <div>
 
-<ion-content [fullscreen]="true" class="ion-padding">
-  <div class="form-container" style="max-width: 380px; margin: auto; padding: 25px; background-color: white; border-radius: 20px;">
-    <h1 class="center" style="color: #0A49A7; text-align: center;">Ingresa tu cuenta</h1>
-
+    <!--Logo PuntoDuoc-->
+    <div class="logo-style">PuntoDuoc</div>
+    
     <!-- Formulario -->
-    <form #loginForm="ngForm" (ngSubmit)="iniciarSesion()" novalidate>
-
+    <form #loginForm="ngForm" (ngSubmit)="iniciarSesion()" novalidate class="ion-padding">
+      
+      <h1>Bienvenid&#64; de vuelta</h1>
       <!-- Correo Electrónico -->
-      <div class="mb-3 position-relative">
-        <ion-item class="custom-item">
-          <ion-input style="color: black;" type="email" [(ngModel)]="user.email" name="email" placeholder="Correo Electrónico" required></ion-input>
+      <div class="mb-3">
+        <ion-item>
+          <ion-input type="email" label="Correo" labelPlacement="floating" [(ngModel)]="user.email" name="email" placeholder="Ingrese correo" required></ion-input>
         </ion-item>
-        <div *ngIf="emailError" class="error-message">Por favor, introduce un correo electrónico válido.</div>
+        <ion-note *ngIf="emailError || (loginForm.controls['email']?.invalid && loginForm.submitted)"><!-- color="danger" -->
+          El correo o la contraseña ingresados no son válidos.
+        </ion-note>
       </div>
 
       <!-- Contraseña -->
-      <div class="mb-3 position-relative">
-        <ion-item class="custom-item">
-          <ion-input style="color: black;" type="password" [(ngModel)]="user.password" name="password" placeholder="Contraseña" required minlength="8" maxlength="20"></ion-input>
+      <div class="mb-3">
+        <ion-item>
+          <ion-input type="password" label="Contraseña" labelPlacement="floating" [(ngModel)]="user.password" name="password" placeholder="Contraseña" required minlength="8" maxlength="20"></ion-input>
         </ion-item>
-        <div *ngIf="passwordError" class="error-message">La contraseña debe tener entre 8 y 20 caracteres.</div>
+        <ion-note *ngIf="passwordError || (loginForm.controls['password']?.invalid && loginForm.submitted)"><!-- color="danger" -->
+          La contraseña debe tener entre 8 y 20 caracteres.
+        </ion-note>
       </div>
 
-      <div class="mb-3 remember-me">
-        <ion-checkbox slot="start" [(ngModel)]="rememberMe" name="rememberMe" aria-label="Recordar contraseña automáticamente"></ion-checkbox>
+      <!-- Recordar contraseña -->
+      <ion-checkbox labelPlacement="end" [(ngModel)]="rememberMe" name="rememberMe" class="ps-3">Recordar contraseña</ion-checkbox>
+
+      <!-- recordar contraseña antiguo
+      <div class="remember-me">
+        <ion-checkbox slot="start" [(ngModel)]="rememberMe" name="rememberMe"></ion-checkbox>
         <label for="rememberMe" class="remember-me-label">Recordar contraseña automáticamente</label>
       </div>
+      -->
 
-
-      <!-- ¿Olvidaste tu contraseña? -->
-      <div class="forgot-password" style="text-align: right;">
-        <a (click)="openForgotPasswordAlert()" class="forgot-password-link">Olvidé mi contraseña</a>
-      </div>
+      
 
       <!-- Botón de iniciar sesión -->
-      <div class="button-group">
-        <ion-button expand="block" type="submit" class="custom-button">
+      <div class="mt-3 mb-2 px-3">
+        <ion-button expand="block" type="submit">
           Iniciar sesión
         </ion-button>
       </div>
-      <div class="button-group">
-        <ion-button expand="block" [routerLink]="['/registrar-usuarios']" type="button" class="custom-button">
-          Registrar Estudiante
-        </ion-button>
+
+      <!-- ¿Olvidaste tu contraseña? -->
+      <div style="text-align:center" class="mb-3">
+        
       </div>
-      <div class="button-group">
-        <ion-button expand="block" [routerLink]="['/registrar-invitado']" type="button" class="custom-button">
-          Registrar Invitado
-        </ion-button>
+
+      <!-- ¿Olvidaste tu contraseña? -->
+      <div style="text-align:center" class="mb-3">
+        <a (click)="openForgotPasswordAlert()" class="text-primary" style="text-decoration:none; cursor:pointer;">Olvidé mi contraseña</a>
+        <!--<a [routerLink]="['/recuperar-contraseña']" style="text-decoration:none;">Olvidé mi contraseña (antiguo, descartado)</a>-->
       </div>
+
+      <hr>
+
+      <p class="p-0 m-0">Registrar como:</p>
+
+      <ion-grid>
+        <ion-row>
+          <ion-col>
+            <div>
+              <ion-button expand="block" [routerLink]="['/registrar-usuarios']" type="submit" color="dark">
+                Estudiante
+              </ion-button>
+            </div>
+          </ion-col>
+          <ion-col>
+            <div>
+              <ion-button expand="block" [routerLink]="['/registrar-invitado']" type="submit" color="dark">
+                Invitado
+              </ion-button>
+            </div>
+          </ion-col>
+        </ion-row>
+      </ion-grid>
+      
     </form>
+    
   </div>
 
   <!-- Mensaje flotante de error -->
-  <div *ngIf="errorMessage" class="toast-message">
-    {{ errorMessage }}
+  <div *ngIf="errorMessage">
+    <ion-toast isOpen="true" message="{{ errorMessage }}" [duration]="5000"></ion-toast>
+  </div>
+
+
+  <!--Contacto-->
+  <div>
+    <img src="../../assets/svg/layered-waves-haikei-reverse.svg" alt="Logo Duoc" style="padding:0; margin:0; width:100%;">
+
+    <div style="text-align:center; background:#0a49a8; outline:3px solid #0a49a8;">
+
+      <div style="padding: 1rem 0 3rem 0; color: #fff;">
+        <p class="p-0 m-0">Síguenos en nuestras redes sociales:</p>
+
+        <ion-grid class="w-75">
+          <ion-row class="ion-justify-content-evenly p-0 my-2">
+            <ion-col>
+              <div><a href="https://www.facebook.com/DuocUC" target="_blank" rel="noopener noreferrer" class="social-icon"><ion-icon name="logo-facebook"></ion-icon></a></div>
+            </ion-col>
+            <ion-col>
+              <div><a href="https://www.instagram.com/duocuc_cl" target="_blank" rel="noopener noreferrer" class="social-icon"><ion-icon name="logo-instagram"></ion-icon></a></div>
+            </ion-col>
+            <ion-col>
+              <div><a href="https://x.com/duocuc" target="_blank" rel="noopener noreferrer" class="social-icon"><ion-icon name="logo-x"></ion-icon></a></div>
+            </ion-col>
+            <ion-col>
+              <div><a href="https://www.youtube.com/DuocUCvideos" target="_blank" rel="noopener noreferrer" class="social-icon"><ion-icon name="logo-youtube"></ion-icon></a></div>
+            </ion-col>
+            <ion-col>
+              <div><a href="https://www.flickr.com/photos/duocuc" target="_blank" rel="noopener noreferrer" class="social-icon"><ion-icon name="logo-flickr"></ion-icon></a></div>
+            </ion-col>
+            <ion-col>
+              <div><a href="https://www.linkedin.com/school/duoc-uc" target="_blank" rel="noopener noreferrer" class="social-icon"><ion-icon name="logo-linkedin"></ion-icon></a></div>
+            </ion-col>
+          </ion-row>
+        </ion-grid>
+
+        <p style="padding:0; margin:0;">&copy; 2024 Punto Duoc. Todos los derechos reservados.</p>
+      </div>
+
+    </div>
+
   </div>
 </ion-content>
-
-<ion-footer collapse="fade" class="footer">
-  <p>Síguenos en nuestras redes sociales:</p>
-  <div class="social-icons">
-    <ion-icon name="logo-facebook" class="social-icon"></ion-icon>
-    <ion-icon name="logo-twitter" class="social-icon"></ion-icon>
-    <ion-icon name="logo-instagram" class="social-icon"></ion-icon>
-  </div>
-  <p>&copy; 2024 Punto Duoc. Todos los derechos reservados.</p>
-</ion-footer>
