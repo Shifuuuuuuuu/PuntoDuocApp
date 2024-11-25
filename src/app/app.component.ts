@@ -2,13 +2,17 @@ import { Component, OnInit } from '@angular/core';
 import { PushNotifications } from '@capacitor/push-notifications';
 import Swal from 'sweetalert2';
 import { Capacitor } from '@capacitor/core';
+import { MessagingService } from './services/messaging.service';
 @Component({
   selector: 'app-root',
   templateUrl: 'app.component.html',
   styleUrls: ['app.component.scss'],
 })
 export class AppComponent implements OnInit {
-  constructor() {}
+  constructor(private messagingService: MessagingService) {
+    this.messagingService.requestPermission();
+    this.messagingService.receiveMessage();
+  }
 
   ngOnInit() {
     // Verificar la plataforma antes de solicitar permisos y registrar notificaciones

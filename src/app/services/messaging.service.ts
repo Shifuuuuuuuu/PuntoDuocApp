@@ -1,10 +1,11 @@
 import { Injectable } from '@angular/core';
 import { AngularFireMessaging } from '@angular/fire/compat/messaging';
-import { take } from 'rxjs/operators';
 import { BehaviorSubject } from 'rxjs';
+import { take } from 'rxjs/operators';
 import { NotificationService } from './notification.service';
 import { AngularFirestore } from '@angular/fire/compat/firestore';
-import { Notificacion, UsuarioId  } from '../interface/INotificacion';
+import { Notificacion, UsuarioId } from '../interface/INotificacion';
+
 @Injectable({
   providedIn: 'root'
 })
@@ -15,12 +16,17 @@ export class MessagingService {
     private afMessaging: AngularFireMessaging,
     private notificationService: NotificationService,
     private firestore: AngularFirestore
-  ) {}
+  ) {
+    this.afMessaging.messages.subscribe((message: any) => {
+      this.handleForegroundMessage(message);
+    });
+  }
 
   requestPermission() {
     this.afMessaging.requestToken.pipe(take(1)).subscribe(
       (token) => {
         console.log('Token FCM:', token);
+        // Aquí puedes guardar el token en Firestore o tu base de datos si es necesario
       },
       (error) => {
         console.error('Error al obtener el token FCM:', error);
@@ -28,26 +34,17 @@ export class MessagingService {
     );
   }
 
+  receiveMessage() {
+    this.afMessaging.messages.subscribe((payload) => {
+      console.log("Message received. ", payload);
+      this.currentMessage.next(payload);
+    });
+  }
+
   listenForMessages() {
     this.afMessaging.messages.subscribe(
       (message: any) => {
-        console.log('Mensaje recibido en primer plano:', message);
-
-        if (message.notification) {
-          const notification: Notificacion = {
-            id: '', // Genera un ID único si es necesario
-            titulo: message.notification.title || 'Sin título',
-            descripcion: message.notification.body || 'Sin contenido',
-            fecha: new Date(),
-            imagen: message.notification.image,
-            url: message.notification.click_action,
-            usuarioIds: [] // Agrega un array vacío o actualiza según sea necesario
-          };
-
-          // Agrega la notificación al servicio de notificaciones
-          this.notificationService.addNotification(notification);
-          this.currentMessage.next(notification);
-        }
+        this.handleForegroundMessage(message);
       },
       (error) => {
         console.error('Error al recibir el mensaje:', error);
@@ -55,6 +52,25 @@ export class MessagingService {
     );
   }
 
+  private handleForegroundMessage(message: any) {
+    console.log('Mensaje recibido en primer plano:', message);
+
+    if (message.notification) {
+      const notification: Notificacion = {
+        id: '', // Genera un ID único si es necesario
+        titulo: message.notification.title || 'Sin título',
+        descripcion: message.notification.body || 'Sin contenido',
+        fecha: new Date(),
+        imagen: message.notification.image,
+        url: message.notification.click_action,
+        usuarioIds: [] // Agrega un array vacío o actualiza según sea necesario
+      };
+
+      // Agrega la notificación al servicio de notificaciones
+      this.notificationService.addNotification(notification);
+      this.currentMessage.next(notification);
+    }
+  }
 
   async sendNotification(notification: any) {
     try {
@@ -95,5 +111,4 @@ export class MessagingService {
       console.error('Error al enviar o guardar la notificación:', error);
     }
   }
-
 }
