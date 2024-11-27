@@ -1,19 +1,19 @@
-<ion-header [translucent]="true" class="custom-header">
-  <ion-toolbar class="custom-toolbar">
-    <ion-buttons slot="start" *ngIf="isStudent">
+<ion-header [translucent]="true">
+  <ion-toolbar>
+    <ion-buttons slot="secondary" *ngIf="isStudent">
+      <!--Icon version (not reviewed)-->
       <ion-button (click)="openMissionsModal()">
-        <ion-icon slot="icon-only" name="ribbon-outline" style="color: white;"></ion-icon>
+        <ion-icon slot="icon-only" name="ribbon-outline"></ion-icon>
       </ion-button>
     </ion-buttons>
-    <ion-title style="color: white;">Mi cuenta</ion-title>
-    <ion-buttons slot="end">
-      <ion-button [routerLink]="['/notifications']" style="position: relative;">
-        <ion-icon slot="icon-only" name="notifications-outline" style="color: white;"></ion-icon>
-        <!-- Badge para mostrar el número de notificaciones -->
-        <ion-badge *ngIf="unreadNotificationsCount > 0" color="danger" style="position: absolute; top: -5px; right: -5px;">
-          {{ unreadNotificationsCount }}
-        </ion-badge>
-      </ion-button>
+
+    <ion-title class="ion-title-custom">Mi cuenta</ion-title>
+
+    <ion-buttons slot="primary">
+        <ion-button [routerLink]="['/notifications']" class="w-auto">
+          <ion-icon slot="icon-only" name="notifications-outline"></ion-icon><!--Ícono notificaciones--> 
+          <ion-badge *ngIf="unreadNotificationsCount > 0" color="danger">{{ unreadNotificationsCount }}</ion-badge><!--Badge nro de notificaciones-->
+        </ion-button>
     </ion-buttons>
   </ion-toolbar>
 </ion-header>
