@@ -14,3 +14,11 @@ export interface Notificacion {
   fechaTermino?: Date;
   usuarioIds: UsuarioId[];
 }
+
+export interface NotificacionesDirectas {
+  id: string;
+  titulo: string;
+  cuerpo: string;
+  timestampt: Date;
+  usuarioIds: { userId: string; leido: boolean }[];
+}

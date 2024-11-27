@@ -1,13 +1,21 @@
 import { Injectable } from '@angular/core';
 import { AngularFireMessaging } from '@angular/fire/compat/messaging';
-import { BehaviorSubject } from 'rxjs';
-import { take } from 'rxjs/operators';
+import { BehaviorSubject, Observable } from 'rxjs';
+import { take, map } from 'rxjs/operators';
 import { NotificationService } from './notification.service';
 import { AngularFirestore } from '@angular/fire/compat/firestore';
 import { Notificacion, UsuarioId } from '../interface/INotificacion';
 
+export interface NotificacionesDirectas {
+  id: string;
+  titulo: string;
+  cuerpo: string;
+  timestampt: Date;
+  usuarioIds: { userId: string; leido: boolean }[];
+}
+
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class MessagingService {
   currentMessage = new BehaviorSubject<any>(null);
@@ -22,11 +30,11 @@ export class MessagingService {
     });
   }
 
+  // Solicitar permisos para recibir notificaciones push
   requestPermission() {
     this.afMessaging.requestToken.pipe(take(1)).subscribe(
       (token) => {
         console.log('Token FCM:', token);
-        // Aquí puedes guardar el token en Firestore o tu base de datos si es necesario
       },
       (error) => {
         console.error('Error al obtener el token FCM:', error);
@@ -34,44 +42,40 @@ export class MessagingService {
     );
   }
 
+  // Escuchar mensajes en tiempo real
   receiveMessage() {
     this.afMessaging.messages.subscribe((payload) => {
-      console.log("Message received. ", payload);
+      console.log('Mensaje recibido.', payload);
       this.currentMessage.next(payload);
     });
   }
 
-  listenForMessages() {
-    this.afMessaging.messages.subscribe(
-      (message: any) => {
-        this.handleForegroundMessage(message);
-      },
-      (error) => {
-        console.error('Error al recibir el mensaje:', error);
-      }
-    );
+  getDirectNotifications(userId: string) {
+    return this.firestore
+      .collection<NotificacionesDirectas>('NotificacionesDirectas')
+      .valueChanges({ idField: 'id' });
   }
+  
 
+  // Manejar mensajes en primer plano
   private handleForegroundMessage(message: any) {
     console.log('Mensaje recibido en primer plano:', message);
 
     if (message.notification) {
       const notification: Notificacion = {
-        id: '', // Genera un ID único si es necesario
+        id: '', // Generar un ID único si es necesario
         titulo: message.notification.title || 'Sin título',
         descripcion: message.notification.body || 'Sin contenido',
         fecha: new Date(),
         imagen: message.notification.image,
         url: message.notification.click_action,
-        usuarioIds: [] // Agrega un array vacío o actualiza según sea necesario
+        usuarioIds: [], // Agregar usuarios si corresponde
       };
 
-      // Agrega la notificación al servicio de notificaciones
       this.notificationService.addNotification(notification);
       this.currentMessage.next(notification);
     }
   }
-
   async sendNotification(notification: any) {
     try {
       const existingNotification = await this.firestore.collection('Notificaciones')

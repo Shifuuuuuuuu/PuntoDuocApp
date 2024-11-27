@@ -9,23 +9,21 @@
 
 <ion-content [fullscreen]="true" class="content-center">
   <ion-list style="width: 100%; background-color: white;">
+    <!-- Notificaciones regulares -->
     <ion-card
       *ngFor="let notification of currentNotifications"
       class="notification-card"
       (click)="notification.url ? openUrl(notification.url) : null"
     >
       <ion-row>
-        <!-- Imagen de la notificación -->
         <ion-col size="3" class="notification-image">
           <img *ngIf="notification.imagen" [src]="notification.imagen" alt="Notificación">
         </ion-col>
-        <!-- Información de la notificación -->
         <ion-col size="8" class="notification-details">
           <h2 class="notification-title">{{ notification.titulo }}</h2>
           <p class="notification-description">{{ notification.descripcion }}</p>
           <small class="notification-date">{{ notification.fecha | date: 'dd/MM/yyyy, hh:mm a' }}</small>
         </ion-col>
-        <!-- Botón de cierre -->
         <ion-col size="1" class="notification-close">
           <ion-button fill="clear" (click)="ocultarNotificacion(notification.id); $event.stopPropagation()">
             <ion-icon name="close-outline"></ion-icon>
@@ -33,8 +31,20 @@
         </ion-col>
       </ion-row>
     </ion-card>
+
+    <!-- Notificaciones directas -->
+    <div class="direct-notifications">
+      <h3>Notificaciones Directas</h3>
+      <ion-card *ngFor="let directNotification of directNotifications">
+        <ion-row>
+          <ion-col>
+            <h2 class="notification-title">{{ directNotification.titulo }}</h2>
+            <p class="notification-description">{{ directNotification.cuerpo }}</p>
+          </ion-col>
+        </ion-row>
+      </ion-card>
+    </div>
   </ion-list>
   <p *ngIf="currentNotifications.length === 0">No hay notificaciones recientes.</p>
 </ion-content>
 <app-tab-usuario></app-tab-usuario>
-
