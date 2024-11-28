@@ -5,9 +5,7 @@ import { InvitadoService } from '../services/invitado.service';
 import * as QRCode from 'qrcode';
 import Swal from 'sweetalert2';
 import { AngularFireMessaging } from '@angular/fire/compat/messaging';
-import { environment } from 'src/environments/environment';
 import { firstValueFrom } from 'rxjs';
-import { AngularFireAuth } from '@angular/fire/compat/auth';
 @Component({
   selector: 'app-registrar-invitado',
   templateUrl: './registrar-invitado.page.html',
@@ -23,7 +21,7 @@ export class RegistrarInvitadoPage implements OnInit {
     Telefono: '569', // Prefijo predeterminado
     codigoQr: '',
     tokenFCM: '',
-    verificado: false // Establecer verificado como false inicialmente
+    verificado: false, // Establecer verificado como false inicialmente
   };
 
   errorMessage: string = '';
@@ -51,12 +49,27 @@ export class RegistrarInvitadoPage implements OnInit {
         Swal.fire('Error', 'El correo electrónico ya está registrado.', 'error');
         return;
       }
-        // Desestructurar `this.invitado` para omitir `password`
-        const { password, ...invitadoData } = this.invitado;
 
-        // Registrar al invitado en Firebase Auth y crear el documento en Firestore
-        const invitadoRegistrado = await this.invitadoService.registrarInvitado(invitadoData, password);
-        console.log('Invitado registrado en Firestore:', invitadoRegistrado);
+      // Desestructurar `this.invitado` para omitir `password`
+      const { password, ...invitadoData } = this.invitado;
+
+      // Registrar al invitado en Firebase Auth y crear el documento en Firestore
+      const invitadoRegistrado = await this.invitadoService.registrarInvitado(invitadoData, password);
+      console.log('Invitado registrado en Firestore:', invitadoRegistrado);
+
+      // Generar el código QR basado en los datos del invitado registrado
+      const qrData = JSON.stringify({
+        idInvitado: invitadoRegistrado.id_Invitado,
+        nombreCompleto: invitadoRegistrado.Nombre_completo,
+        rut: invitadoRegistrado.Rut,
+        telefono: invitadoRegistrado.Telefono,
+        eventosInscritos: invitadoRegistrado.eventosInscritos || [],
+      });
+      invitadoRegistrado.codigoQr = await QRCode.toDataURL(qrData);
+
+      // Actualizar el invitado en Firestore con el QR generado
+      await this.invitadoService.updateInvitado(invitadoRegistrado);
+      console.log('Código QR generado y guardado en Firestore.');
 
       // Solicitar y obtener el token FCM
       try {
@@ -71,18 +84,6 @@ export class RegistrarInvitadoPage implements OnInit {
       } catch (error) {
         console.error('Error al obtener el token FCM:', error);
       }
-
-            // Generar el código QR basado en los datos del invitado registrado
-      const qrData = JSON.stringify({
-        idInvitado: invitadoRegistrado.id_Invitado,
-        nombreCompleto: invitadoRegistrado.Nombre_completo,
-        rut: invitadoRegistrado.Rut,
-        telefono: invitadoRegistrado.Telefono,
-        eventosInscritos: invitadoRegistrado.eventosInscritos || []
-      });
-      invitadoRegistrado.codigoQr = await QRCode.toDataURL(qrData);
-      await this.invitadoService.updateInvitado(invitadoRegistrado);
-      console.log('Código QR generado y guardado en Firestore.');
 
       Swal.fire('Éxito', 'Invitado registrado correctamente. Verifique su correo electrónico.', 'success');
       this.router.navigate(['/iniciar-sesion']);
@@ -125,18 +126,16 @@ export class RegistrarInvitadoPage implements OnInit {
   }
 
   ngOnInit() {
-    firstValueFrom(this.angularFireMessaging.requestToken).then(
-      (token) => {
+    firstValueFrom(this.angularFireMessaging.requestToken)
+      .then((token) => {
         if (token) {
           console.log('Token obtenido manualmente:', token);
         } else {
           console.warn('No se pudo obtener el token');
         }
-      }
-    ).catch(
-      (error) => {
+      })
+      .catch((error) => {
         console.error('Error al obtener el token manualmente:', error);
-      }
-    );
+      });
   }
 }

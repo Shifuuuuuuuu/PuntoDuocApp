@@ -11,6 +11,7 @@ export interface Estudiante {
   puntaje: number;
   tokenFCM: string | null;
   verificado: boolean;
+  imagen?: string;
 }
 
 export interface EstudianteSinPassword {

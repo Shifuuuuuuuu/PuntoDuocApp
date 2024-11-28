@@ -11,12 +11,15 @@ import { MenuController, NavController } from '@ionic/angular';
 import * as QRCode from 'qrcode';
 import { NotificationService } from '../services/notification.service';
 import { MissionsAlertService } from '../services/missions-alert.service';
+import { AngularFireStorage } from '@angular/fire/compat/storage';
 @Component({
   selector: 'app-perfil-usuario',
   templateUrl: './perfil-usuario.page.html',
   styleUrls: ['./perfil-usuario.page.scss'],
 })
 export class PerfilUsuarioPage implements OnInit {
+  profileImageUrl: string = ''; // URL de la imagen de perfil
+  defaultProfileImage: string = 'assets/icon/default-profile.png'; // Ruta del icono predeterminado
   estudiante: Estudiante | null = null;
   invitado: Invitado | null = null;
   isEditing: boolean = false;
@@ -45,7 +48,8 @@ export class PerfilUsuarioPage implements OnInit {
     private navCtrl: NavController,
     private menu: MenuController,
     private notificationService: NotificationService,
-    private missionsAlertService: MissionsAlertService
+    private missionsAlertService: MissionsAlertService,
+    private storage: AngularFireStorage,
   ) {}
   ionViewWillEnter() {
     this.menu.enable(false);  // Deshabilita el menú en esta página
@@ -61,6 +65,7 @@ export class PerfilUsuarioPage implements OnInit {
           if (invEmail) {
             this.userEmail = invEmail;
             await this.loadUserData();
+            await this.loadProfileImage();
           } else {
             this.errorMessage = 'Error: currentUserEmail no está definido.';
           }
@@ -72,10 +77,46 @@ export class PerfilUsuarioPage implements OnInit {
       this.unreadNotificationsCount = count;
     });
   }
+  async loadProfileImage() {
+    if (this.isInvitado && this.invitado) {
+      this.profileImageUrl = this.invitado.imagen || this.defaultProfileImage;
+    } else if (this.estudiante) {
+      this.profileImageUrl = this.estudiante.imagen || this.defaultProfileImage;
+    }
+  }
 
   ngOnDestroy() {
     this.authSubscription?.unsubscribe();
     this.invitadoSubscription?.unsubscribe();
+  }
+  async uploadProfileImage(event: any) {
+    const file = event.target.files[0];
+    if (file) {
+      const filePath = `profile_images/${this.userEmail}_${new Date().getTime()}`;
+      const fileRef = this.storage.ref(filePath);
+
+      // Subir el archivo a Firebase Storage
+      const task = await this.storage.upload(filePath, file);
+
+      // Obtener la URL de la imagen
+      const imageUrl = await fileRef.getDownloadURL().toPromise();
+
+      // Guardar la URL en Firestore
+      if (this.isInvitado && this.invitado) {
+        await this.invitadoService.updateInvitado({
+          ...this.invitado,
+          imagen: imageUrl,
+        });
+      } else if (this.estudiante) {
+        await this.authService.updateEstudiante({
+          ...this.estudiante,
+          imagen: imageUrl,
+        });
+      }
+
+      this.profileImageUrl = imageUrl;
+      Swal.fire('Éxito', 'Imagen de perfil actualizada correctamente.', 'success');
+    }
   }
 
   async loadUserData() {
@@ -88,25 +129,21 @@ export class PerfilUsuarioPage implements OnInit {
       const estudianteResult = await firstValueFrom(this.authService.getEstudianteByEmails(this.userEmail));
       if (estudianteResult) {
         this.estudiante = estudianteResult;
-        this.eventoId = this.estudiante.eventosInscritos?.[0] || '';
+        this.profileImageUrl = this.estudiante.imagen || this.defaultProfileImage;
+        this.qrData = this.estudiante.codigoQr || ''; // Cargar QR desde Firestore
         this.isInvitado = false;
-        this.isStudent = true; // Es estudiante
+        this.isStudent = true;
       } else {
         const invitadoResult = await firstValueFrom(this.invitadoService.obtenerInvitadoPorEmail(this.userEmail));
         if (invitadoResult) {
           this.invitado = invitadoResult;
-          this.eventoId = this.invitado.eventosInscritos?.[0] || '';
+          this.profileImageUrl = this.invitado.imagen || this.defaultProfileImage;
+          this.qrData = this.invitado.codigoQr || ''; // Cargar QR desde Firestore
           this.isInvitado = true;
-          this.isStudent = false; // No es estudiante
+          this.isStudent = false;
         } else {
           this.errorMessage = 'No se encontró ningún invitado con ese email.';
         }
-      }
-
-      await this.generateQrData();
-
-      if (this.userEmail && this.eventoId) {
-        await this.verificarEstadoAcreditacion();
       }
     } catch (error) {
       console.error('Error al cargar los datos del usuario:', error);
@@ -152,63 +189,61 @@ export class PerfilUsuarioPage implements OnInit {
     });
   }
 
-
   // Funciones de edición de perfil
-  editProfile() {
-    this.isEditing = true;
-    this.tempNombreCompleto = this.estudiante?.Nombre_completo || this.invitado?.Nombre_completo || '';
-    this.tempEmail = this.estudiante?.email || this.invitado?.email || '';
-    this.tempRut = this.estudiante?.Rut || this.invitado?.Rut || '';
-    this.tempTelefono = this.estudiante?.Telefono || this.invitado?.Telefono || '';
+editProfile() {
+  this.isEditing = true; // Activar el modo de edición
+
+  // Cargar temporalmente los datos actuales del usuario para permitir la edición
+  this.tempNombreCompleto = this.estudiante?.Nombre_completo || this.invitado?.Nombre_completo || '';
+  this.tempEmail = this.estudiante?.email || this.invitado?.email || '';
+  this.tempRut = this.estudiante?.Rut || this.invitado?.Rut || '';
+  this.tempTelefono = this.estudiante?.Telefono || this.invitado?.Telefono || '';
+
+  // Asegurarse de que el ícono de la cámara esté visible para cambiar la imagen de perfil
+  if (!this.profileImageUrl) {
+    // Si no hay imagen de perfil cargada, mostrar el ícono predeterminado
+    this.profileImageUrl = '';
   }
+}
 
-  async saveProfile() {
-    try {
-      if (this.isInvitado && this.invitado) {
-        // Actualiza los datos temporales del invitado
-        this.invitado.Nombre_completo = this.tempNombreCompleto;
-        this.invitado.Rut = this.tempRut;
-        this.invitado.Telefono = this.tempTelefono;
 
-        // Llama a la función para actualizar el QR con los nuevos datos
-        this.generateQrData();
+async saveProfile() {
+  try {
+    const newQrData = await this.generateQrData();
+    this.qrData = newQrData;
 
-        // Actualiza en Firestore el invitado junto con el nuevo código QR
-        await this.invitadoService.updateInvitado({
-          ...this.invitado,
-          codigoQr: this.qrData // Guarda el nuevo código QR en Firestore
-        });
-      } else if (this.estudiante) {
-        // Actualiza los datos temporales del estudiante
-        this.estudiante.Nombre_completo = this.tempNombreCompleto;
-        this.estudiante.Rut = this.tempRut;
-        this.estudiante.Telefono = this.tempTelefono;
+    if (this.isInvitado && this.invitado) {
+      // Actualizar datos del invitado
+      this.invitado.Nombre_completo = this.tempNombreCompleto;
+      this.invitado.Rut = this.tempRut;
+      this.invitado.Telefono = this.tempTelefono;
 
-        // Llama a la función para actualizar el QR con los nuevos datos
-        this.generateQrData();
-
-        // Actualiza en Firestore el estudiante junto con el nuevo código QR
-        await this.authService.updateEstudiante({
-          ...this.estudiante,
-          codigoQr: this.qrData // Guarda el nuevo código QR en Firestore
-        });
-      }
-
-      this.isEditing = false;
-
-      // Alerta de confirmación de actualización
-      Swal.fire({
-        title: 'Perfil Actualizado',
-        text: 'Los cambios en tu perfil se han guardado correctamente.',
-        icon: 'success',
-        confirmButtonText: 'OK'
+      await this.invitadoService.updateInvitado({
+        ...this.invitado,
+        codigoQr: this.qrData, // Actualizar QR
       });
 
-    } catch (error) {
-      console.error('Error al guardar el perfil:', error);
-      this.errorMessage = 'Error al guardar el perfil.';
+      Swal.fire('Éxito', 'Los cambios se guardaron correctamente.', 'success');
+    } else if (this.isStudent && this.estudiante) {
+      // Actualizar datos del estudiante
+      this.estudiante.Nombre_completo = this.tempNombreCompleto;
+      this.estudiante.Rut = this.tempRut;
+      this.estudiante.Telefono = this.tempTelefono;
+
+      await this.authService.updateEstudiante({
+        ...this.estudiante,
+        codigoQr: this.qrData, // Actualizar QR
+      });
+
+      Swal.fire('Éxito', 'Los cambios se guardaron correctamente.', 'success');
     }
+
+    this.isEditing = false;
+  } catch (error) {
+    console.error('Error al guardar el perfil:', error);
+    Swal.fire('Error', 'Hubo un problema al guardar los cambios.', 'error');
   }
+}
   openMissionsModal() {
     this.missionsAlertService.showMissionsAlert();
   }
@@ -234,26 +269,30 @@ export class PerfilUsuarioPage implements OnInit {
     this.authService.logout();
     this.router.navigate(['/iniciar-sesion']);
   }
-  async generateQrData() {
-    const eventosInscritos = this.isInvitado
-        ? this.invitado?.eventosInscritos || []
-        : this.estudiante?.eventosInscritos || [];
+  async generateQrData(): Promise<string> {
+    const qrDataObject = this.isInvitado
+      ? {
+          userId: this.invitado?.id_Invitado || '',
+          nombreCompleto: this.invitado?.Nombre_completo || '',
+          rut: this.invitado?.Rut || '',
+          telefono: this.invitado?.Telefono || '',
+        }
+      : {
+          userId: this.estudiante?.id_estudiante || '',
+          nombreCompleto: this.estudiante?.Nombre_completo || '',
+          rut: this.estudiante?.Rut || '',
+          telefono: this.estudiante?.Telefono || '',
+          carrera: this.estudiante?.carrera || '',
+        };
 
-    const qrDataObject = {
-        userId: this.isInvitado ? this.invitado?.id_Invitado : this.estudiante?.id_estudiante,
-        tipoUsuario: this.isInvitado ? 'invitado' : 'estudiante', // Campo adicional para identificar el tipo de usuario
-        eventosInscritos: eventosInscritos,
-        nombreCompleto: this.isInvitado ? this.invitado?.Nombre_completo : this.estudiante?.Nombre_completo,
-        rut: this.isInvitado ? this.invitado?.Rut : this.estudiante?.Rut,
-        telefono: this.isInvitado ? this.invitado?.Telefono : this.estudiante?.Telefono,
-    };
-
-    // Convierte el JSON en una cadena
-    const qrString = JSON.stringify(qrDataObject);
-
-    // Genera la imagen QR y guárdala en `this.qrData`
-    this.qrData = await QRCode.toDataURL(qrString);
-}
+    try {
+      const qrString = JSON.stringify(qrDataObject);
+      return await QRCode.toDataURL(qrString);
+    } catch (error) {
+      console.error('Error al generar el QR:', error);
+      throw error;
+    }
+  }
 
   irAConsultas() {
     this.navCtrl.navigateForward('/consultas'); // Ruta de la página de consultas

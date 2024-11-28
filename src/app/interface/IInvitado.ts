@@ -9,6 +9,7 @@ export interface Invitado {
     eventosInscritos?: string[];
     tokenFCM: string | null;
     verificado: boolean;
+    imagen?: string;
   }
 export interface InvitadoSinPassword {
     id_Invitado?: string;

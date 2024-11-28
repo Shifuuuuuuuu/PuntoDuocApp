@@ -1,7 +1,7 @@
 <ion-header [translucent]="true">
   <ion-toolbar>
     <ion-buttons slot="secondary" *ngIf="isStudent">
-      <!--Icon version (not reviewed)-->
+      <!-- Icono de misiones -->
       <ion-button (click)="openMissionsModal()">
         <ion-icon slot="icon-only" name="ribbon-outline"></ion-icon>
       </ion-button>
@@ -10,10 +10,10 @@
     <ion-title class="ion-title-custom">Mi cuenta</ion-title>
 
     <ion-buttons slot="primary">
-        <ion-button [routerLink]="['/notifications']" class="w-auto">
-          <ion-icon slot="icon-only" name="notifications-outline"></ion-icon><!--Ícono notificaciones--> 
-          <ion-badge *ngIf="unreadNotificationsCount > 0" color="danger">{{ unreadNotificationsCount }}</ion-badge><!--Badge nro de notificaciones-->
-        </ion-button>
+      <ion-button [routerLink]="['/notifications']" class="w-auto">
+        <ion-icon slot="icon-only" name="notifications-outline"></ion-icon>
+        <ion-badge *ngIf="unreadNotificationsCount > 0" color="danger">{{ unreadNotificationsCount }}</ion-badge>
+      </ion-button>
     </ion-buttons>
   </ion-toolbar>
 </ion-header>
@@ -28,6 +28,7 @@
     </ion-card-content>
   </ion-card>
 
+
   <!-- Información personal -->
   <div class="form-container" style="max-width: 380px; margin: auto; padding: 25px; background-color: white; border-radius: 20px;">
     <div class="header-container">
@@ -38,6 +39,34 @@
         <ion-icon *ngIf="isEditing" name="close-outline" (click)="cancelEdit()"></ion-icon>
       </div>
     </div>
+    <!-- Contenedor de perfil -->
+    <div class="profile-container">
+      <div class="profile-image">
+        <!-- Imagen de perfil o ícono predeterminado -->
+        <img *ngIf="profileImageUrl" [src]="profileImageUrl" alt="Imagen de perfil" />
+        <ion-icon *ngIf="!profileImageUrl" name="person-circle-outline" class="default-icon"></ion-icon>
+
+        <!-- Botón para cambiar imagen -->
+        <div
+          class="upload-overlay"
+          [class.hidden]="!isEditing"
+        >
+          <ion-icon name="camera-outline"></ion-icon>
+          <input
+            type="file"
+            accept="image/*"
+            (change)="uploadProfileImage($event)"
+            hidden
+            id="fileInput"
+          />
+          <label for="fileInput" class="upload-label"></label>
+        </div>
+      </div>
+    </div>
+  <br>
+
+
+
     <form *ngIf="estudiante || invitado">
       <!-- Nombre Completo -->
       <div class="mb-3 position-relative">
@@ -55,7 +84,7 @@
         <ion-item class="custom-item">
           <ion-label>
             <h2 style="color: black;">Correo Electrónico</h2>
-            <p>{{ estudiante ? estudiante.email : invitado?.email }}</p> <!-- Siempre muestra el correo como texto -->
+            <p>{{ estudiante ? estudiante.email : invitado?.email }}</p>
           </ion-label>
         </ion-item>
       </div>
@@ -81,14 +110,17 @@
           </ion-label>
         </ion-item>
       </div>
+
       <div class="mb-3 position-relative" *ngIf="estudiante">
         <ion-item class="custom-item">
           <ion-label>
             <h2 style="color: black;">Puntaje</h2>
-            <p>{{ estudiante.puntaje }}</p> <!-- Muestra el puntaje como texto sin opción de edición -->
+            <p>{{ estudiante.puntaje }}</p>
           </ion-label>
         </ion-item>
       </div>
+
+      <!-- Código QR -->
       <div class="qr-container" *ngIf="qrData">
         <h1 style="color: black; text-align: center;">Código QR</h1>
         <div class="qr-image-container">
@@ -98,10 +130,8 @@
     </form>
   </div>
 
-  <!-- Espacio entre Información personal y la lista -->
-  <div class="spacer"></div>
-
   <!-- Lista de opciones adicionales -->
+  <div class="spacer"></div>
   <ion-list class="custom-list">
     <ion-item button class="custom-item2" (click)="irAConsultas()">
       <ion-icon style="color: black;" slot="start" name="chatbubbles-outline"></ion-icon>
