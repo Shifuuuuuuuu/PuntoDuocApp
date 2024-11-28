@@ -13,4 +13,5 @@ export interface Inscripcion {
   puntaje?: number;
   carrera: string;
   fechaVerificacion?: Date;
+  email: string
 }
