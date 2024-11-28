@@ -87,11 +87,14 @@ export class IniciarSesionPage implements OnInit {
           this.eliminarCredenciales(); // Elimina las credenciales si la opción no está marcada
         }
 
+        // Verificar y actualizar el campo `verificado`
+        await this.verificarYActualizarVerificacion(userCredential.user);
+
         // Verificar si el usuario es Estudiante
         const estudianteData = await this.estudianteService.obtenerEstudiantePorEmail(this.user.email);
         if (estudianteData) {
           if (!estudianteData.verificado) {
-            await loading.dismiss(); // Cierra el loader
+            await loading.dismiss();
             Swal.fire('Error', 'Primero debes verificar tu correo electrónico.', 'error');
             return;
           }
@@ -171,6 +174,7 @@ export class IniciarSesionPage implements OnInit {
       await loading.dismiss();
     }
   }
+
 
   // Método para cargar credenciales del localStorage
   cargarCredenciales() {
@@ -255,30 +259,39 @@ export class IniciarSesionPage implements OnInit {
 
 
   async verificarYActualizarVerificacion(user: any) {
-    await user.reload(); // Recargar la información del usuario
+    await user.reload(); // Recargar la información del usuario desde Firebase
     if (user.emailVerified) {
       const userId = user.uid;
       try {
-        // Obtener el documento actual del estudiante e invitado
+        // Verificar y actualizar el campo `verificado` en la colección correspondiente
         const estudianteData = await this.estudianteService.obtenerEstudiantePorId(userId);
         const invitadoData = await this.invitadoService.obtenerInvitadoPorId(userId);
 
         if (estudianteData) {
           // Actualizar solo el campo `verificado` del estudiante
-          estudianteData.verificado = true;
-          await this.estudianteService.updateEstudiante(estudianteData);
+          await this.estudianteService.updateEstudiante({
+            ...estudianteData,
+            verificado: true,
+          });
+          console.log('Campo `verificado` actualizado para el estudiante:', userId);
         }
 
         if (invitadoData) {
           // Actualizar solo el campo `verificado` del invitado
-          invitadoData.verificado = true;
-          await this.invitadoService.updateInvitado(invitadoData);
+          await this.invitadoService.updateInvitado({
+            ...invitadoData,
+            verificado: true,
+          });
+          console.log('Campo `verificado` actualizado para el invitado:', userId);
         }
       } catch (error) {
         console.error('Error al actualizar la verificación en Firestore:', error);
       }
+    } else {
+      console.warn('El correo electrónico aún no está verificado.');
     }
   }
+
 
 
 

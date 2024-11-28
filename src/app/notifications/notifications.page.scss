@@ -117,8 +117,25 @@
   color: gray;
 }
 
+
+
 .notification-close ion-button {
   --padding-start: 0;
   --padding-end: 0;
   --icon-size: 20px;
+  --background: transparent; /* Fondo transparente */
+  color: black; /* Cambia el color del icono a negro */
+}
+
+.notification-close ion-button:focus {
+  outline: none; /* Elimina el contorno azul al hacer clic */
+  box-shadow: none; /* Elimina la sombra azul */
+}
+
+.notification-close ion-button:hover {
+  background-color: transparent; /* Elimina cualquier fondo al pasar el cursor */
+}
+
+.notification-close ion-icon {
+  color: black; /* Asegúrate de que el icono también sea negro */
 }

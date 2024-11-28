@@ -190,38 +190,27 @@ export class EventDetailsPage implements OnInit {
 
       // Lógica de inscripción automática si hay cupos disponibles y usuarios en lista de espera
       if (this.event.Cupos > 0 && this.event.listaEspera && this.event.listaEspera.length > 0) {
-        console.log('Cupos disponibles:', this.event.Cupos);
-        console.log('Usuarios en lista de espera:', this.event.listaEspera);
-
-        // Inscribir automáticamente al primer usuario en la lista de espera
         const primerUsuario = this.event.listaEspera[0];
-        console.log('Contenido de primerUsuario:', primerUsuario);
-
-        // Asignar las propiedades de manera manual
         const userId = primerUsuario.id_Invitado || primerUsuario.id_estudiante;
         const userName = primerUsuario.Nombre_completo || primerUsuario.userName;
         const rut = primerUsuario.Rut || primerUsuario.rut;
 
-        console.log('Intentando inscribir al usuario:', userId, userName, rut);
-
         if (userId) {
           if (primerUsuario.id_Invitado) {
-            console.log('Inscribiendo como invitado...');
-            await this.eventosService.inscribirInvitado(this.event.id_evento, userId, userName, rut, false);
+            const invitado = await this.invitadoService.obtenerInvitadoPorId(userId);
+            const email = invitado?.email || '';
+            await this.eventosService.inscribirInvitado(this.event.id_evento, userId, userName, rut, email, false);
           } else if (primerUsuario.id_estudiante) {
-            console.log('Inscribiendo como estudiante...');
-            const estudianteData = await this.estudianteService.obtenerEstudiantePorId(userId);
-            const carrera = estudianteData?.carrera || ''; // Obtiene la carrera
-
-            await this.eventosService.inscribirEstudiante(this.event.id_evento, userId, userName, rut, carrera, false);
+            const estudiante = await this.estudianteService.obtenerEstudiantePorId(userId);
+            const carrera = estudiante?.carrera || '';
+            const email = estudiante?.email || '';
+            await this.eventosService.inscribirEstudiante(this.event.id_evento, userId, userName, rut, carrera, email, false);
           }
 
           // Eliminar al usuario de la lista de espera
-          console.log('Eliminando al usuario de la lista de espera:', userId);
           await this.eventosService.eliminarUsuarioDeListaEspera(this.event.id_evento, userId);
 
           // Reducir el número de cupos disponibles
-          console.log('Reduciendo cupos disponibles...');
           await this.firestore.collection('Eventos').doc(this.event.id_evento).update({ Cupos: this.event.Cupos });
 
           // Recargar los detalles del evento para reflejar los cambios
@@ -229,14 +218,14 @@ export class EventDetailsPage implements OnInit {
         }
       }
 
-      // Actualiza la referencia para que Angular lo detecte y fuerza la detección de cambios
-      this.event = { ...this.event };
-      this.cdr.detectChanges();
+      this.event = { ...this.event }; // Actualiza la referencia
+      this.cdr.detectChanges(); // Fuerza la detección de cambios
     } catch (error) {
       console.error('Error al verificar lista de espera o al realizar la inscripción automática:', error);
       this.event.enListaEspera = false;
     }
   }
+
 
 
 
@@ -346,18 +335,21 @@ export class EventDetailsPage implements OnInit {
       let userName = '';
       let rut = '';
       let carrera = '';
+      let email = '';
 
       if (this.isInvitado) {
         const invitado = await this.invitadoService.obtenerInvitadoPorId(this.userId);
         userName = invitado?.Nombre_completo || 'Invitado';
         rut = invitado?.Rut || '';
-        await this.eventosService.inscribirInvitado(eventoId, this.userId, userName, rut, false);
+        email = invitado?.email || '';
+        await this.eventosService.inscribirInvitado(eventoId, this.userId, userName, rut, email, false);
       } else {
         const estudiante = await this.estudianteService.obtenerEstudiantePorId(this.userId);
         userName = estudiante?.Nombre_completo || 'Estudiante';
         rut = estudiante?.Rut || '';
         carrera = estudiante?.carrera || '';
-        await this.eventosService.inscribirEstudiante(eventoId, this.userId, userName, rut, carrera, false);
+        email = estudiante?.email || '';
+        await this.eventosService.inscribirEstudiante(eventoId, this.userId, userName, rut, carrera, email, false);
       }
 
       Swal.fire('Éxito', 'Te has inscrito al evento correctamente.', 'success');
@@ -368,7 +360,9 @@ export class EventDetailsPage implements OnInit {
     } finally {
       this.loading = false;
     }
-}
+  }
+
+
 
 
   async cancelarInscripcion(eventoId: string) {

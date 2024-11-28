@@ -11,7 +11,15 @@ export class EventosService {
   constructor(private firestore: AngularFirestore) {}
 
  // Método para inscribir un Estudiante
-async inscribirEstudiante(eventoId: string, userId: string, userName: string, rut: string, carrera: string, verificado: boolean): Promise<void> {
+ async inscribirEstudiante(
+  eventoId: string,
+  userId: string,
+  userName: string,
+  rut: string,
+  carrera: string,
+  email: string, // Agregado
+  verificado: boolean
+): Promise<void> {
   const eventoDocRef = doc(this.firestore.firestore, 'Eventos', eventoId);
   const eventoDoc = await getDoc(eventoDocRef);
 
@@ -24,13 +32,14 @@ async inscribirEstudiante(eventoId: string, userId: string, userName: string, ru
         Nombre_completo: userName,
         Rut: rut,
         carrera: carrera,
-        verificado: verificado // Agregar verificado al objeto de inscripción
+        email: email, // Agregado
+        verificado: verificado,
       };
 
       await updateDoc(eventoDocRef, {
         Cupos: increment(-1),
         inscritos: increment(1),
-        Inscripciones: arrayUnion(inscripcion)
+        Inscripciones: arrayUnion(inscripcion),
       });
 
       const inscripcionesRef = this.firestore.collection('Inscripciones');
@@ -39,6 +48,7 @@ async inscribirEstudiante(eventoId: string, userId: string, userName: string, ru
         userId: userId,
         tipoUsuario: 'Estudiante',
         carrera: carrera,
+        email: email, // Agregado
         verificado: verificado,
         timestamp: serverTimestamp(),
       });
@@ -53,43 +63,53 @@ async inscribirEstudiante(eventoId: string, userId: string, userName: string, ru
 
 
   // Método para inscribir un Invitado (si es necesario actualizarlo)
-async inscribirInvitado(eventoId: string, userId: string, userName: string, rut: string, verificado: boolean): Promise<void> {
-  const eventoDocRef = doc(this.firestore.firestore, 'Eventos', eventoId);
-  const eventoDoc = await getDoc(eventoDocRef);
+  async inscribirInvitado(
+    eventoId: string,
+    userId: string,
+    userName: string,
+    rut: string,
+    email: string, // Agregado
+    verificado: boolean
+  ): Promise<void> {
+    const eventoDocRef = doc(this.firestore.firestore, 'Eventos', eventoId);
+    const eventoDoc = await getDoc(eventoDocRef);
 
-  if (eventoDoc.exists()) {
-    const eventoData = eventoDoc.data() as Evento;
+    if (eventoDoc.exists()) {
+      const eventoData = eventoDoc.data() as Evento;
 
-    if (eventoData.Cupos > 0) {
-      const inscripcion = {
-        id_invitado: userId,
-        Nombre_completo: userName,
-        Rut: rut,
-        verificado: verificado // Agregar verificado al objeto de inscripción
-      };
+      if (eventoData.Cupos > 0) {
+        const inscripcion = {
+          id_invitado: userId,
+          Nombre_completo: userName,
+          Rut: rut,
+          email: email, // Agregado
+          verificado: verificado,
+        };
 
-      await updateDoc(eventoDocRef, {
-        Cupos: increment(-1),
-        inscritos: increment(1),
-        Inscripciones: arrayUnion(inscripcion)
-      });
+        await updateDoc(eventoDocRef, {
+          Cupos: increment(-1),
+          inscritos: increment(1),
+          Inscripciones: arrayUnion(inscripcion),
+        });
 
-      const inscripcionesRef = this.firestore.collection('Inscripciones');
-      await inscripcionesRef.add({
-        eventoId: eventoId,
-        userId: userId,
-        tipoUsuario: 'Invitado',
-        verificado: verificado,
-        timestamp: serverTimestamp(),
-      });
+        const inscripcionesRef = this.firestore.collection('Inscripciones');
+        await inscripcionesRef.add({
+          eventoId: eventoId,
+          userId: userId,
+          tipoUsuario: 'Invitado',
+          email: email, // Agregado
+          verificado: verificado,
+          timestamp: serverTimestamp(),
+        });
+      } else {
+        await this.agregarInvitadoAListaEspera(eventoId, userId, userName, rut);
+        throw new Error('No hay cupos disponibles. Has sido añadido a la lista de espera.');
+      }
     } else {
-      await this.agregarInvitadoAListaEspera(eventoId, userId, userName, rut);
-      throw new Error('No hay cupos disponibles. Has sido añadido a la lista de espera.');
+      throw new Error('Evento no encontrado.');
     }
-  } else {
-    throw new Error('Evento no encontrado.');
   }
-}
+
 
   // Cancelar inscripción para Estudiante
   async cancelarInscripcionEstudiante(eventoId: string, userId: string): Promise<void> {
@@ -272,6 +292,35 @@ async inscribirInvitado(eventoId: string, userId: string, userName: string, rut:
     }
   }
 
+  async obtenerDatosInvitado(userId: string): Promise<any> {
+    try {
+      const invitadoDocRef = doc(this.firestore.firestore, 'Invitados', userId);
+      const invitadoSnapshot = await getDoc(invitadoDocRef);
+
+      if (invitadoSnapshot.exists()) {
+        return invitadoSnapshot.data();
+      }
+      throw new Error('Invitado no encontrado');
+    } catch (error) {
+      console.error('Error al obtener datos del invitado:', error);
+      throw error;
+    }
+  }
+  async obtenerDatosEstudiante(userId: string): Promise<any> {
+    try {
+      const estudianteDocRef = doc(this.firestore.firestore, 'Estudiantes', userId);
+      const estudianteSnapshot = await getDoc(estudianteDocRef);
+
+      if (estudianteSnapshot.exists()) {
+        return estudianteSnapshot.data();
+      }
+      throw new Error('Estudiante no encontrado');
+    } catch (error) {
+      console.error('Error al obtener datos del estudiante:', error);
+      throw error;
+    }
+  }
+
 
 // Verificar lista de espera y añadir usuario si hay cupos
 async verificarListaEspera(eventoId: string): Promise<void> {
@@ -280,51 +329,34 @@ async verificarListaEspera(eventoId: string): Promise<void> {
     if (cuposDisponibles > 0) {
       const listaEspera = await this.obtenerListaEspera(eventoId);
       if (listaEspera.length > 0) {
-        const primerUsuarioEnEspera = listaEspera[0];
+        const primerUsuarioEnEspera = listaEspera[0]; // Primer usuario en la lista de espera
 
-        // Detectar el tipo de usuario en la lista de espera y proceder con la inscripción adecuada
-        if ((primerUsuarioEnEspera as any).id_invitado || primerUsuarioEnEspera.userId.startsWith('invitado_')) {
-          const invitado = {
-            id_invitado: primerUsuarioEnEspera.userId,
-            Nombre_completo: primerUsuarioEnEspera.userName,
-            Rut: primerUsuarioEnEspera.rut,
-            verificado: false // Agregar el estado de verificación
-          };
+        if (primerUsuarioEnEspera.userId.startsWith('invitado_')) {
+          // Es un invitado
+          const invitado = await this.obtenerDatosInvitado(primerUsuarioEnEspera.userId);
+          const email = invitado?.email || '';
           await this.inscribirInvitado(
             eventoId,
-            invitado.id_invitado,
+            invitado.id_Invitado,
             invitado.Nombre_completo,
             invitado.Rut,
-            invitado.verificado // Pasar el estado de verificación
+            email, // Agregado
+            false
           );
-          await this.eliminarUsuarioDeListaEspera(eventoId, invitado.id_invitado);
-        } else if ((primerUsuarioEnEspera as any).id_estudiante || primerUsuarioEnEspera.userId.startsWith('estudiante_')) {
-          // Obtener la carrera del estudiante directamente en eventos.service.ts
-          const estudianteDocRef = doc(this.firestore.firestore, 'Estudiantes', primerUsuarioEnEspera.userId);
-          const estudianteDoc = await getDoc(estudianteDocRef);
-          let carrera = '';
-
-          if (estudianteDoc.exists()) {
-            const estudianteData = estudianteDoc.data();
-            carrera = estudianteData['carrera'] || ''; // Usar acceso con corchetes
-          }
-
-          const estudiante = {
-            id_estudiante: primerUsuarioEnEspera.userId,
-            Nombre_completo: primerUsuarioEnEspera.userName,
-            Rut: primerUsuarioEnEspera.rut,
-            carrera: carrera, // Agregar la carrera al objeto
-            verificado: false // Agregar el estado de verificación
-          };
-
-          // Llamar al método con la carrera y verificado incluido
+          await this.eliminarUsuarioDeListaEspera(eventoId, invitado.id_Invitado);
+        } else if (primerUsuarioEnEspera.userId.startsWith('estudiante_')) {
+          // Es un estudiante
+          const estudiante = await this.obtenerDatosEstudiante(primerUsuarioEnEspera.userId);
+          const carrera = estudiante?.carrera || '';
+          const email = estudiante?.email || '';
           await this.inscribirEstudiante(
             eventoId,
             estudiante.id_estudiante,
             estudiante.Nombre_completo,
             estudiante.Rut,
-            estudiante.carrera,
-            estudiante.verificado // Pasar el estado de verificación
+            carrera,
+            email, // Agregado
+            false
           );
           await this.eliminarUsuarioDeListaEspera(eventoId, estudiante.id_estudiante);
         }
@@ -334,6 +366,8 @@ async verificarListaEspera(eventoId: string): Promise<void> {
     console.error('Error al verificar la lista de espera:', error);
   }
 }
+
+
 
 
 
