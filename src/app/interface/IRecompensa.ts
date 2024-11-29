@@ -4,9 +4,10 @@ export interface Recompensa {
   puntos_requeridos: number;
   cantidad: number;
   id_recompensa?: string; // Campo opcional para el ID de la recompensa
+  imagen?: string; // Campo opcional para la imagen en Base64
   estudiantesReclamaron?: {
     id_estudiante: string;
-    reclamado: boolean ;
+    reclamado: boolean;
     qrCode?: string;
     fechaReclamacion: string;
     estado: string;

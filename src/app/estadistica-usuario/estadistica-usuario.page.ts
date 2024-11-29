@@ -16,6 +16,12 @@ export class EstadisticaUsuarioPage implements OnInit {
   @ViewChild('promedioMensualChart') promedioMensualChart!: ElementRef;
   @ViewChild('eventosPorCategoriaChart') eventosPorCategoriaChart!: ElementRef;
   @ViewChild('porcentajeVerificacionChart') porcentajeVerificacionChart!: ElementRef;
+  @ViewChild('misionesChart') misionesChart!: ElementRef;
+
+  misionesCompletadas: any[] = [];
+  categoriasMisiones: { [categoria: string]: number } = {};
+  totalMisionesCompletadas: number = 0;
+  puntajeTotalMisiones: number = 0;
 
   chart: any;
   etiquetas: string[] = [];
@@ -55,12 +61,11 @@ export class EstadisticaUsuarioPage implements OnInit {
         return;
       }
 
-      // Cargar el historial de puntaje
+      // Historial de puntaje, promedio mensual y eventos asistidos por categoría
       const historialPuntaje = await firstValueFrom(this.estudianteService.obtenerHistorialPuntajeDesdeFirestore(estudianteId));
       this.etiquetas = historialPuntaje.map(data => data.fecha);
       this.puntajes = historialPuntaje.map(data => data.puntaje);
 
-      // Calcular el promedio mensual
       const puntajesPorMes: { [mes: string]: number[] } = {};
       historialPuntaje.forEach((data) => {
         const mes = data.fecha.slice(3, 10);
@@ -76,28 +81,63 @@ export class EstadisticaUsuarioPage implements OnInit {
         return puntajes.reduce((a, b) => a + b, 0) / puntajes.length;
       });
 
-      // Cargar eventos asistidos por categoría
       const eventos = await this.estudianteService.obtenerEventosAsistidosPorCategoria(estudianteId);
       eventos.forEach(evento => {
         const categoria = evento.categoria || 'Sin Categoría';
         this.eventosPorCategoria[categoria] = (this.eventosPorCategoria[categoria] || 0) + 1;
       });
 
-      // Calcular el porcentaje de verificación en eventos
       this.totalEventosInscritos = eventos.length;
       this.totalEventosVerificados = eventos.filter(evento => evento.verificado).length;
       this.porcentajeVerificacion = this.totalEventosInscritos > 0
         ? (this.totalEventosVerificados / this.totalEventosInscritos) * 100
         : 0;
 
+      // **Cargar estadísticas de misiones completadas**
+      const misiones = await this.missionsAlertService.obtenerMisionesCompletadas(estudianteId);
+      this.misionesCompletadas = misiones;
+      this.totalMisionesCompletadas = misiones.length;
+      this.puntajeTotalMisiones = misiones.reduce((acc, mision) => acc + (mision.puntaje || 0), 0);
+
+      misiones.forEach(mision => {
+        const categoria = mision.categoria || 'Sin Categoría';
+        this.categoriasMisiones[categoria] = (this.categoriasMisiones[categoria] || 0) + 1;
+      });
+
       // Crear los gráficos
       this.crearGraficoPuntaje();
       this.crearGraficoPromedioMensual();
       this.crearGraficoEventosPorCategoria();
       this.crearGraficoPorcentajeVerificacion();
+      this.crearGraficoMisionesCompletadas();
     } catch (error) {
       console.error('Error al cargar el historial de puntaje:', error);
     }
+  }
+  crearGraficoMisionesCompletadas() {
+    const categorias = Object.keys(this.categoriasMisiones);
+    const valores = Object.values(this.categoriasMisiones);
+
+    new Chart(this.misionesChart.nativeElement, {
+      type: 'bar',
+      data: {
+        labels: categorias,
+        datasets: [{
+          label: 'Misiones completadas por categoría',
+          data: valores,
+          backgroundColor: 'rgba(75, 192, 192, 0.6)',
+          borderColor: 'rgba(75, 192, 192, 1)',
+          borderWidth: 1,
+        }]
+      },
+      options: {
+        responsive: true,
+        scales: {
+          y: { beginAtZero: true, title: { display: true, text: 'Cantidad' }},
+          x: { title: { display: true, text: 'Categorías' }}
+        }
+      }
+    });
   }
 
   crearGraficoPuntaje() {

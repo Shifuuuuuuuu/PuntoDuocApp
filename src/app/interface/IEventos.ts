@@ -14,7 +14,7 @@ export interface Evento {
   inscritos: number;
   lugar: string;
   sede: string;
-
+  tipo: string;
   titulo: string;
   show?: boolean;
   estaInscrito?: boolean;

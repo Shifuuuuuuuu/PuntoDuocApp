@@ -149,66 +149,67 @@ export class VerRecompensasComponent implements OnInit {
 
       try {
         const recompensaDoc = await firstValueFrom(this.recompensaService.getRecompensaById(id_recompensa));
-        if (recompensaDoc) {
-          const recompensa = { ...recompensaDoc.data() } as Recompensa;
+        const recompensa = recompensaDoc?.data(); // Accede a los datos del documento
 
-          if (this.estudiante.puntaje < recompensa.puntos_requeridos) {
-            Swal.fire({
-              title: 'Puntos insuficientes',
-              text: 'No tienes suficientes puntos para reclamar esta recompensa.',
-              icon: 'warning',
-              confirmButtonText: 'OK'
-            });
-            return;
-          }
-
-          await this.generarQR(recompensa);
-
-          let nuevaCantidad = recompensa.cantidad - 1;
-          let nuevoPuntaje = this.estudiante.puntaje - recompensa.puntos_requeridos;
-
-          if (this.estudiante.id_estudiante) {
-            const estudianteReclamado = {
-              id_estudiante: this.estudiante.id_estudiante,
-              reclamado: false,
-              qrCode: this.qrCodeImage,
-              fechaReclamacion: new Date().toISOString(), // Fecha de reclamación añadida
-              estado: 'activo' // Estado añadido
-            };
-
-            if (!recompensa.estudiantesReclamaron) {
-              recompensa.estudiantesReclamaron = [];
-            }
-
-            recompensa.estudiantesReclamaron.push(estudianteReclamado);
-
-            if (recompensa.id_recompensa) {
-              await this.recompensaService.actualizarRecompensa(recompensa.id_recompensa, {
-                cantidad: nuevaCantidad,
-                estudiantesReclamaron: recompensa.estudiantesReclamaron
-              });
-
-              await this.estudianteService.updateEstudiantePuntaje(this.estudiante.id_estudiante, nuevoPuntaje);
-
-              Swal.fire({
-                title: 'Recompensa reclamada',
-                text: 'Recompensa reclamada con éxito. Tu puntaje ha sido descontado.',
-                icon: 'success',
-                confirmButtonText: 'OK'
-              });
-              await this.actualizarDatos();
-            }
-          } else {
-            console.error('ID del estudiante es undefined');
-            return;
-          }
-        } else {
+        if (!recompensa) {
           Swal.fire({
             title: 'Error',
             text: 'No se encontró la recompensa.',
             icon: 'error',
             confirmButtonText: 'OK'
           });
+          return;
+        }
+
+        if (this.estudiante.puntaje < recompensa.puntos_requeridos) {
+          Swal.fire({
+            title: 'Puntos insuficientes',
+            text: 'No tienes suficientes puntos para reclamar esta recompensa.',
+            icon: 'warning',
+            confirmButtonText: 'OK'
+          });
+          return;
+        }
+
+        await this.generarQR(recompensa);
+
+        const nuevaCantidad = recompensa.cantidad - 1;
+        const nuevoPuntaje = this.estudiante.puntaje - recompensa.puntos_requeridos;
+
+        if (this.estudiante.id_estudiante) {
+          const estudianteReclamado = {
+            id_estudiante: this.estudiante.id_estudiante,
+            reclamado: false,
+            qrCode: this.qrCodeImage,
+            fechaReclamacion: new Date().toISOString(),
+            estado: 'activo'
+          };
+
+          if (!recompensa.estudiantesReclamaron) {
+            recompensa.estudiantesReclamaron = [];
+          }
+
+          recompensa.estudiantesReclamaron.push(estudianteReclamado);
+
+          if (recompensa.id_recompensa) {
+            await this.recompensaService.actualizarRecompensa(recompensa.id_recompensa, {
+              cantidad: nuevaCantidad,
+              estudiantesReclamaron: recompensa.estudiantesReclamaron
+            });
+
+            await this.estudianteService.updateEstudiantePuntaje(this.estudiante.id_estudiante, nuevoPuntaje);
+
+            Swal.fire({
+              title: 'Recompensa reclamada',
+              text: 'Recompensa reclamada con éxito. Tu puntaje ha sido descontado.',
+              icon: 'success',
+              confirmButtonText: 'OK'
+            });
+            await this.actualizarDatos();
+          }
+        } else {
+          console.error('ID del estudiante es undefined');
+          return;
         }
       } catch (error) {
         console.error('Error al reclamar la recompensa:', error);
@@ -221,6 +222,7 @@ export class VerRecompensasComponent implements OnInit {
       }
     }
   }
+
 
   async generarQR(recompensa: Recompensa) {
     if (!this.estudiante) return;

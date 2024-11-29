@@ -14,7 +14,7 @@
     </ion-card-content>
   </ion-card>
 
-  <div *ngIf="usuarioVentas" class="form-container">
+  <div *ngIf="usuarioVentas" style="max-width: 380px; margin: auto; padding: 25px; background-color: white; border-radius: 20px;" class="form-container">
     <div class="header-container">
       <h1>Información personal</h1>
       <div class="icon-container">
@@ -23,6 +23,25 @@
         <ion-icon *ngIf="isEditing" name="close-outline" (click)="cancelEdit()"></ion-icon>
       </div>
     </div>
+    <div class="profile-container centered-profile">
+      <div class="profile-image">
+        <img *ngIf="profileImageUrl" [src]="profileImageUrl"  />
+        <ion-icon *ngIf="!profileImageUrl" name="person-circle-outline" class="default-icon"></ion-icon>
+
+        <div class="upload-overlay" [class.hidden]="!isEditing">
+          <ion-icon name="camera-outline"></ion-icon>
+          <input
+            type="file"
+            accept="image/*"
+            (change)="uploadProfileImage($event)"
+            hidden
+            id="fileInput"
+          />
+          <label for="fileInput" class="upload-label"></label>
+        </div>
+      </div>
+    </div>
+    <br>
     <form>
       <!-- Nombre Completo -->
       <div class="mb-3 position-relative">

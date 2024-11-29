@@ -17,7 +17,6 @@
     </ion-card-content>
   </ion-card>
 
-  <!-- Información personal -->
   <div class="form-container">
     <div class="header-container">
       <h1>Información personal</h1>
@@ -28,8 +27,29 @@
       </div>
     </div>
 
+    <div class="profile-container centered-profile">
+      <div class="profile-image">
+        <!-- Imagen de perfil o ícono predeterminado -->
+        <img *ngIf="profileImageUrl" [src]="profileImageUrl"/>
+        <ion-icon *ngIf="!profileImageUrl" name="person-circle-outline" class="default-icon"></ion-icon>
+
+        <!-- Botón para cambiar imagen -->
+        <div class="upload-overlay" [class.hidden]="!isEditing">
+          <ion-icon name="camera-outline"></ion-icon>
+          <input
+            type="file"
+            accept="image/*"
+            (change)="uploadProfileImage($event)"
+            hidden
+            id="fileInput"
+          />
+          <label for="fileInput" class="upload-label"></label>
+        </div>
+      </div>
+    </div>
+
+    <br>
     <form *ngIf="gestor">
-      <!-- Nombre Completo -->
       <div class="mb-3 position-relative">
         <ion-item class="custom-item">
           <ion-label>
@@ -40,17 +60,15 @@
         </ion-item>
       </div>
 
-      <!-- Correo Electrónico -->
       <div class="mb-3 position-relative">
         <ion-item class="custom-item">
           <ion-label>
             <h2 style="color: black;">Correo Electrónico</h2>
-            <p>{{ gestor.email }}</p> <!-- Siempre muestra el correo como texto -->
+            <p>{{ gestor.email }}</p>
           </ion-label>
         </ion-item>
       </div>
 
-      <!-- RUT -->
       <div class="mb-3 position-relative">
         <ion-item class="custom-item">
           <ion-label>
@@ -64,4 +82,3 @@
   </div>
 </ion-content>
 <app-tab-bar-admin></app-tab-bar-admin>
-

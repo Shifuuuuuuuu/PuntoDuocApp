@@ -6,7 +6,7 @@
     margin: 20px;
     border-radius: 8px;
   }
-  
+
   ion-content {
     --background: #ffffff;
     display: flex;
@@ -14,7 +14,7 @@
     align-items: center;
     height: 100vh;
   }
-  
+
   /* Ajustes del formulario */
   .form-container {
     max-width: 400px;
@@ -24,7 +24,7 @@
     border-radius: 15px;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
   }
-  
+
   /* Ajustes de los elementos del formulario */
   .custom-item {
     --background: #f2f2f2;
@@ -33,13 +33,13 @@
     --border-width: 0px;
     --inner-border-width: 0px;
   }
-  
+
   ion-input {
     padding: 10px;
     font-size: 16px;
     color: #333;
   }
-  
+
   /* Estilo de los botones */
   .custom-button {
     --border-radius: 8px;
@@ -48,35 +48,35 @@
     font-weight: bold;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
   }
-  
+
   .custom-button:hover {
     background-color: #084a9a;
   }
-  
+
   .forgot-password-link {
     color: #0a49a7;
     text-decoration: none;
     font-size: 14px;
   }
-  
+
   .forgot-password-link:hover {
     text-decoration: underline;
   }
-  
+
   .text-danger {
     color: #d9534f;
     font-weight: bold;
     margin-top: 5px;
     text-align: left;
   }
-  
+
   /* Header personalizado */
   .custom-header {
     --background: linear-gradient(45deg, #0A49A7, #0a74da);
     position: relative;
     z-index: 10;
   }
-  
+
   .custom-toolbar {
     height: 120px;
     display: flex;
@@ -87,14 +87,14 @@
     background-color: black;
     --background: transparent;
   }
-  
+
   .custom-toolbar ion-title {
     font-size: 24px;
     font-weight: bold;
     color: white;
     text-align: center;
   }
-  
+
   .custom-header::after {
     position: absolute;
     bottom: -30px;
@@ -105,13 +105,13 @@
     border-top-left-radius: 50%;
     border-top-right-radius: 50%;
   }
-  
+
   /* Centrar el título */
   .centered-title {
     width: 100%;
     text-align: center;
   }
-  
+
   /* Estilo para los iconos de redes sociales */
   .social-icons {
     display: flex;
@@ -119,17 +119,17 @@
     gap: 15px;
     margin: 10px 0;
   }
-  
+
   .social-icon {
     font-size: 24px;
     color: #0A49A7;
     transition: transform 0.3s ease;
   }
-  
+
   .social-icon:hover {
     transform: scale(1.2);
   }
-  
+
   /* Pie de página */
   .footer {
     text-align: center;
@@ -139,31 +139,31 @@
     border-radius: 15px;
     color: #0A49A7;
   }
-  
+
   .footer p {
     margin: 5px 0;
     font-size: 14px;
   }
-  
-  
+
+
   /* QR Container */
   .qr-container {
     text-align: center;
     margin-top: 20px;
   }
-  
+
   .qr-image-container {
     display: flex;
     justify-content: center;
     align-items: center;
     margin: 0 auto;
   }
-  
+
   .qr-image {
     max-width: 100%;
     height: auto;
   }
-  
+
   /* Lista personalizada */
   .custom-item2 {
     --background: #ffffff;
@@ -176,12 +176,12 @@
     padding: 10px;
     margin-bottom: 10px;
   }
-  
+
   /* Espacio adicional entre secciones */
   .spacer {
     height: 10px;
   }
-  
+
   /* Estilo personalizado para ion-list e ion-item */
   .custom-list {
     background-color: #ffffff;
@@ -196,29 +196,92 @@
     justify-content: space-between;
     margin-bottom: 20px;
   }
-  
+
   .header-container h1 {
     color: #0A49A7;
     font-size: 24px;
     font-weight: bold;
     margin: 0;
   }
-  
+
   .icon-container {
     display: flex;
     gap: 15px;
   }
-  
+
   .icon-container ion-icon {
     font-size: 24px;
     color: #0A49A7;
     cursor: pointer;
     transition: color 0.3s ease, transform 0.3s ease;
   }
-  
+
   .icon-container ion-icon:hover {
     color: #084a9a; /* Cambia de color al pasar el cursor */
     transform: scale(1.1); /* Efecto de zoom en hover */
   }
-  
-  
+  .centered-profile {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    margin-top: 20px;
+  }
+
+  .profile-image {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    overflow: hidden;
+    border: 3px solid #0a49a7;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+    background-color: #f2f2f2;
+  }
+
+  .profile-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .default-icon {
+    font-size: 100px;
+    color: #ccc;
+  }
+
+  .upload-overlay {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    background-color: rgba(0, 0, 0, 0.6);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+  }
+
+  .upload-overlay.hidden {
+    display: none;
+  }
+
+  .upload-overlay ion-icon {
+    color: white;
+    font-size: 24px;
+  }
+
+  .upload-label {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    top: 0;
+    left: 0;
+    cursor: pointer;
+  }
+

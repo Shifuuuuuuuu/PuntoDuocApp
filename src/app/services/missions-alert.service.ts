@@ -382,9 +382,6 @@ async claimReward(missionId: string, puntaje: number, userId: string, categoria:
     }
 }
 
-
-
-
   private async getCurrentUserId(): Promise<string | null> {
     try {
       const userEmail = localStorage.getItem('currentUserEmail');
@@ -409,5 +406,38 @@ async claimReward(missionId: string, puntaje: number, userId: string, categoria:
       return null;
     }
   }
+  async obtenerMisionesCompletadas(userId: string): Promise<any[]> {
+    try {
+      const estudianteDoc = await this.firestore.collection('Estudiantes').doc(userId).get().toPromise();
+
+      if (!estudianteDoc || !estudianteDoc.exists) {
+        console.warn('No se encontró información del estudiante.');
+        return [];
+      }
+
+      const estudianteData = estudianteDoc.data() as { misionesCompletadas?: string[] };
+
+      if (!estudianteData.misionesCompletadas || estudianteData.misionesCompletadas.length === 0) {
+        return [];
+      }
+
+      const missionsSnapshot = await this.firestore.collection('Misiones', ref =>
+        ref.where(firebase.firestore.FieldPath.documentId(), 'in', estudianteData.misionesCompletadas)
+      ).get().toPromise();
+
+      return missionsSnapshot?.docs.map(doc => {
+        const data = doc.data() as Record<string, any>; // Especifica el tipo de los datos como objeto genérico
+        return {
+          id: doc.id,
+          ...data,
+        };
+      }) || [];
+    } catch (error) {
+      console.error('Error al obtener misiones completadas:', error);
+      return [];
+    }
+  }
+
+
 }
 

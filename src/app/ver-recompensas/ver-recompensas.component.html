@@ -1,10 +1,14 @@
-<!-- ver-recompensas.component.html -->
+<!-- Lista de Recompensas Disponibles -->
 <ion-card class="event-card">
   <ion-card-header>
     <ion-card-title style="color: black;">Recompensas Disponibles para Reclamar</ion-card-title>
   </ion-card-header>
   <ion-list *ngIf="recompensas.length > 0" style="background-color: white;">
     <ion-item *ngFor="let recompensa of recompensas" style="--background: transparent;">
+      <!-- Contenedor de imagen -->
+      <ion-thumbnail slot="start">
+        <img [src]="recompensa.imagen" alt="Imagen de la recompensa" />
+      </ion-thumbnail>
       <ion-label style="color: black;">
         <h2>{{ recompensa.descripcion }}</h2>
         <p>Puntos requeridos: {{ recompensa.puntos_requeridos }}</p>
@@ -18,13 +22,17 @@
   </ion-card-content>
 </ion-card>
 
-<!-- Recompensas con QR -->
+<!-- Lista de Recompensas con QR -->
 <ion-card class="event-card">
   <ion-card-header>
     <ion-card-title style="color: black;">Recompensas con QR</ion-card-title>
   </ion-card-header>
   <ion-list *ngIf="recompensasConQR.length > 0" style="background-color: white;">
     <ion-item *ngFor="let item of recompensasConQR" style="--background: transparent;">
+      <!-- Contenedor de imagen -->
+      <ion-thumbnail slot="start">
+        <img [src]="item.recompensa.imagen" alt="Imagen de la recompensa" />
+      </ion-thumbnail>
       <ion-label style="color: black;">
         <h2>{{ item.recompensa.descripcion }}</h2>
         <p>Fecha de caducidad: {{ item.fechaCaducidad }}</p>
