@@ -12,27 +12,26 @@
 
     <!-- Notificaciones directas -->
     <ion-card
-      *ngFor="let directNotification of directNotifications"
-      class="notification-card"
-    >
-      <ion-row>
-         <!--  <ion-col size="3" class="notification-image">
-          <img *ngIf="directNotification.imagen" [src]="directNotification.imagen || 'assets/default-notification-image.jpg'" alt="Notificación Directa">
-        </ion-col>-->
-        <ion-col size="8" class="notification-details">
-          <h2 class="notification-title">{{ directNotification.titulo }}</h2>
-          <p class="notification-description">{{ directNotification.cuerpo }}</p>
-         <!--<small class="notification-date">
-            {{ directNotification.fecha | date: 'dd/MM/yyyy, hh:mm a' }}
-          </small>-->
-        </ion-col>
-        <ion-col size="1" class="notification-close">
-          <ion-button fill="clear" (click)="ocultarNotificacion(directNotification.id); $event.stopPropagation()">
-            <ion-icon name="close-outline"></ion-icon>
-          </ion-button>
-        </ion-col>
-      </ion-row>
-    </ion-card>
+    *ngFor="let directNotification of directNotifications"
+    class="notification-card"
+    (click)="markDirectNotificationAsRead(directNotification.id); $event.stopPropagation()"
+  >
+    <ion-row>
+      <ion-col size="8" class="notification-details">
+        <h2 class="notification-title">{{ directNotification.titulo }}</h2>
+        <p class="notification-description">{{ directNotification.cuerpo }}</p>
+      </ion-col>
+      <ion-col size="1" class="notification-close">
+        <ion-button
+          fill="clear"
+          (click)="ocultarNotificacionDirecta(directNotification.id); $event.stopPropagation()"
+        >
+          <ion-icon name="close-outline"></ion-icon>
+        </ion-button>
+      </ion-col>
+    </ion-row>
+  </ion-card>
+
 
     <!-- Notificaciones regulares -->
     <ion-card

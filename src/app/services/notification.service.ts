@@ -76,6 +76,30 @@ export class NotificationService {
         return Promise.resolve();
     }
 }
+async markNotificationAsRead(notificationId: string, userId: string) {
+  const notificationRef = this.firestore.collection('Notificaciones').doc(notificationId);
+  const notification = await notificationRef.get().toPromise();
+
+  // Verifica si la notificación existe
+  if (notification && notification.exists) {
+    const data = notification.data() as Notificacion;
+    const usuarioIds = data.usuarioIds || [];
+    const userIndex = usuarioIds.findIndex((user) => user.userId === userId);
+
+    if (userIndex !== -1) {
+      usuarioIds[userIndex].leido = true; // Actualiza el estado de lectura
+      return notificationRef.update({ usuarioIds });
+    } else {
+      console.warn(`El usuario ${userId} no está asociado a esta notificación.`);
+      return Promise.resolve();
+    }
+  } else {
+    console.error(`La notificación con ID ${notificationId} no existe.`);
+    return Promise.resolve();
+  }
+}
+
+
 
 
   eliminarNotificacionesCaducadas() {
