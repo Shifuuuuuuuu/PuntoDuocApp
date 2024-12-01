@@ -61,5 +61,12 @@ font-weight: 200;
 ion-button{
   --box-shadow:none;
   text-transform: none;
+ }
+
+ .button-color {
   --background: #336dcf;
+ }
+ 
+ .ion-title-custom {
+   font-weight:500;
  }
