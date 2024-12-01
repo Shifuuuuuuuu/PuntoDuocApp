@@ -1,57 +1,120 @@
-<!-- Lista de Recompensas Disponibles -->
-<ion-card class="event-card">
-  <ion-card-header>
-    <ion-card-title style="color: black;">Recompensas Disponibles para Reclamar</ion-card-title>
-  </ion-card-header>
-  <ion-list *ngIf="recompensas.length > 0" style="background-color: white;">
-    <ion-item *ngFor="let recompensa of recompensas" style="--background: transparent;">
-      <!-- Contenedor de imagen -->
-      <ion-thumbnail slot="start">
-        <img [src]="recompensa.imagen" alt="Imagen de la recompensa" />
-      </ion-thumbnail>
-      <ion-label style="color: black;">
-        <h2>{{ recompensa.descripcion }}</h2>
-        <p>Puntos requeridos: {{ recompensa.puntos_requeridos }}</p>
-        <p>Cantidad disponible: {{ recompensa.cantidad }}</p>
-      </ion-label>
-      <ion-button style="background-color: white;" (click)="reclamarRecompensa(recompensa.id_recompensa)">Reclamar</ion-button>
-    </ion-item>
-  </ion-list>
-  <ion-card-content *ngIf="recompensas.length === 0">
-    No hay recompensas disponibles para reclamar.
-  </ion-card-content>
-</ion-card>
+<h2 class="ion-padding pb-0">Disponibles para reclamar</h2>
+
+<!-- ver-recompensas.component.html -->
+<div *ngIf="recompensas.length > 0">
+  <ion-card *ngFor="let recompensa of recompensas" class="p-0"><!--(test) style="--background:url('../../assets/svg/layered-waves-haikei-reverse.svg'); background-position:bottom -2rem center; background-repeat:no-repeat;"-->
+    <ion-grid>
+      <ion-row class="ion-align-items-center">
+        <!--Columna imagen-->
+        <ion-col size="3"><img [src]="recompensa.imagen" alt="Imagen de la recompensa" style="aspect-ratio: 1 / 1; object-fit:cover;" loading="lazy" /></ion-col>
+        
+        <!--Columna todo lo demás-->
+        <ion-col>
+          
+          <!--Grid nombre y lo demás -->
+          <ion-grid class="p-0 m-0">
+          
+            <!--Fila Nombre recompensa-->
+            <ion-row class="p-0 m-0">
+              <ion-col class="p-0 m-0">
+                <ion-card-header class="p-2 ps-0">
+                  <ion-card-title style="font-weight: 500; font-size:large">{{ recompensa.descripcion }}</ion-card-title>
+                </ion-card-header>
+              </ion-col>
+            </ion-row>
+
+            <!--Fila Puntos y botón-->
+            <ion-row class="p-0 m-0 ion-align-items-center">
+              <!--Puntos-->
+              <ion-col class="p-0 m-0">
+                <ion-card-content class="p-0 m-0">
+                  <p style="font-weight: 300;">Precio: <b>{{ recompensa.puntos_requeridos }} puntos</b>
+                    <br>Disponibles: <b>{{ recompensa.cantidad }}</b>
+                  </p>
+                </ion-card-content>
+              </ion-col>
+
+              <!--Botón-->
+              <ion-col size="auto" class="p-0 m-0">
+                  <ion-button (click)="reclamarRecompensa(recompensa.id_recompensa)" class="button-color me-0">Reclamar</ion-button>
+              </ion-col>
+            </ion-row>
+          </ion-grid>
+        </ion-col>
+      </ion-row>
+    </ion-grid>
+  </ion-card>
+</div>
+
+<!--Si no hay recompensas disponibles para reclamar-->
+<div *ngIf="recompensas.length === 0" class="ion-padding text-center">
+  <p>No hay recompensas disponibles para reclamar.</p>
+</div>
+
+
+<h2 class="ion-padding pb-0">Canjear reclamadas</h2>
+
 
 <!-- Lista de Recompensas con QR -->
-<ion-card class="event-card">
-  <ion-card-header>
-    <ion-card-title style="color: black;">Recompensas con QR</ion-card-title>
-  </ion-card-header>
-  <ion-list *ngIf="recompensasConQR.length > 0" style="background-color: white;">
-    <ion-item *ngFor="let item of recompensasConQR" style="--background: transparent;">
-      <!-- Contenedor de imagen -->
-      <ion-thumbnail slot="start">
-        <img [src]="item.recompensa.imagen" alt="Imagen de la recompensa" />
-      </ion-thumbnail>
-      <ion-label style="color: black;">
-        <h2>{{ item.recompensa.descripcion }}</h2>
-        <p>Fecha de caducidad: {{ item.fechaCaducidad }}</p>
-      </ion-label>
-      <ion-button (click)="verQRConSweetAlert(item.qrCode)">Ver QR</ion-button>
-    </ion-item>
-  </ion-list>
-  <ion-card-content *ngIf="recompensasConQR.length === 0">
-    No hay recompensas disponibles con QR.
-  </ion-card-content>
-</ion-card>
+<div *ngIf="recompensasConQR.length > 0">
+  <ion-card *ngFor="let item of recompensasConQR" class="p-0">
+    <ion-grid>
+      <ion-row class="ion-align-items-center">
+        <!--Columna imagen-->
+        <ion-col size="3"><img [src]="item.recompensa.imagen" alt="Imagen de la recompensa" style="aspect-ratio: 1 / 1; object-fit:cover;" loading="lazy" /></ion-col>
+        
+        <!--Columna todo lo demás-->
+        <ion-col>
 
-<!-- Mensaje de Error -->
-<ion-card *ngIf="errorMessage" class="event-card">
-  <ion-card-header>
-    <ion-card-title>Error</ion-card-title>
-  </ion-card-header>
-  <ion-card-content>
-    <p>{{ errorMessage }}</p>
-  </ion-card-content>
-</ion-card>
+          <!--Grid nombre y lo demás -->
+          <ion-grid class="p-0 m-0">
+          
+            <!--Fila Nombre recompensa-->
+            <ion-row class="p-0 m-0">
+              <ion-col class="p-0 m-0">
+                <ion-card-header class="p-2 ps-0">
+                  <ion-card-title style="font-weight: 500; font-size:large">{{ item.recompensa.descripcion }}</ion-card-title>
+                </ion-card-header>
+              </ion-col>
+            </ion-row>
 
+            <!--Fila Fecha caducidad y botón-->
+            <ion-row class="p-0 m-0 ion-align-items-center">
+              <!--Fecha caducidad-->
+              <ion-col class="p-0 m-0">
+                <ion-card-content class="p-0 m-0">
+                  <p style="font-weight: 300;">Fecha de caducidad:<br><b>{{ item.fechaCaducidad }}</b></p>
+                </ion-card-content>
+              </ion-col>
+
+              <!--Botón-->
+              <ion-col size="auto" class="p-0 m-0">
+                  <ion-button (click)="verQRConSweetAlert(item.qrCode)" color="dark" class="me-0">Mostrar QR</ion-button>
+              </ion-col>
+            </ion-row>
+          </ion-grid>
+        </ion-col>
+      </ion-row>
+    </ion-grid>
+  </ion-card>
+</div>
+
+<!--Si no hay recompensas disponibles para canjear-->
+<div *ngIf="recompensasConQR.length === 0" class="ion-padding text-center">
+  <p>No hay recompensas disponibles para canjear.</p>
+</div>
+
+
+<!------------------------------------------------------->
+
+
+<div>
+  <ion-card class="error-card">
+    <ion-card-header class="pb-0">
+      <h2 class="text-center">Error al mostrar datos</h2>
+    </ion-card-header>
+    <ion-card-content>
+      <p style="font-weight:400;">Error: {{ errorMessage }}</p>
+    </ion-card-content>
+  </ion-card>
+</div>

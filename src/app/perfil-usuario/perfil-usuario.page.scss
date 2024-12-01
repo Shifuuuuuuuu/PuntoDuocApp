@@ -1,18 +1,10 @@
 /* Estilo del mensaje de error */
 .error-card {
-  background-color: #f8d7da;
-  border-color: #f5c6cb;
-  padding: 15px;
-  margin: 20px;
-  border-radius: 8px;
+  --background: #f8d7da;
 }
 
 ion-content {
-  --background: #ffffff;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 100vh;
+  --background: #fff; /*#0a49a8;*/
 }
 
 /* Ajustes del formulario */
@@ -29,15 +21,8 @@ ion-content {
 .custom-item {
   --background: #f2f2f2;
   --border-radius: 10px;
-  margin-bottom: 15px;
-  --border-width: 0px;
-  --inner-border-width: 0px;
-}
-
-ion-input {
-  padding: 10px;
-  font-size: 16px;
-  color: #333;
+  --border-width: 0;
+  --inner-border-width: 0;
 }
 
 /* Estilo de los botones */
@@ -112,23 +97,6 @@ ion-input {
   text-align: center;
 }
 
-/* Estilo para los iconos de redes sociales */
-.social-icons {
-  display: flex;
-  justify-content: center;
-  gap: 15px;
-  margin: 10px 0;
-}
-
-.social-icon {
-  font-size: 24px;
-  color: #0A49A7;
-  transition: transform 0.3s ease;
-}
-
-.social-icon:hover {
-  transform: scale(1.2);
-}
 
 /* Pie de página */
 .footer {
@@ -177,10 +145,6 @@ ion-input {
   margin-bottom: 10px;
 }
 
-/* Espacio adicional entre secciones */
-.spacer {
-  height: 10px;
-}
 
 /* Estilo personalizado para ion-list e ion-item */
 .custom-list {
@@ -287,3 +251,41 @@ ion-input {
 
 
 
+
+.social-icon:hover {
+  transform: scale(1.2);
+}
+
+
+.ion-icon-custom {
+  cursor: pointer;
+  transition: color 0.3s ease, transform 0.3s ease;
+}
+
+.ion-icon-custom:hover {
+  transform: scale(1.1);
+}
+
+
+
+.ion-input-custom {
+  --background: #f2f2f2;
+  --border-radius: 0.1rem;
+  --border-width: 0;
+  --inner-border-width: 0;
+}
+
+.ion-input-edit-custom {
+  --background: transparent;
+}
+
+.ion-input-custom ion-label {
+  border-bottom: 1px solid #f2f2f2;
+}
+
+/*
+ion-input {
+  padding: 0;
+  color: #333;
+}
+*/

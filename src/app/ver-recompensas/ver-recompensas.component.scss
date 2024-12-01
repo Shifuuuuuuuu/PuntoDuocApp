@@ -1,31 +1,14 @@
 /* ver-recompensas.component.scss */
 
-/* Espaciado general en el contenido */
-ion-content {
-    padding: 16px; /* Añade un padding general alrededor del contenido */
-  }
-
-  /* Estilo para los cards de error y recompensas */
-  ion-card {
-    margin-bottom: 16px; /* Espacio entre los cards */
-  }
-
-  /* Estilo para la lista de recompensas */
-  ion-list {
-    margin-top: 16px; /* Añade espacio entre el título y la lista */
-  }
-
-  /* Espaciado en cada ítem de la lista */
-  ion-item {
-    margin-bottom: 8px; /* Espacio entre ítems */
-    --border-width: 0px; /* Quita la línea inferior */
-    --inner-border-width: 0px; /* Quita cualquier borde interno */
-  }
-
 /* Ajustes de las tarjetas */
 .event-card {
   background-color: #ffffff; /* Fondo blanco */
   border-radius: 15px; /* Bordes redondeados */
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
   color: black;
+}
+
+/* Estilo del mensaje de error */
+.error-card {
+  --background: #f8d7da;
 }
