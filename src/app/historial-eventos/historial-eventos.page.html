@@ -29,7 +29,7 @@
         </ion-thumbnail>
         <div class="event-details">
           <h2>{{ evento.titulo }}</h2>
-          <p>Fecha de acreditación: {{ evento.fechaVerificacion | date:'dd/MM/yyyy' }}</p>
+          <p *ngIf="evento.Inscripciones[0]?.fechaVerificacion">Fecha de acreditación: {{ evento.Inscripciones[0]?.fechaVerificacion | date:'dd/MM/yyyy' }}</p>
         </div>
         <div class="event-badge badge-acreditado">Acreditado</div>
       </div>
@@ -46,7 +46,7 @@
         </ion-thumbnail>
         <div class="event-details">
           <h2>{{ evento.titulo }}</h2>
-          <p>Fecha de término: {{ evento.fecha_termino | date:'dd/MM/yyyy' }}</p>
+          <p *ngIf="evento.fecha_termino">Fecha de término: {{ evento.fecha_termino | date:'dd/MM/yyyy' }}</p>
         </div>
         <div class="event-badge badge-no-acreditado">No Acreditado</div>
       </div>

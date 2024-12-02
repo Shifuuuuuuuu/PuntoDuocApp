@@ -3,6 +3,7 @@ import { HistorialEventosService } from '../services/historial-eventos.service';
 import { NotificationService } from '../services/notification.service';
 import { MissionsAlertService } from '../services/missions-alert.service';
 import { Timestamp } from 'firebase/firestore';
+import { Inscripcion } from '../interface/IInscripcion';
 
 @Component({
   selector: 'app-historial-eventos',
@@ -53,17 +54,37 @@ export class HistorialEventosPage implements OnInit {
       this.historialEventosService.getEventosVerificados(this.userId, this.userType).subscribe(
         (eventos) => {
           eventos.forEach(evento => {
-            if (evento.fechaVerificacion instanceof Timestamp) {
-              evento.fechaVerificacion = evento.fechaVerificacion.toDate();
+            // Convertir fechas de evento
+            if (evento.fecha && 'seconds' in evento.fecha) {
+              evento.fecha = new Date(evento.fecha.seconds * 1000);
             }
-            if (evento.fecha_termino instanceof Timestamp) {
-              evento.fecha_termino = evento.fecha_termino.toDate();
+            if (evento.fecha_termino && 'seconds' in evento.fecha_termino) {
+              evento.fecha_termino = new Date(evento.fecha_termino.seconds * 1000);
+            }
+
+            // Convertir fechas en inscripciones
+            if (evento.Inscripciones && evento.Inscripciones.length > 0) {
+              evento.Inscripciones.forEach((inscripcion: Inscripcion) => {
+                if (inscripcion.fechaVerificacion instanceof Timestamp) {
+                  inscripcion.fechaVerificacion = inscripcion.fechaVerificacion.toDate();
+                }
+              });
             }
           });
 
-          this.eventosAcreditados = eventos.filter(evento => evento.estadoVerificacion === 'Acreditado');
-          this.eventosNoAcreditados = eventos.filter(evento => evento.estadoVerificacion === 'No Acreditado');
-          this.eventosPenalizados = eventos.filter(evento => evento.estadoVerificacion === 'Penalizado');
+          // Clasificar los eventos según las inscripciones
+          this.eventosAcreditados = eventos.filter(evento =>
+            evento?.Inscripciones?.some((inscripcion: Inscripcion) => inscripcion.verificado)
+          );
+
+          this.eventosNoAcreditados = eventos.filter(evento =>
+            evento?.Inscripciones?.some((inscripcion: Inscripcion) => !inscripcion.verificado)
+          );
+
+          this.eventosPenalizados = eventos.filter(evento =>
+            evento?.Inscripciones?.some((inscripcion: Inscripcion) => inscripcion.puntaje === 0)
+          );
+
           this.loading = false;
         },
         (error) => {
@@ -76,5 +97,7 @@ export class HistorialEventosPage implements OnInit {
       this.loading = false;
     }
   }
+
+
 
 }

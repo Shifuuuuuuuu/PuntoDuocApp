@@ -2,8 +2,10 @@
 import { Injectable } from '@angular/core';
 import { AngularFirestore } from '@angular/fire/compat/firestore';
 
-import { Observable } from 'rxjs';
-import { map } from 'rxjs/operators';
+import { Observable, of } from 'rxjs';
+import { map, catchError } from 'rxjs/operators';
+import { Evento } from '../interface/IEventos';
+import { Inscripcion } from '../interface/IInscripcion';
 
 @Injectable({
   providedIn: 'root'
@@ -44,43 +46,36 @@ getInvitadoIdByEmail(email: string): Observable<string | null> {
       })
     );
 }
-getEventosVerificados(userId: string, userType: 'estudiante' | 'invitado'): Observable<any[]> {
-  return this.firestore.collection('Eventos')
+getEventosVerificados(
+  userId: string,
+  userType: 'estudiante' | 'invitado'
+): Observable<Evento[]> {
+  return this.firestore
+    .collection('Eventos')
     .snapshotChanges()
     .pipe(
-      map(actions => actions
-        .map(a => {
-          const data = a.payload.doc.data() as any;
-
-          const inscripcionEncontrada = data.Inscripciones.find((inscripcion: any) =>
-            (inscripcion.id_estudiante === userId || inscripcion.id_invitado === userId)
-          );
-
-          if (inscripcionEncontrada) {
-            // Convertir Timestamp de Firestore a Date
-            const fechaVerificacion = inscripcionEncontrada.fechaVerificacion?.toDate?.() || null;
-            const fechaTermino = data.fecha_termino?.toDate?.() || null;
-            const currentDate = new Date(); // Fecha actual
-
-            let estadoVerificacion = 'No Acreditado';
-            if (inscripcionEncontrada.verificado) {
-              estadoVerificacion = 'Acreditado';
-            } else if (fechaTermino && currentDate > fechaTermino) {
-              estadoVerificacion = 'Penalizado';
-            }
-
-            return {
-              ...data,
-              fechaVerificacion,
-              fechaTermino,
-              estadoVerificacion,
-            };
-          } else {
-            return null; // Excluir eventos sin inscripción
-          }
+      map((actions) =>
+        actions.map((a) => {
+          const data = a.payload.doc.data() as Evento; // Usamos la interfaz Evento
+          const id = a.payload.doc.id;
+          return { id, ...data };
         })
-        .filter(evento => evento !== null) // Filtrar eventos no válidos
-      )
+      ),
+      map((eventos) =>
+        eventos.filter((evento) => {
+          // Verificamos si el usuario está inscrito en el evento
+          const inscripciones = evento.Inscripciones || [];
+          return inscripciones.some(
+            (inscripcion: Inscripcion) =>
+              (userType === 'estudiante' && inscripcion.id_estudiante === userId) ||
+              (userType === 'invitado' && inscripcion.id_invitado === userId)
+          );
+        })
+      ),
+      catchError((error) => {
+        console.error('Error al obtener eventos verificados:', error);
+        return of([]); // Devuelve un array vacío en caso de error
+      })
     );
 }
 
