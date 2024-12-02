@@ -13,6 +13,7 @@ export class ConsultaService {
       mensaje: consulta.mensaje,
       nombre: consulta.nombre,
       correo: consulta.correo,
+      estado: "Pendiente",
       timestamp: new Date()
     });
   }

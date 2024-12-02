@@ -16,7 +16,8 @@ export class ConsultasPage implements OnInit {
     motivo: '',
     mensaje: '',
     nombre: '',
-    correo: ''
+    correo: '',
+    estado: 'Pendiente'
   };
   unreadNotificationsCount: number = 0;
   constructor(
