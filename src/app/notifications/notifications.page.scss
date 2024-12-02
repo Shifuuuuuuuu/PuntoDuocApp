@@ -100,7 +100,18 @@
   flex-direction: column;
   justify-content: center;
 }
-
+.notification-image {
+  display: flex;
+  padding-top: 15px;
+  justify-content: center; /* Centra el contenido horizontalmente */
+  align-items: center;     /* Centra el contenido verticalmente */
+  height: 100%;            /* Asegura que el contenedor tenga altura completa */
+}
+.notification-image ion-icon,
+.notification-image img {
+  max-width: 100%;  /* Hace que el ícono o la imagen no se desborde del contenedor */
+  max-height: 100%; /* Limita el tamaño del ícono o imagen para que no se desborde */
+}
 .notification-title {
   font-size: 16px;
   font-weight: bold;

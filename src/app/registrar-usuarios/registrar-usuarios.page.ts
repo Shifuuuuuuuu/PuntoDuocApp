@@ -24,7 +24,7 @@ export class RegistrarUsuariosPage implements OnInit {
     codigoQr: '',
     puntaje: 0,
     tokenFCM: '',
-    verificado: true // Establecer verificado como false inicialmente
+    verificado: false // Establecer verificado como false inicialmente
   };
 
   errorMessage: string = '';

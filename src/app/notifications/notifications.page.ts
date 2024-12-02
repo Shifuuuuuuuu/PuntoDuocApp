@@ -4,6 +4,9 @@ import { NotificationService } from '../services/notification.service';
 import { Subscription } from 'rxjs';
 import { Notificacion } from '../interface/INotificacion';
 import { NotificacionesDirectas } from '../services/messaging.service';
+import { Router } from '@angular/router';
+import { AngularFirestore } from '@angular/fire/compat/firestore';
+import { doc, getDoc, updateDoc } from 'firebase/firestore';
 
 @Component({
   selector: 'app-notifications',
@@ -15,10 +18,12 @@ export class NotificationsPage implements OnInit, OnDestroy {
   directNotifications: NotificacionesDirectas[] = [];
   private hiddenNotificationIds: string[] = []; // Lista de IDs ocultos
   private messageSubscription: Subscription;
+  private firestore: AngularFirestore;
 
   constructor(
     private messagingService: MessagingService,
-    private notificationService: NotificationService
+    private notificationService: NotificationService,
+    private router: Router
   ) {}
 
   ngOnInit() {
@@ -76,22 +81,16 @@ export class NotificationsPage implements OnInit, OnDestroy {
   }
 
 
-  markDirectNotificationAsRead(notificationId: string) {
-    const userId = this.getCurrentUserId();
-    if (userId) {
-      this.notificationService.markNotificationAsRead(notificationId, userId)
-        .then(() => {
-          this.loadDirectNotifications(userId); // Recargar las notificaciones directas
-          this.notificationService.loadUnreadNotificationsCount(); // Actualizar el contador
-        })
-        .catch((error) => {
-          console.error(`Error al marcar como leída la notificación ${notificationId}:`, error);
-        });
-    } else {
-      console.error('No se pudo obtener el ID del usuario actual para marcar la notificación como leída.');
+  async markDirectNotificationAsRead(notificationId: string): Promise<void> {
+    try {
+      // Llamar al servicio para actualizar el estado de la notificación
+      await this.messagingService.updateNotificationReadStatus(notificationId);
+      console.log(`Notificación ${notificationId} marcada como leída.`);
+    } catch (error) {
+      console.error('Error al marcar la notificación como leída', error);
     }
-  }
-
+  } 
+  
 
   getCurrentUserId(): string {
     return localStorage.getItem('id') || 'usuarioEjemploId';
@@ -128,29 +127,39 @@ export class NotificationsPage implements OnInit, OnDestroy {
   }
 
   loadDirectNotifications(userId: string) {
-    this.messagingService.getDirectNotifications().subscribe(
+    const userType = localStorage.getItem('userType') || 'defaultUserType';  // Obtenemos el userType
+  
+    console.log('userType:', userType);
+    this.messagingService.getDirectNotifications().subscribe(  // Pasamos userType aquí
       async (directNotifications) => {
-
         // Filtrar notificaciones asociadas al usuario actual
         this.directNotifications = directNotifications.filter((notif) =>
           Array.isArray(notif.usuarioIds) && notif.usuarioIds.some((user) => user.userId === userId)
         );
-
-
-        // Marcar como leídas las notificaciones del usuario
-        for (const notif of this.directNotifications) {
-          const userIndex = notif.usuarioIds.findIndex((user) => user.userId === userId);
-          if (userIndex !== -1 && !notif.usuarioIds[userIndex].leido) {
-            notif.usuarioIds[userIndex].leido = true; // Actualizar el estado localmente
-            await this.messagingService.updateNotificationReadStatus(notif.id, userId); // Actualizar en Firestore
-          }
-        }
+  
+        // Ya no marcamos automáticamente las notificaciones como leídas aquí
+        // Esto se hará solo cuando el usuario haga clic en la X de la notificación.
       },
       (error) => {
         console.error('Error al cargar las notificaciones directas:', error);
       }
     );
   }
+  
+  // Función para marcar como leída una notificación cuando se hace clic en la X
+  async markNotificationAsRead(notificationId: string, userId: string) {
+    // Encontrar la notificación en la lista de directNotifications
+    const notification = this.directNotifications.find(notif => notif.id === notificationId);
+    
+    if (notification) {
+      const userIndex = notification.usuarioIds.findIndex((user) => user.userId === userId);
+      if (userIndex !== -1 && !notification.usuarioIds[userIndex].leido) {
+        notification.usuarioIds[userIndex].leido = true; // Actualizar el estado localmente
+        await this.messagingService.updateNotificationReadStatus(notificationId); // Actualizar en Firestore
+      }
+    }
+  }
+  
 
   corregirNotificaciones() {
     const userId = this.getCurrentUserId(); // Obtén el ID del usuario actual
@@ -162,12 +171,7 @@ export class NotificationsPage implements OnInit, OnDestroy {
     }
   }
 
-  onNotificationClick(notificationId: string) {
-    const userId = this.getCurrentUserId();
-    if (userId) {
-      this.markDirectNotificationAsRead(notificationId);
-    }
-  }
+  
 
 
   ocultarNotificacion(notificacionId: string) {

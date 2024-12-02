@@ -12,6 +12,7 @@ export interface NotificacionesDirectas {
   cuerpo: string;
   timestampt: Date;
   usuarioIds: { userId: string; leido: boolean }[];
+  tipo?: string; // Nuevo campo para tipo de usuario
 }
 
 @Injectable({
@@ -34,6 +35,7 @@ export class MessagingService {
   requestPermission() {
     this.afMessaging.requestToken.pipe(take(1)).subscribe(
       (token) => {
+        // Manejo del token
       },
       (error) => {
         console.error('Error al obtener el token FCM:', error);
@@ -50,20 +52,50 @@ export class MessagingService {
   }
 
   getDirectNotifications(): Observable<NotificacionesDirectas[]> {
+    const userType = localStorage.getItem('userType');  // Obtener el userType desde localStorage
+    const userId = localStorage.getItem('id');  // Obtener el userId desde localStorage
+  
+    // Log de los valores obtenidos de localStorage
+    console.log('User Type:', userType);
+    console.log('User ID:', userId);
+  
     return this.firestore
-      .collection<NotificacionesDirectas>('NotificacionesDirectas')
-      .valueChanges({ idField: 'id' });
+      .collection<NotificacionesDirectas>('NotificacionesDirectas', ref =>
+        ref.where('destinatario', '==', userType)  // Filtramos por destinatario que coincida con userType
+          .where('leido', '==', false)  // Filtramos para mostrar solo las notificaciones no leídas
+      )
+      .valueChanges({ idField: 'id' })
+      .pipe(
+        map((notifications: NotificacionesDirectas[]) => {
+          console.log('Notificaciones obtenidas:', notifications); // Log de las notificaciones obtenidas
+          
+          return notifications.filter(notification => {
+            // Log para cada notificación
+            console.log('Verificando notificación:', notification);
+  
+            // Filtramos por el usuarioId dentro del array usuarioIds
+            const userNotification = notification.usuarioIds.find(user => user.userId === userId);
+            
+            // Log si encontramos el userNotification
+            console.log('User Notification:', userNotification);
+  
+            // Verificamos si se encontró el userId y si su 'leido' es false
+            return userNotification && userNotification.leido === false;
+          });
+        })
+      );
   }
+  
+  
+  
+
   getCurrentUserId(): string | null {
-    // Puedes ajustar esta lógica dependiendo de dónde almacenes el ID del usuario
     const userId = localStorage.getItem('id');
     if (!userId) {
       console.error('No se encontró el ID del usuario en el almacenamiento local.');
     }
     return userId;
   }
-
-
 
   async corregirNotificacionesDirectas(userId: string) {
     try {
@@ -78,7 +110,6 @@ export class MessagingService {
           if (!Array.isArray(data.usuarioIds) || !data.usuarioIds.some((user: any) => user.userId === userId)) {
             console.log(`Corrigiendo notificación ${doc.id}...`);
 
-            // Agregar el campo usuarioIds con el ID del usuario actual si no está presente
             const usuarioIds = Array.isArray(data.usuarioIds) ? data.usuarioIds : [];
             usuarioIds.push({ userId, leido: false });
             batch.update(doc.ref, { usuarioIds });
@@ -94,50 +125,68 @@ export class MessagingService {
     }
   }
 
-  async updateNotificationReadStatus(notificationId: string, userId: string): Promise<void> {
+  async updateNotificationReadStatus(notificationId: string): Promise<void> {
+    const userId = localStorage.getItem('id'); // Obtener el userId desde localStorage
+  
+    if (!userId) {
+      console.error('No se pudo obtener el ID del usuario desde localStorage');
+      return;
+    }
+  
     try {
+      // Verificar si la colección es 'NotificacionesDirectas', si es así, no hacer nada
+      if (notificationId.startsWith('NotificacionesDirectas')) {
+        console.log('Colección NotificacionesDirectas, no se realizará ninguna actualización.');
+        return; // No realiza ninguna acción si está en 'NotificacionesDirectas'
+      }
+  
       const notificationRef = this.firestore.collection('NotificacionesDirectas').doc(notificationId);
       const notificationDoc = await notificationRef.get().toPromise();
-
+  
       if (notificationDoc && notificationDoc.exists) {
         const notificationData = notificationDoc.data() as NotificacionesDirectas;
         const userIndex = notificationData.usuarioIds.findIndex((user) => user.userId === userId);
-
+  
         if (userIndex !== -1) {
-          notificationData.usuarioIds[userIndex].leido = true; // Cambiar el estado de lectura
+          // Marcar la notificación como leída solo si el usuario existe en el array
+          notificationData.usuarioIds[userIndex].leido = true;
+          console.log("Notificación marcada como leída");
+  
+          // Actualizar la notificación en Firestore
           await notificationRef.update({ usuarioIds: notificationData.usuarioIds });
           console.log(`Notificación ${notificationId} marcada como leída para el usuario ${userId}.`);
+        } else {
+          console.warn(`El usuario con id ${userId} no tiene acceso a esta notificación.`);
         }
+      } else {
+        console.warn(`La notificación con ID ${notificationId} no existe o no se pudo obtener.`);
       }
     } catch (error) {
       console.error('Error al actualizar el estado de lectura de la notificación:', error);
     }
   }
+  
+  
 
-
-
-
-
-
-  // Manejar mensajes en primer plano
   private handleForegroundMessage(message: any) {
     console.log('Mensaje recibido en primer plano:', message);
 
     if (message.notification) {
       const notification: Notificacion = {
-        id: '', // Generar un ID único si es necesario
+        id: '',
         titulo: message.notification.title || 'Sin título',
         descripcion: message.notification.body || 'Sin contenido',
         fecha: new Date(),
         imagen: message.notification.image,
         url: message.notification.click_action,
-        usuarioIds: [], // Agregar usuarios si corresponde
+        usuarioIds: [],
       };
 
       this.notificationService.addNotification(notification);
       this.currentMessage.next(notification);
     }
   }
+
   async sendNotification(notification: any) {
     try {
       const existingNotification = await this.firestore.collection('Notificaciones')
@@ -152,7 +201,7 @@ export class MessagingService {
           url: notification.url || '',
           fecha: notification.fecha || new Date(),
           fechaTermino: notification.fechaTermino,
-          usuarioIds: notification.usuarioIds // Guarda los IDs de usuario con su estado de lectura
+          usuarioIds: notification.usuarioIds
         });
         console.log(`Notificación guardada en Firestore para usuario(s).`);
       } else {
@@ -177,24 +226,22 @@ export class MessagingService {
       console.error('Error al enviar o guardar la notificación:', error);
     }
   }
+
   async addDirectNotification(notification: NotificacionesDirectas, userId: string) {
     try {
-      const usuarioId = { userId, leido: false }; // Estructura esperada en usuarioIds
+      const usuarioId = { userId, leido: false };
 
-      // Obtener la notificación existente
       const existingNotification = await this.firestore
         .collection('NotificacionesDirectas')
         .doc(notification.id)
         .get()
         .toPromise();
 
-      // Verificar si la notificación existe
       if (existingNotification && existingNotification.exists) {
         console.log(`La notificación con ID ${notification.id} ya existe.`);
       } else {
-        // Crear la notificación si no existe
-        notification.usuarioIds = notification.usuarioIds || []; // Garantizar que usuarioIds existe
-        notification.usuarioIds.push(usuarioId); // Agregar el usuario actual a usuarioIds
+        notification.usuarioIds = notification.usuarioIds || [];
+        notification.usuarioIds.push(usuarioId);
         await this.firestore.collection('NotificacionesDirectas').doc(notification.id).set(notification);
         console.log(`Notificación directa creada con éxito para el usuario ${userId}.`);
       }
@@ -202,5 +249,4 @@ export class MessagingService {
       console.error('Error al agregar la notificación directa:', error);
     }
   }
-
 }

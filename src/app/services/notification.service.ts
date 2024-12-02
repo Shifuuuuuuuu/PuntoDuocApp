@@ -6,6 +6,8 @@ import { Notificacion } from '../interface/INotificacion';
 import { AuthService } from './auth.service';
 import { EstudianteService } from './estudiante.service';
 import { InvitadoService } from './invitado.service';
+import { Router } from '@angular/router';
+import { doc, getDoc } from 'firebase/firestore';
 @Injectable({
   providedIn: 'root'
 })
@@ -16,7 +18,8 @@ export class NotificationService {
   constructor(
     private firestore: AngularFirestore,
     private estudianteService: EstudianteService,
-    private invitadoService: InvitadoService
+    private invitadoService: InvitadoService,
+    private router: Router
   ) {
     this.loadUnreadNotificationsCount();
   }
@@ -171,5 +174,47 @@ async markNotificationAsRead(notificationId: string, userId: string) {
       console.error('No se pudo obtener el ID del usuario actual para actualizar el contador.');
     }
   }
-
+  
+  async markDirectNotificationAsRead(notificationId: string) {
+    const userId = localStorage.getItem('userId');  // Obtener el userId desde localStorage
+  
+    if (!userId) {
+      console.error('El userId no está disponible en el localStorage');
+      return;
+    }
+  
+    // Obtener la referencia al documento
+    const notificationRef = this.firestore.collection('NotificacionesDirectas').doc(notificationId);
+  
+    try {
+      // Obtener la notificación
+      const notificationSnapshot = await notificationRef.get().toPromise();
+  
+      // Verificar si la notificación existe
+      if (notificationSnapshot && notificationSnapshot.exists) {
+        const notificationData = notificationSnapshot.data() as any;  // Aquí usamos "any" para obtener la estructura de la notificación
+        const usuarioIds = notificationData.usuarioIds || [];
+  
+        // Verificar si el usuario está en el array usuarioIds
+        const userIndex = usuarioIds.findIndex((user: any) => user.userId === userId);
+  
+        if (userIndex !== -1) {
+          // Marcar como leída la notificación en Firestore
+          usuarioIds[userIndex].leido = true;
+  
+          // Actualizar Firestore con los nuevos datos
+          await notificationRef.update({ usuarioIds });
+  
+          // Redirigir al detalle de la notificación
+          this.router.navigate([`/notificacionesDirectas/${notificationId}`]);
+        } else {
+          console.warn(`El usuario ${userId} no está asociado a esta notificación.`);
+        }
+      } else {
+        console.error(`La notificación con ID ${notificationId} no existe.`);
+      }
+    } catch (error) {
+      console.error('Error al obtener la notificación:', error);
+    }
+  }
 }

@@ -21,4 +21,6 @@ export interface NotificacionesDirectas {
   cuerpo: string;
   timestampt: Date;
   usuarioIds: { userId: string; leido: boolean }[];
+  tipo?: string; // Nuevo campo para tipo de usuario
+  destinatario: string;
 }
