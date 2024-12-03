@@ -1,95 +1,226 @@
-<ion-header [translucent]="true" class="custom-header">
-  <ion-toolbar class="custom-toolbar" style="background-color: black;">
+<ion-header [translucent]="true">
+  <ion-toolbar>
     <ion-buttons slot="start">
-      <ion-back-button defaultHref="/events-category/:category" style="color: white;"></ion-back-button>
+      <!--Ícono regresar-->
+      <ion-back-button defaultHref="/events-category/:category"></ion-back-button>
     </ion-buttons>
-    <ion-title style="color: white">Detalle del evento</ion-title>
+    <ion-title class="ion-title-custom">Detalles del evento</ion-title>
+
     <ion-buttons slot="end">
-      <ion-button [routerLink]="['/notifications']" style="position: relative;">
-        <ion-icon slot="icon-only" name="notifications-outline" style="color: white;"></ion-icon>
-        <ion-badge *ngIf="unreadNotificationsCount > 0" color="danger" style="position: absolute; top: -5px; right: -5px;">
-          {{ unreadNotificationsCount }}
-        </ion-badge>
+      <!--Ícono notificaciones-->
+      <ion-button [routerLink]="['/notifications']" class="w-auto">
+        <ion-icon slot="icon-only" name="notifications-outline"></ion-icon>
+        <!--Badge nro notificaciones-->
+        <ion-badge *ngIf="unreadNotificationsCount > 0" color="danger">{{ unreadNotificationsCount }}</ion-badge><!--style="position: absolute; top: -5px; right: -5px;"-->
       </ion-button>
     </ion-buttons>
   </ion-toolbar>
 </ion-header>
 
-<ion-content *ngIf="event" [fullscreen]="true" class="content-center">
-  <ion-card style="background-color: white;">
-    <img [src]="event.imagen" alt="Imagen del evento" />
-    <ion-card-header>
-      <ion-card-title style="color: black;">{{ event.titulo }}</ion-card-title>
-      <p style="color: black;">Lugar: {{ event.lugar }}</p>
 
-      <!-- Mostrar fecha de término si el evento está terminado -->
-      <p *ngIf="event.estado === 'Terminado'" style="color: black;">
-        Este evento ha finalizado el {{ transformarFecha(event.fecha_termino) | date: 'dd/MM/yyyy' }}
-      </p>
-      <!-- Mostrar fecha de inicio si el evento no ha terminado -->
-      <p *ngIf="event.estado !== 'Terminado'" style="color: black;">
-        Fecha: {{ transformarFecha(event.fecha) | date: 'dd/MM/yyyy' }}
-      </p>
-    </ion-card-header>
-    <ion-card-content>
-      <p style="color: black;">{{ event.descripcion }}</p>
+<ion-content *ngIf="event" [fullscreen]="true">
+  <div class="ion-padding mb-0">
 
-      <!-- Ocultar cupos si el evento ha terminado -->
-      <p *ngIf="event.estado !== 'Terminado'" style="color: black;">Cupos disponibles: {{ event.Cupos }}</p>
+    <h2>{{ event.titulo }}</h2>
 
-      <!-- Estado de inscripción y verificación -->
-      <p *ngIf="event.estaInscrito && event.verificado" style="color: black;">¡Estás verificado en este evento!</p>
-      <p *ngIf="event.estaInscrito && !event.verificado" style="color: black;">¡Ya estás inscrito en este evento!</p>
-      <p *ngIf="event.enListaEspera" style="color: black;">¡Ya estás en la lista de espera!</p>
 
-      <!-- Ocultar el botón si el evento está terminado -->
-      <ion-button
-        *ngIf="event.estado !== 'Terminado'"
-        [color]="event.enListaEspera ? 'danger' : (event.estaInscrito ? 'danger' : 'primary')"
-        expand="block"
-        (click)="handleEventButtonClick(event)">
-        {{ event.enListaEspera ? 'Salir de la lista de espera' : (event.estaInscrito ? 'Cancelar inscripción' : 'Inscribirse') }}
-      </ion-button>
 
-      <!-- Formulario de comentarios y calificaciones (solo si el evento está terminado) -->
-      <div *ngIf="event.estado === 'Terminado'" style="margin-top: 20px;">
+    <!--Fila Datos y badge-->
+    <ion-grid class="p-0 m-0">
+      <ion-row class="p-0 m-0 ion-align-items-center">
+        <!--Datos-->
+        <ion-col class="p-0 m-0">
+          <ion-text color="dark">
+            <!--Evento terminado [Fecha término]-->
+            <p *ngIf="event.estado === 'Terminado'" class="mb-0" style="font-weight: 300;"><b>Finalizado:</b> {{ transformarFecha(event.fecha_termino) | date: 'dd/MM/yyyy' }}</p>
+
+            <!--Evento no termina [Fecha inicio]-->
+            <p *ngIf="event.estado !== 'Terminado'" class="mb-0" style="font-weight: 300;"><b>Fecha:</b> {{ transformarFecha(event.fecha) | date: 'dd/MM/yyyy' }}</p>
+          </ion-text>
+        </ion-col>
+        
+        <!--Badge-->
+        <ion-col size="auto" class="p-0 m-0 ion-align-self-stretch">
+          <!--Evento terminado-->
+          <ion-button *ngIf="event.estado === 'Terminado'" class="me-0" color="dark" disabled="true" style="opacity: 1; --border-radius: 0;">Finalizado</ion-button>
+          
+          <!--Evento no terminado-->
+          <ion-button *ngIf="event.estado !== 'Terminado'" class="me-0 button-color" disabled="true" style="opacity: 1; --border-radius: 0;">Activo</ion-button>
+        </ion-col>
+      </ion-row>
+    </ion-grid>
+
+
+
+
+
+
+
+  </div>
+
+  <div style="position: relative;">
+    <img [src]="event.imagen" alt="Imagen del evento" style="aspect-ratio: 2 / 1.3; object-fit:cover;" />
+    <!--Sede evento (badge)-->
+    <ion-badge color="warning" style="position: absolute; top: 0.5rem; left: 0.5rem; font-weight: 300; font-size: medium;">{{ event.sede }}</ion-badge>
+  </div>
+
+  <div class="ion-padding">
+    <!-- Estado de inscripción y verificación -->
+    <div class="text-center pb-4">
+      <ion-button *ngIf="event.estaInscrito && event.verificado" disabled="true" style="--background: #6DCF33; opacity: 1; --border-radius: 0;">¡Estás verificado en este evento!</ion-button>
+      <ion-button *ngIf="event.estaInscrito && !event.verificado" disabled="true" color="dark" style="opacity: 1; --border-radius: 0;">¡Ya estás inscrito en este evento!</ion-button>
+      <ion-button *ngIf="event.enListaEspera" disabled="true" color="medium" style="opacity: 1; --border-radius: 0;">¡Ya estás en la lista de espera!</ion-button>
+    </div>
+
+    <p><b>Dirección:</b> {{ event.lugar }}</p>
+
+    <p>{{ event.descripcion }}</p>
+
+
+    <!-- Cupos (ocultar si evento ha terminado) -->
+    <ion-grid *ngIf="event.estado !== 'Terminado'" class="p-0 m-0">
+      <ion-row class="p-0 m-0 ion-align-items-center">
+        <ion-col class="p-0 m-0" size="auto">
+          <!--Inscritos respecto a Total-->
+          <p><b>Inscritos: {{ event.inscritos }}</b> de <b>{{ event.inscritos + event.Cupos }}</b></p>
+        </ion-col>
+        <ion-col class="p-0 m-0 ms-3 ion-align-self-center mb-3">
+          <!--Barra progreso inscritos-->
+          <ion-progress-bar [value]="(event.inscritos + event.Cupos > 0) ? (event.inscritos / (event.inscritos + event.Cupos)) : 0" color="secondary"></ion-progress-bar>
+        </ion-col>
+      </ion-row>
+    </ion-grid>
+
+
+
+
+
+
+
+    <!-- Ocultar el botón si el evento está terminado -->
+    <ion-button *ngIf="event.estado !== 'Terminado'" class="mb-5"
+      [color]="event.enListaEspera ? 'danger' : (event.estaInscrito ? 'danger' : 'primary')"
+      expand="block"
+      (click)="handleEventButtonClick(event)">
+      {{ event.enListaEspera ? 'Salir de la lista de espera' : (event.estaInscrito ? 'Cancelar inscripción' : 'Inscribirse') }}
+    </ion-button>
+
+  </div>
+  <!---->
+
+  <!-- Formulario de comentarios y calificaciones (solo si el evento está terminado) -->
+  <div *ngIf="event.estado === 'Terminado'" class="py-3 ps-2 pe-3">
+    <ion-grid class="p-0 m-0">
+      <ion-row class="p-0 m-0 mb-2 ps-3 ion-align-items-center">
         <!-- Selector de calificación con estrellas -->
-        <div class="stars" style="margin-bottom: 10px;">
-          <ion-icon *ngFor="let star of [1, 2, 3, 4, 5]; let i = index"
-                    name="star"
-                    [color]="calificacion >= star ? 'warning' : 'medium'"
-                    [ngClass]="{'animate-star': calificacion >= star}"
-                    (click)="calificacion = star"></ion-icon>
-        </div>
-        <div style="display: flex; align-items: center;">
-          <ion-textarea [(ngModel)]="comentario" placeholder="Escribe tu comentario" style="flex: 1;"></ion-textarea>
-          <ion-button fill="clear" (click)="guardarComentario()">
-            <ion-icon name="send" color="primary"></ion-icon>
+        <ion-col class="p-0 m-0" size="auto">
+          <p class="m-0" style="font-size: medium; font-weight: 300; color: #000">Califica el evento:</p>
+        </ion-col>
+        <ion-col size="auto">
+          <div class="stars mt-1">
+            <ion-icon *ngFor="let star of [1, 2, 3, 4, 5]; let i = index"
+                      name="star"
+                      [color]="calificacion >= star ? 'warning' : 'medium'"
+                      [ngClass]="{'animate-star': calificacion >= star}"
+                      (click)="calificacion = star">
+            </ion-icon>
+          </div>
+        </ion-col>
+      </ion-row>
+
+      <ion-row class="p-0 m-0 pb-3 ion-align-items-center">
+        <!--Comentario-->
+        <ion-col class="p-0 m-0">
+            <ion-list class="p-0 m-0" lines="none">
+              <ion-item class="p-0 m-0">
+              <ion-textarea [(ngModel)]="comentario" labelPlacement="floating" label="Comentar" fill="solid" placeholder="Añade un comentario"></ion-textarea>
+            </ion-item>
+          </ion-list>
+        </ion-col>
+        
+        <!--Ícono enviar-->
+        <ion-col size="auto">
+          <ion-button (click)="guardarComentario()" color="dark">
+            <ion-icon name="send"></ion-icon>
           </ion-button>
-        </div>
+        </ion-col>
+
+      </ion-row>
+    </ion-grid>
+  </div>
+
+  <!-- Mostrar comentarios -->
+  <ion-list *ngIf="comentarios.length > 0" class="mb-5">
+    <ion-item>
+      Comentarios ({{ comentarios.length }})
+    </ion-item>
+    <ion-item *ngFor="let comentario of comentarios">
+      <ion-label>
+        <ion-text color="black">
+          <h4 style="font-size: medium; font-weight: 300;">{{ comentario.nombre_completo }}</h4>
+          <p><ion-icon *ngFor="let star of [1, 2, 3, 4, 5]" name="star" [color]="comentario.calificacion >= star ? 'warning' : 'medium'"></ion-icon></p>
+          <p>{{ comentario.descripcion }}</p>
+        </ion-text>
+      </ion-label>
+    </ion-item>
+  </ion-list>
+
+
+
+  <!-- Si no hay comentarios -->
+  <ion-list *ngIf="event.estado === 'Terminado' && comentarios.length === 0" class="mb-5">
+    <ion-item>
+      Comentarios
+    </ion-item>
+    <ion-item>
+      <ion-label>
+        <p class="py-3 text-center" style="color: #000;">No hay comentarios aún.</p>
+      </ion-label>
+    </ion-item>
+  </ion-list>
+
+
+
+  <!--Contacto-->
+  <div>
+    <img src="../../assets/svg/layered-waves-haikei-reverse.svg" alt="Logo Duoc" style="padding:0; margin:0; width:100%;">
+
+    <div style="text-align:center; background:#0a49a8; outline:3px solid #0a49a8;">
+
+      <div style="padding: 1rem 0 3rem 0; color: #fff;">
+        <p class="p-0 m-0">Síguenos en nuestras redes sociales:</p>
+
+        <ion-grid class="w-75">
+          <ion-row class="ion-justify-content-evenly p-0 my-2">
+            <ion-col>
+              <div><a href="https://www.facebook.com/DuocUC" target="_blank" rel="noopener noreferrer" class="social-icon"><ion-icon name="logo-facebook"></ion-icon></a></div>
+            </ion-col>
+            <ion-col>
+              <div><a href="https://www.instagram.com/duocuc_cl" target="_blank" rel="noopener noreferrer" class="social-icon"><ion-icon name="logo-instagram"></ion-icon></a></div>
+            </ion-col>
+            <ion-col>
+              <div><a href="https://x.com/duocuc" target="_blank" rel="noopener noreferrer" class="social-icon"><ion-icon name="logo-x"></ion-icon></a></div>
+            </ion-col>
+            <ion-col>
+              <div><a href="https://www.youtube.com/DuocUCvideos" target="_blank" rel="noopener noreferrer" class="social-icon"><ion-icon name="logo-youtube"></ion-icon></a></div>
+            </ion-col>
+            <ion-col>
+              <div><a href="https://www.flickr.com/photos/duocuc" target="_blank" rel="noopener noreferrer" class="social-icon"><ion-icon name="logo-flickr"></ion-icon></a></div>
+            </ion-col>
+            <ion-col>
+              <div><a href="https://www.linkedin.com/school/duoc-uc" target="_blank" rel="noopener noreferrer" class="social-icon"><ion-icon name="logo-linkedin"></ion-icon></a></div>
+            </ion-col>
+          </ion-row>
+        </ion-grid>
+
+        <p class="p-0 m-0">&copy; 2024 Punto Duoc. Todos los derechos reservados.</p>
       </div>
 
-      <!-- Mostrar comentarios -->
-      <ion-list style="background-color: white;" *ngIf="comentarios.length > 0">
-        <ion-item style="--background: transparent; --border-width: 0px; --inner-border-width: 0px;" *ngFor="let comentario of comentarios">
-          <ion-label>
-            <h3 style="color: black;">{{ comentario.nombre_completo }}</h3>
-            <p>
-              <ion-icon *ngFor="let star of [1, 2, 3, 4, 5]"
-                        name="star"
-                        [color]="comentario.calificacion >= star ? 'warning' : 'medium'"></ion-icon>
-            </p>
-            <p style="color: black;">{{ comentario.descripcion }}</p>
-          </ion-label>
-        </ion-item>
-      </ion-list>
+    </div>
+  </div>
 
-      <!-- Mostrar mensaje "No hay comentarios" solo si el evento ha terminado -->
-      <ion-text *ngIf="event.estado === 'Terminado' && comentarios.length === 0" style="color: gray;">
-        No hay comentarios aún.
-      </ion-text>
-    </ion-card-content>
-  </ion-card>
+
+
 </ion-content>
 
 <app-tab-usuario></app-tab-usuario>
