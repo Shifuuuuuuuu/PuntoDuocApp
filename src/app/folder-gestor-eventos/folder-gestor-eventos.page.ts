@@ -1,11 +1,15 @@
 import { Component, OnInit } from '@angular/core';
 import { EventosGestorService } from '../services/eventos-gestor.service';
-import { map, Observable } from 'rxjs';
+import { map, Observable, of, switchMap } from 'rxjs';
 import { Router } from '@angular/router';
 import { Evento } from '../interface/IEventos';
 import Swal from 'sweetalert2';
 import { AngularFirestore } from '@angular/fire/compat/firestore';
 import { MessagingService } from '../services/messaging.service';
+import { TareasGestor } from '../interface/ITareasGestor';
+import { GestorEventosService } from '../services/gestoreventos.service';
+import firebase from 'firebase/compat/app';
+import 'firebase/compat/firestore';
 
 
 @Component({
@@ -16,17 +20,24 @@ import { MessagingService } from '../services/messaging.service';
 export class FolderGestorEventosPage implements OnInit {
   eventosHoy$: Observable<Evento[]> = new Observable<Evento[]>();
   private eventosHoy: Evento[] = [];
+  gestorId: string = '';
   constructor(
     private eventosService: EventosGestorService,
     private firestore: AngularFirestore,
     private messagingService: MessagingService,
-    private router: Router
+    private router: Router,
+    private gestorEventos: GestorEventosService
   ) {}
 
   ngOnInit() {
-    this.cargarEventosHoy();
+
+    this.obtenerGestorId().then(() => {
+
+      this.cargarEventosHoy();
+    });
     this.enviarRecordatorios();
   }
+
 
   enviarRecordatorios() {
     this.eventosHoy$
@@ -59,44 +70,62 @@ export class FolderGestorEventosPage implements OnInit {
       });
   }
 
+  async obtenerGestorId() {
+    try {
+      const gestor = await this.gestorEventos.obtenerGestorAutenticado();
+      if (gestor) {
+        this.gestorId = gestor.id_Geventos || '';
+
+      } else {
+        console.error('No se encontró un gestor autenticado.');
+      }
+    } catch (error) {
+      console.error('Error al obtener el gestor autenticado:', error);
+    }
+  }
+
+
+
+
   cargarEventosHoy() {
+
     this.eventosHoy$ = this.firestore
-      .collection<Evento>('Eventos', ref =>
-        ref.where('estado', 'in', ['Aprobado', 'en_curso']) // Incluir estados Aprobado y en_curso
-      )
-      .snapshotChanges()
+      .collection<TareasGestor>('TareasGestor', ref => ref.where('gestor_id', '==', this.gestorId)) // Filtrar por gestor_id
+      .valueChanges()
       .pipe(
-        map(snapshots => {
-          const eventosTransformados = snapshots.map(snapshot => {
-            const eventData = snapshot.payload.doc.data() as Evento;
-            const docId = snapshot.payload.doc.id;
+        switchMap((tareas: TareasGestor[]) => {
 
-            // Transformar fechas
-            const fechaInicio = this.transformarFecha(eventData.fecha);
-            const fechaFin = this.transformarFecha(eventData.fecha_termino);
+          const eventoIds = tareas.map(tarea => tarea.evento_id); // Extraer IDs de eventos
 
-            return {
-              ...eventData,
-              id_evento: docId,
-              fechaInicio,
-              fechaFin,
-            };
+          if (eventoIds.length === 0) {
+
+            return of([]); // Retornar un observable vacío si no hay eventos
+          }
+
+          return this.firestore
+            .collection<Evento>('Eventos', ref => {
+
+              return ref.where(firebase.firestore.FieldPath.documentId(), 'in', eventoIds);
+            })
+            .snapshotChanges();
+        }),
+        map(snapshot => {
+
+          const eventos = snapshot.map(doc => {
+            const data = doc.payload.doc.data() as Evento;
+            const id = doc.payload.doc.id;
+
+            const fechaInicio = this.transformarFecha(data.fecha);
+            const fechaFin = this.transformarFecha(data.fecha_termino);
+            return { ...data, id_evento: id, fechaInicio, fechaFin };
           });
 
-          const ahora = new Date();
-          return eventosTransformados.filter(evento => {
-            const comienzoDia = this.comenzarDia(ahora);
-            const finDia = this.finalizarDia(ahora);
-
-            return (
-              evento.fechaInicio &&
-              evento.fechaInicio >= comienzoDia &&
-              evento.fechaInicio <= finDia
-            );
-          });
+          return eventos;
         })
       );
   }
+
+
 
   comenzarDia(fecha: Date): Date {
     const inicio = new Date(fecha);
@@ -118,13 +147,12 @@ export class FolderGestorEventosPage implements OnInit {
     if (!fechaInicio || !fechaFin) {
       return false;
     }
-
-    return (
-      ahora >= fechaInicio &&
-      ahora < fechaFin &&
-      evento.estado === 'Aprobado'
-    );
+    // Verificar si está dentro del rango y el estado es Aprobado
+    const dentroDeRango = ahora >= fechaInicio && ahora <= fechaFin;
+    const esAprobado = evento.estado === 'Aprobado';
+    return dentroDeRango && esAprobado;
   }
+
 
   transformarFecha(fecha: any): Date | null {
     if (fecha && fecha.seconds) {

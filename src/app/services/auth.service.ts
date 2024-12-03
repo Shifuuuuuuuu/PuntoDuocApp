@@ -126,13 +126,18 @@ export class AuthService {
 
   async updateEstudiante(estudiante: Estudiante): Promise<void> {
     if (!estudiante.id_estudiante) {
-      throw new Error('El estudiante no tiene un ID asignado');
+      throw new Error('ID del estudiante no disponible.');
     }
+
+    console.log('Datos del estudiante antes de actualizar:', estudiante);
     try {
       await this.firestore.collection('Estudiantes').doc(estudiante.id_estudiante).update(estudiante);
+      console.log(`Estudiante actualizado con éxito. ID: ${estudiante.id_estudiante}`);
     } catch (error) {
-      console.error('Error en AuthService.updateEstudiante:', error);
+      console.error('Error al actualizar estudiante en Firestore:', error);
       throw error;
     }
   }
+
+
 }

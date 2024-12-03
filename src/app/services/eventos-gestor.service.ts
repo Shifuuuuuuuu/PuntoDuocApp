@@ -5,6 +5,7 @@ import {  filter, map} from 'rxjs/operators';
 import { Evento } from '../interface/IEventos';
 import { Inscripcion, Inscripcion2 } from '../interface/IInscripcion';
 import {  getDoc } from '@angular/fire/firestore';
+import { GestorEventos } from '../interface/IGestorEventos';
 @Injectable({
   providedIn: 'root'
 })

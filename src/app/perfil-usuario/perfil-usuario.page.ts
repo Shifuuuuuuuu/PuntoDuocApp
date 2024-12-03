@@ -55,6 +55,7 @@ export class PerfilUsuarioPage implements OnInit {
     this.menu.enable(false);  // Deshabilita el menú en esta página
   }
 
+
   async ngOnInit() {
     this.authSubscription = this.authService.getCurrentUserEmail().subscribe(email => {
       if (email) {
@@ -92,32 +93,50 @@ export class PerfilUsuarioPage implements OnInit {
   async uploadProfileImage(event: any) {
     const file = event.target.files[0];
     if (file) {
-      const filePath = `profile_images/${this.userEmail}_${new Date().getTime()}`;
-      const fileRef = this.storage.ref(filePath);
+      try {
+        const filePath = `profile_images/${this.userEmail}_${new Date().getTime()}`;
+        const fileRef = this.storage.ref(filePath);
 
-      // Subir el archivo a Firebase Storage
-      const task = await this.storage.upload(filePath, file);
+        console.log('Subiendo archivo a Firebase Storage en la ruta:', filePath);
 
-      // Obtener la URL de la imagen
-      const imageUrl = await fileRef.getDownloadURL().toPromise();
+        // Subir el archivo a Firebase Storage
+        const task = await this.storage.upload(filePath, file);
+        console.log('Archivo subido con éxito:', task);
 
-      // Guardar la URL en Firestore
-      if (this.isInvitado && this.invitado) {
-        await this.invitadoService.updateInvitado({
-          ...this.invitado,
-          imagen: imageUrl,
-        });
-      } else if (this.estudiante) {
-        await this.authService.updateEstudiante({
-          ...this.estudiante,
-          imagen: imageUrl,
-        });
+        // Obtener la URL de la imagen
+        const imageUrl = await fileRef.getDownloadURL().toPromise();
+        console.log('URL de la imagen obtenida:', imageUrl);
+
+        // Guardar la URL en Firestore
+        if (this.isInvitado && this.invitado) {
+          console.log('Actualizando imagen para invitado:', this.invitado.email);
+          this.invitado.imagen = imageUrl; // Asigna la URL al campo imagen
+          await this.invitadoService.updateInvitado({
+            ...this.invitado,
+            imagen: imageUrl,
+          });
+        } else if (this.isStudent && this.estudiante) {
+          console.log('Actualizando imagen para estudiante:', this.estudiante.email);
+          this.estudiante.imagen = imageUrl; // Asigna la URL al campo imagen
+          await this.authService.updateEstudiante({
+            ...this.estudiante,
+            imagen: imageUrl,
+          });
+        }
+
+        // Actualizar la imagen en la UI
+        this.profileImageUrl = imageUrl;
+        Swal.fire('Éxito', 'Imagen de perfil actualizada correctamente.', 'success');
+      } catch (error) {
+        console.error('Error al actualizar la imagen de perfil:', error);
+        Swal.fire('Error', 'No se pudo actualizar la imagen de perfil.', 'error');
       }
-
-      this.profileImageUrl = imageUrl;
-      Swal.fire('Éxito', 'Imagen de perfil actualizada correctamente.', 'success');
+    } else {
+      console.warn('No se seleccionó ningún archivo.');
     }
   }
+
+
 
   async loadUserData() {
     if (!this.userEmail) {
@@ -126,6 +145,7 @@ export class PerfilUsuarioPage implements OnInit {
     }
 
     try {
+      // Buscar si el usuario es un estudiante
       const estudianteResult = await firstValueFrom(this.authService.getEstudianteByEmails(this.userEmail));
       if (estudianteResult) {
         this.estudiante = estudianteResult;
@@ -133,22 +153,28 @@ export class PerfilUsuarioPage implements OnInit {
         this.qrData = this.estudiante.codigoQr || ''; // Cargar QR desde Firestore
         this.isInvitado = false;
         this.isStudent = true;
+        console.log('Estudiante cargado:', this.estudiante);
       } else {
-        const invitadoResult = await firstValueFrom(this.invitadoService.obtenerInvitadoPorEmail(this.userEmail));
+        // Si no es un estudiante, buscar como invitado
+        const invitadoResult = await this.invitadoService.getInvitadoByEmail(this.userEmail);
         if (invitadoResult) {
           this.invitado = invitadoResult;
           this.profileImageUrl = this.invitado.imagen || this.defaultProfileImage;
           this.qrData = this.invitado.codigoQr || ''; // Cargar QR desde Firestore
           this.isInvitado = true;
           this.isStudent = false;
+          console.log('Invitado cargado:', this.invitado);
         } else {
-          this.errorMessage = 'No se encontró ningún invitado con ese email.';
+          this.errorMessage = 'No se encontró ningún usuario con ese email.';
+          console.warn('Usuario no encontrado en ambas colecciones.');
         }
       }
     } catch (error) {
       console.error('Error al cargar los datos del usuario:', error);
+      this.errorMessage = 'Ocurrió un error al cargar los datos del usuario.';
     }
   }
+
 
 
   async verificarEstadoAcreditacion() {

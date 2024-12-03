@@ -2,15 +2,15 @@
   <div>
     <img src="../../assets/svg/layered-waves-haikei.svg" alt="Logo Duoc" style="padding:0; margin:0; width:100%">
   </div>
-  
+
   <div>
 
     <!--Logo PuntoDuoc-->
     <div class="logo-style">PuntoDuoc</div>
-    
+
     <!-- Formulario -->
     <form #loginForm="ngForm" (ngSubmit)="iniciarSesion()" novalidate class="ion-padding">
-      
+
       <h1>Bienvenid&#64; de vuelta</h1>
       <!-- Correo Electrónico -->
       <div class="mb-3">
@@ -35,14 +35,8 @@
       <!-- Recordar contraseña -->
       <ion-checkbox labelPlacement="end" [(ngModel)]="rememberMe" name="rememberMe" class="ps-3">Recordar contraseña</ion-checkbox>
 
-      <!-- recordar contraseña antiguo
-      <div class="remember-me">
-        <ion-checkbox slot="start" [(ngModel)]="rememberMe" name="rememberMe"></ion-checkbox>
-        <label for="rememberMe" class="remember-me-label">Recordar contraseña automáticamente</label>
-      </div>
-      -->
 
-      
+
 
       <!-- Botón de iniciar sesión -->
       <div class="mt-3 mb-2 px-3">
@@ -53,7 +47,7 @@
 
       <!-- ¿Olvidaste tu contraseña? -->
       <div style="text-align:center" class="mb-3">
-        
+
       </div>
 
       <!-- ¿Olvidaste tu contraseña? -->
@@ -84,9 +78,9 @@
           </ion-col>
         </ion-row>
       </ion-grid>
-      
+
     </form>
-    
+
   </div>
 
   <!-- Mensaje flotante de error -->
@@ -94,7 +88,8 @@
     <ion-toast isOpen="true" message="{{ errorMessage }}" [duration]="5000"></ion-toast>
   </div>
 
-
+  <br><br><br>
+  <br>
   <!--Contacto-->
   <div>
     <img src="../../assets/svg/layered-waves-haikei-reverse.svg" alt="Logo Duoc" style="padding:0; margin:0; width:100%;">

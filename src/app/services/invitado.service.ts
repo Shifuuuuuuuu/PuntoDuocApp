@@ -132,8 +132,17 @@ async verificarInvitadoPorCorreo(correo: string): Promise<boolean> {
     if (!invitado.id_Invitado) {
       throw new Error('El invitado no tiene un ID asignado');
     }
-    await this.invitadosCollection.doc(invitado.id_Invitado).update(invitado);
+
+    console.log('Actualizando invitado:', invitado);
+    try {
+      await this.invitadosCollection.doc(invitado.id_Invitado).update(invitado);
+      console.log(`Invitado actualizado con éxito. ID: ${invitado.id_Invitado}`);
+    } catch (error) {
+      console.error('Error al actualizar invitado en Firestore:', error);
+      throw error;
+    }
   }
+
   obtenerInvitadoPorEmail(email: string): Observable<Invitado | null> {
     return this.firestore.collection<Invitado>('Invitados', ref => ref.where('email', '==', email))
       .valueChanges()

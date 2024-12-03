@@ -28,6 +28,8 @@ export interface Evento {
   verificados?: number; // Agrega esta propiedad para contar los verificados
   puntaje: number;
   favoritos: boolean;
+  gestorAsignadoId: string;
+  tipo_usuario: string
 }
 
 

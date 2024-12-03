@@ -50,11 +50,14 @@ export class RegistrarInvitadoPage implements OnInit {
         return;
       }
 
-      // Desestructurar `this.invitado` para omitir `password`
-      const { password, ...invitadoData } = this.invitado;
+      // Crear un nuevo objeto invitado con todos los campos necesarios, incluida la contraseña
+      const invitadoCompleto: Invitado = {
+        ...this.invitado,
+        password: this.invitado.password, // Asegurar que el campo `password` esté presente
+      };
 
       // Registrar al invitado en Firebase Auth y crear el documento en Firestore
-      const invitadoRegistrado = await this.invitadoService.registrarInvitado(invitadoData, password);
+      const invitadoRegistrado = await this.invitadoService.registrarInvitado(invitadoCompleto, this.invitado.password);
       console.log('Invitado registrado en Firestore:', invitadoRegistrado);
 
       // Generar el código QR basado en los datos del invitado registrado
@@ -96,6 +99,7 @@ export class RegistrarInvitadoPage implements OnInit {
       }
     }
   }
+
 
   validarRUT(event: any) {
     let rut = event.target.value;

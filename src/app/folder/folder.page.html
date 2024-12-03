@@ -11,7 +11,7 @@
 
     <ion-buttons slot="primary">
         <ion-button [routerLink]="['/notifications']" class="w-auto">
-          <ion-icon slot="icon-only" name="notifications-outline"></ion-icon><!--Ícono notificaciones--> 
+          <ion-icon slot="icon-only" name="notifications-outline"></ion-icon><!--Ícono notificaciones-->
           <ion-badge *ngIf="unreadNotificationsCount > 0" color="danger">{{ unreadNotificationsCount }}</ion-badge><!--Badge nro de notificaciones-->
         </ion-button>
     </ion-buttons>
@@ -24,7 +24,7 @@
     <ion-row class="ion-align-items-center">
       <!--Barra Búsqueda-->
       <ion-col>
-        
+
         <ion-searchbar [(ngModel)]="searchText"
           (ionInput)="filterEvents()"
           show-clear-button="always"
@@ -34,7 +34,7 @@
           class="custom-search-bar">
         </ion-searchbar>
       </ion-col>
-      
+
       <!--Botón Filtros-->
       <ion-col size="auto">
         <ion-button (click)="openSedeSelect()" color="light">
@@ -70,7 +70,7 @@
   <!--------------->
   <h2 class="ion-padding pb-0">Eventos más populares</h2>
   <!--------------->
-  
+
   <swiper-container
     [slidesPerView]="1.2"
     [spaceBetween]="5"
@@ -102,7 +102,7 @@
         <ion-card-content class="pb-0">
           <!--Inscritos respecto a Total-->
           <p style="font-weight: 300;"><b>Inscritos: {{ event.inscritos }}</b> de <b>{{ event.inscritos + event.Cupos }}</b></p>
-          
+
           <!--Descripción-->
           <!--<p *ngIf="event.show">{{ event.descripcion }}</p>-->
 
@@ -130,25 +130,26 @@
   <!--------------->
 
   <swiper-container
-    [slidesPerView]="2.4"
-    [spaceBetween]="10"
-    [freeMode]="true"
-  >
-    <swiper-slide *ngFor="let category of categories" (click)="goToCategoryEvents(category.name)">
-      <ion-grid>
-        <ion-row>
-          <ion-col>
-            <div class="ion-text-center">
-              <ion-avatar class="mx-auto mb-2" style="height: 6rem; width: 6rem;">
-                <img [src]="category.image" alt="{{ category.name }}" loading="lazy">
-              </ion-avatar>
-              <p style="font-weight: 500; font-size:small">{{ category.name }}</p>
-            </div>
-          </ion-col>
-        </ion-row>
-      </ion-grid>
-    </swiper-slide>
-  </swiper-container>
+  [slidesPerView]="2.4"
+  [spaceBetween]="10"
+  [freeMode]="true"
+>
+  <swiper-slide *ngFor="let category of getCategories()" (click)="goToCategoryEvents(category.name)">
+    <ion-grid>
+      <ion-row>
+        <ion-col>
+          <div class="ion-text-center">
+            <ion-avatar class="mx-auto mb-2" style="height: 6rem; width: 6rem;">
+              <img [src]="category.image" alt="{{ category.name }}" loading="lazy">
+            </ion-avatar>
+            <p style="font-weight: 500; font-size:small">{{ category.name }}</p>
+          </div>
+        </ion-col>
+      </ion-row>
+    </ion-grid>
+  </swiper-slide>
+</swiper-container>
+
 
   <!--------------->
   <h2 class="ion-padding pb-0">Eventos próximos</h2>
@@ -194,7 +195,7 @@
         <ion-card-content class="pb-0">
           <!--Inscritos respecto a Total-->
           <p style="font-weight: 300;"><b>Inscritos: {{ event.inscritos }}</b> de <b>{{ event.inscritos + event.Cupos }}</b></p>
-          
+
           <!--Descripción-->
           <!--<p *ngIf="event.show">{{ event.descripcion }}</p>-->
 
@@ -228,33 +229,33 @@
         <ion-card>
           <!--Imagen de evento-->
           <img alt="Imagen del evento" [src]="event.imagen" class="event-image" loading="lazy"/>
-  
+
           <!-- Icono de estrella para marcar como favorito -->
           <ion-button shape="round" color="light" (click)="toggleFavorite(event); $event.stopPropagation()" class="card-favoritos">
             <ion-icon name="star" slot="icon-only" [style.color]="event.isFavorite ? '#FFD700' : 'gray'"></ion-icon>
           </ion-button>
-  
+
           <!--Sede evento (badge)-->
           <ion-badge color="warning" style="position: absolute; top: 0.5rem; left: 0.5rem;">{{ event.sede }}</ion-badge>
-  
+
           <ion-card-header class="pb-2">
             <!--Título de evento-->
             <ion-card-title style="font-weight: 500; font-size:medium">{{ event.titulo }}</ion-card-title>
-  
+
             <!--Fecha del evento-->
             <ion-card-subtitle style="font-weight: 300;"><b>Inicio:</b> {{ transformarFecha(event.fecha) | date: 'dd-MM-yyyy' }}, {{ transformarFecha(event.fecha) | date: 'h:mm a' }}</ion-card-subtitle>
           </ion-card-header>
-  
+
           <ion-card-content>
             <!--Inscritos respecto a Total-->
             <p style="font-weight: 300;"><b>Inscritos: {{ event.inscritos }}</b> de <b>{{ event.inscritos + event.Cupos }}</b></p>
-            
+
             <!--Descripción-->
             <!--<p *ngIf="event.show">{{ event.descripcion }}</p>-->
-  
+
             <!--Barra progreso inscritos-->
             <ion-progress-bar [value]="(event.inscritos + event.Cupos > 0) ? (event.inscritos / (event.inscritos + event.Cupos)) : 0" color="secondary"></ion-progress-bar>
-  
+
             <!--Mensajes [verificado], [inscrito], [en lista de espera]-->
             <div class="text-center mt-3" *ngIf="(event.estaInscrito && event.verificado) || (event.estaInscrito && !event.verificado) || (event.enListaEspera)">
               <ion-badge color="success" class="ion-badge-custom" *ngIf="event.estaInscrito && event.verificado">¡Estás verificado en este evento!</ion-badge>
@@ -320,14 +321,14 @@
                 <ion-card-content class="p-0 pt-1">
                   <ion-badge color="medium" style="font-weight: 300;" class="text-center ion-badge-custom">{{ event.estado }}</ion-badge>
                   <p style="font-weight: 300;"><b>Finalizado:</b> {{ transformarFecha(event.fecha_termino) | date: 'dd-MM-yyyy' }}, {{ transformarFecha(event.fecha_termino) | date: 'h:mm a' }}</p>
-                
+
                   <!--Mensajes [verificado], [inscrito], [en lista de espera]-->
                   <div class="text-center mt-3" *ngIf="event.estaInscrito">
                     <ion-badge color="success" class="ion-badge-custom" *ngIf="event.estaInscrito && event.verificado">¡Estás verificado en este evento!</ion-badge>
                     <ion-badge color="danger" class="ion-badge-custom"  *ngIf="event.estaInscrito && !event.verificado">No has verificado tu asistencia al evento.</ion-badge>
                   </div>
                 </ion-card-content>
-                
+
               </ion-col>
             </ion-row>
 
@@ -382,7 +383,7 @@
     </div>
 
   </div>
-  
+
 </ion-content>
 
 <app-tab-usuario></app-tab-usuario>

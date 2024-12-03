@@ -48,6 +48,30 @@ export class GestorEventosService {
       throw error;
     }
   }
+  async obtenerGestorAutenticado(): Promise<GestorEventos | null> {
+    const email = this.getStoredUserEmail(); // Obtener email autenticado
+    if (!email) return null;
+
+    try {
+      const snapshot = await this.firestore
+        .collection<GestorEventos>('GestorEventos', ref => ref.where('email', '==', email))
+        .get()
+        .toPromise();
+
+      if (snapshot && !snapshot.empty) { // Verificar que el snapshot no sea undefined y no esté vacío
+        const gestorDoc = snapshot.docs[0];
+        const gestorData = gestorDoc.data() as GestorEventos;
+        gestorData.id_Geventos = gestorDoc.id;
+        return gestorData;
+      } else {
+        console.warn('No se encontró un gestor con el email proporcionado.');
+        return null;
+      }
+    } catch (error) {
+      console.error('Error al obtener gestor autenticado:', error);
+      throw error;
+    }
+  }
 
 
   // Método para obtener un gestor por correo electrónico

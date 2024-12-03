@@ -183,30 +183,47 @@ export class FolderPage implements OnInit {
       (snapshots) => {
         this.loading = false;
 
-        this.allEvents = snapshots.map(snapshot => {
-          const eventData = snapshot.payload.doc.data() as Evento;
-          const docId = snapshot.payload.doc.id;
+        this.allEvents = snapshots
+          .map((snapshot) => {
+            const eventData = snapshot.payload.doc.data() as Evento;
+            const docId = snapshot.payload.doc.id;
 
-          const isFavorite = Array.isArray(eventData.favoritos) &&
-            eventData.favoritos.some((fav: any) => fav.id === this.userId);
+            const isFavorite =
+              Array.isArray(eventData.favoritos) &&
+              eventData.favoritos.some((fav: any) => fav.id === this.userId);
 
-          return {
-            ...eventData,
-            id_evento: docId,
-            verificado: false,
-            isFavorite: isFavorite || false,
-            show: false,
-            estaInscrito: false,
-            enListaEspera: false
-          };
-        });
+            return {
+              ...eventData,
+              id_evento: docId,
+              verificado: false,
+              isFavorite: isFavorite || false,
+              show: false,
+              estaInscrito: false,
+              enListaEspera: false,
+            };
+          })
+          .filter((event) => {
+            // Filtrar eventos por tipo de usuario
+            if (event.tipo_usuario === 'Todos') {
+              return true; // Mostrar eventos para todos
+            }
+            if (this.isInvitado) {
+              return event.tipo_usuario === 'Invitado';
+            }
+            if (this.isStudent) {
+              return event.tipo_usuario === 'Estudiante';
+            }
+            return false; // Si no es invitado ni estudiante, no mostrar eventos
+          });
 
         this.filteredEvents = [...this.allEvents];
         this.sedeFilteredEvents = [...this.allEvents];
         this.events = [...this.sedeFilteredEvents];
 
         // Filtrar eventos terminados usando la lista de eventos filtrados por sede
-        this.eventsTerminados = this.sedeFilteredEvents.filter(event => event.estado === 'Terminado');
+        this.eventsTerminados = this.sedeFilteredEvents.filter(
+          (event) => event.estado === 'Terminado'
+        );
 
         this.filterEvents();
         this.filterEventsByDate();
@@ -218,9 +235,28 @@ export class FolderPage implements OnInit {
         console.error('Error al obtener eventos de Firestore:', error);
       }
     );
+}
+
+
+
+
+getCategories(): { name: string; image: string }[] {
+  if (this.isInvitado) {
+    // Categorías disponibles solo para invitados
+    return this.categories.filter((category) =>
+      [
+        'Centro de Estudios',
+        'Comunidad',
+        'Pastoral',
+        'Teatro',
+        'Vive Duoc',
+        'Deportes',
+      ].includes(category.name)
+    );
   }
 
-
+  return this.categories;
+}
 
 
   getRecentEvents() {
