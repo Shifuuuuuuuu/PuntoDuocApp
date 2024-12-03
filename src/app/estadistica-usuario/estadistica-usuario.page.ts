@@ -233,3 +233,7 @@ export class EstadisticaUsuarioPage implements OnInit {
     });
   }
 }
+
+Chart.defaults.font.family = "Helvetica Neue";
+Chart.defaults.font.size = 13;
+Chart.defaults.color = "#000";

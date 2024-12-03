@@ -1,70 +1,72 @@
-<ion-header [translucent]="true" class="custom-header">
-  <ion-toolbar class="custom-toolbar" style="background-color: black;">
-    <ion-buttons slot="start">
+<ion-header [translucent]="true">
+  <ion-toolbar>
+    <ion-buttons slot="secondary">
+      <!--Ícono misiones-->
       <ion-button (click)="openMissionsModal()">
-        <ion-icon slot="icon-only" name="ribbon-outline" style="color: white;"></ion-icon>
+        <ion-icon slot="icon-only" name="ribbon-outline"></ion-icon>
       </ion-button>
     </ion-buttons>
-    <ion-title style="color: white">Tu estadísticas</ion-title>
-    <ion-buttons slot="end">
-      <ion-button [routerLink]="['/notifications']" style="position: relative;">
-        <ion-icon slot="icon-only" name="notifications-outline" style="color: white;"></ion-icon>
-        <!-- Badge para mostrar el número de notificaciones -->
-        <ion-badge *ngIf="unreadNotificationsCount > 0" color="danger" style="position: absolute; top: -5px; right: -5px;">
-          {{ unreadNotificationsCount }}
-        </ion-badge>
-      </ion-button>
+
+    <ion-title class="ion-title-custom">Tus estadísticas</ion-title>
+
+    <ion-buttons slot="primary">
+        <!--Ícono notificaciones-->
+        <ion-button [routerLink]="['/notifications']" class="w-auto">
+          <ion-icon slot="icon-only" name="notifications-outline"></ion-icon>
+          <!--Badge nro notificaciones-->
+          <ion-badge *ngIf="unreadNotificationsCount > 0" color="danger">{{ unreadNotificationsCount }}</ion-badge><!--style="position: absolute; top: -5px; right: -5px;"-->
+        </ion-button>
     </ion-buttons>
   </ion-toolbar>
 </ion-header>
 
-<ion-content [fullscreen]="true" class="content-center">
+<ion-content [fullscreen]="true">
 
   <!-- Gráfico de Puntaje Acumulado -->
-  <ion-card style="background-color: white;">
+  <ion-card class="mb-3">
     <ion-card-header>
-      <ion-card-title style="color: black;">Puntaje Acumulado</ion-card-title>
-    </ion-card-header>
+      <ion-card-title style="color: black; font-weight:400">Puntaje acumulado</ion-card-title>
+     </ion-card-header>
     <ion-card-content>
       <canvas #puntajeChart></canvas>
     </ion-card-content>
   </ion-card>
+
   <!-- Gráfico de Misiones Completadas -->
-  <ion-card style="background-color: white;">
+  <ion-card class="mb-3">
     <ion-card-header>
-      <ion-card-title style="color: black;">Misiones Completadas</ion-card-title>
-    </ion-card-header>
+      <ion-card-title style="color: black; font-weight:400">Misiones Completadas</ion-card-title>
+     </ion-card-header>
     <ion-card-content>
       <canvas #misionesChart></canvas>
     </ion-card-content>
   </ion-card>
 
-
-  <!-- Gráfico de Promedio Mensual -->
-  <ion-card style="background-color: white;">
+   <!-- Gráfico de Promedio Mensual -->
+  <ion-card class="mb-3">
     <ion-card-header>
-      <ion-card-title style="color: black;">Promedio Mensual de Puntaje</ion-card-title>
-    </ion-card-header>
+      <ion-card-title style="color: black; font-weight:400">Promedio Mensual de Puntaje</ion-card-title>
+     </ion-card-header>
     <ion-card-content>
       <canvas #promedioMensualChart></canvas>
     </ion-card-content>
   </ion-card>
 
   <!-- Gráfico de Eventos por Categoría -->
-  <ion-card style="background-color: white;">
+   <ion-card class="mb-3">
     <ion-card-header>
-      <ion-card-title style="color: black;">Eventos Inscritos por Categoría</ion-card-title>
-    </ion-card-header>
+      <ion-card-title style="color: black; font-weight:400">Eventos Inscritos por Categoría</ion-card-title>
+     </ion-card-header>
     <ion-card-content>
       <canvas #eventosPorCategoriaChart></canvas>
     </ion-card-content>
   </ion-card>
 
   <!-- Gráfico de Porcentaje de Verificación -->
-  <ion-card style="background-color: white;">
+  <ion-card class="mb-3">
     <ion-card-header>
-      <ion-card-title style="color: black;">Porcentaje de Verificación en Eventos</ion-card-title>
-    </ion-card-header>
+      <ion-card-title style="color: black; font-weight:400">Porcentaje de Verificación en Eventos</ion-card-title>
+     </ion-card-header>
     <ion-card-content>
       <canvas #porcentajeVerificacionChart></canvas>
     </ion-card-content>

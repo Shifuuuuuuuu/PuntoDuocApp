@@ -1,74 +1,171 @@
-<ion-header [translucent]="true" class="custom-header">
-  <ion-toolbar class="custom-toolbar" style="background-color: black;">
-    <ion-buttons slot="start" *ngIf="userType === 'estudiante'">
+<ion-header [translucent]="true">
+  <ion-toolbar>
+    <ion-buttons slot="secondary" *ngIf="userType === 'estudiante'">
+      <!--Ícono misiones-->
       <ion-button (click)="openMissionsModal()">
-        <ion-icon slot="icon-only" name="ribbon-outline" style="color: white;"></ion-icon>
+        <ion-icon slot="icon-only" name="ribbon-outline"></ion-icon>
       </ion-button>
     </ion-buttons>
-    <ion-title style="color: white">Historial de Eventos</ion-title>
-    <ion-buttons slot="end">
-      <ion-button [routerLink]="['/notifications']" style="position: relative;">
-        <ion-icon slot="icon-only" name="notifications-outline" style="color: white;"></ion-icon>
-        <!-- Badge para mostrar el número de notificaciones -->
-        <ion-badge *ngIf="unreadNotificationsCount > 0" color="danger" style="position: absolute; top: -5px; right: -5px;">
-          {{ unreadNotificationsCount }}
-        </ion-badge>
-      </ion-button>
+
+    <ion-title class="ion-title-custom">Historial de Eventos</ion-title>
+
+    <ion-buttons slot="primary">
+        <!--Ícono notificaciones-->
+        <ion-button [routerLink]="['/notifications']" class="w-auto">
+          <ion-icon slot="icon-only" name="notifications-outline"></ion-icon>
+          <!--Badge nro notificaciones-->
+          <ion-badge *ngIf="unreadNotificationsCount > 0" color="danger">{{ unreadNotificationsCount }}</ion-badge><!--style="position: absolute; top: -5px; right: -5px;"-->
+        </ion-button>
     </ion-buttons>
   </ion-toolbar>
 </ion-header>
 
-<ion-content [fullscreen]="true" class="content-center">
-  <!-- Sección: Acreditados -->
-  <ion-list style="background-color: white;" *ngIf="eventosAcreditados.length > 0">
-    <ion-item-divider class="divider">Eventos Acreditados</ion-item-divider>
-    <div *ngFor="let evento of eventosAcreditados" class="event-card">
-      <div class="event-container">
-        <ion-thumbnail class="event-thumbnail">
-          <img [src]="evento.imagen" alt="Imagen del evento" class="event-image">
-        </ion-thumbnail>
-        <div class="event-details">
-          <h2>{{ evento.titulo }}</h2>
-          <p *ngIf="evento.Inscripciones[0]?.fechaVerificacion">Fecha de acreditación: {{ evento.Inscripciones[0]?.fechaVerificacion | date:'dd/MM/yyyy' }}</p>
-        </div>
-        <div class="event-badge badge-acreditado">Acreditado</div>
-      </div>
-    </div>
-  </ion-list>
+<ion-content [fullscreen]="true">
+  
+  <div *ngIf="eventosAcreditados.length > 0">
+    <h2 class="ion-padding pb-0">Eventos acreditados</h2>
+    <ion-card class="p-0" *ngFor="let evento of eventosAcreditados">
+      <ion-grid>
+        <ion-row class="ion-align-items-center">
+          <!--Columna imagen-->
+          <ion-col size="3" size-sm="2"><img [src]="evento.imagen" alt="Imagen del evento" style="aspect-ratio: 1 / 1; object-fit:cover;" loading="lazy" /></ion-col>
+          
+          <!--Columna todo lo demás-->
+          <ion-col>
+            
+            <!--Grid Título y lo demás-->
+            <ion-grid class="p-0 m-0">
+            
+              <!--Fila Título evento-->
+              <ion-row class="p-0 m-0">
+                <ion-col class="p-0 m-0">
+                  <ion-card-header class="p-2 ps-0">
+                    <ion-card-title style="font-weight: 500; font-size:large">{{ evento.titulo }}</ion-card-title>
+                  </ion-card-header>
+                </ion-col>
+              </ion-row>
+  
+              <!--Fila Datos y badge-->
+              <ion-row class="p-0 m-0 ion-align-items-center">
+                <!--Datos-->
+                <ion-col class="p-0 m-0">
+                  <ion-card-content class="p-0 m-0">
+                    <p *ngIf="evento.Inscripciones[0]?.fechaVerificacion" style="font-weight: 300;">Fecha acreditación:
+                      <br><b>{{ evento.Inscripciones[0]?.fechaVerificacion | date:'dd/MM/yyyy' }}</b>
+                    </p>
+                  </ion-card-content>
+                </ion-col>
+  
+                <!--Badge-->
+                <ion-col size="auto" class="p-0 m-0 ion-align-self-stretch">
+                    <ion-button class="me-0" disabled="true" style="--background: #6DCF33; opacity: 1; --border-radius: 0;">Acreditado<ion-icon name="checkmark-circle-outline" class="ms-1"></ion-icon></ion-button>
+                    <!--<ion-badge class="me-0 h-100 px-3" disabled="true" style="--background:#6DCF33; --opacity:1; align-content:center;">Acreditado</ion-badge>-->
+                </ion-col>
+              </ion-row>
+            </ion-grid>
+          </ion-col>
+        </ion-row>
+      </ion-grid>
+    </ion-card>
+  </div>
+
+
 
   <!-- Sección: No Acreditados -->
-  <ion-list style="background-color: white;" *ngIf="eventosNoAcreditados.length > 0">
-    <ion-item-divider class="divider">Eventos No Acreditados</ion-item-divider>
-    <div *ngFor="let evento of eventosNoAcreditados" class="event-card">
-      <div class="event-container">
-        <ion-thumbnail class="event-thumbnail">
-          <img [src]="evento.imagen" alt="Imagen del evento" class="event-image">
-        </ion-thumbnail>
-        <div class="event-details">
-          <h2>{{ evento.titulo }}</h2>
-          <p *ngIf="evento.fecha_termino">Fecha de término: {{ evento.fecha_termino | date:'dd/MM/yyyy' }}</p>
-        </div>
-        <div class="event-badge badge-no-acreditado">No Acreditado</div>
-      </div>
-    </div>
-  </ion-list>
+  <div *ngIf="eventosNoAcreditados.length > 0">
+    <h2 class="ion-padding pb-0">Eventos pendientes</h2>
+    <ion-card class="p-0" *ngFor="let evento of eventosNoAcreditados">
+      <ion-grid>
+        <ion-row class="ion-align-items-center">
+          <!--Columna imagen-->
+          <ion-col size="3" size-sm="2"><img [src]="evento.imagen" alt="Imagen del evento" style="aspect-ratio: 1 / 1; object-fit:cover;" loading="lazy" /></ion-col>
+          
+          <!--Columna todo lo demás-->
+          <ion-col>
+            
+            <!--Grid Evento y lo demás-->
+            <ion-grid class="p-0 m-0">
+            
+              <!--Fila Título evento-->
+              <ion-row class="p-0 m-0">
+                <ion-col class="p-0 m-0">
+                  <ion-card-header class="p-2 ps-0">
+                    <ion-card-title style="font-weight: 500; font-size:large">{{ evento.titulo }}</ion-card-title>
+                  </ion-card-header>
+                </ion-col>
+              </ion-row>
+  
+              <!--Fila Datos y badge-->
+              <ion-row class="p-0 m-0 ion-align-items-center">
+                <!--Datos-->
+                <ion-col class="p-0 m-0">
+                  <ion-card-content class="p-0 m-0">
+                    <p *ngIf="evento.fecha_termino" style="font-weight: 300;">Fecha término:
+                      <br><b>{{ evento.fecha_termino | date:'dd/MM/yyyy' }}</b>
+                    </p>
+                  </ion-card-content>
+                </ion-col>
+  
+                <!--Badge-->
+                <ion-col size="auto" class="p-0 m-0 ion-align-self-stretch">
+                    <ion-button class="me-0" disabled="true" color="medium" style="opacity: 1; --border-radius: 0;">No acreditado<ion-icon name="time-outline" class="ms-1"></ion-icon></ion-button>
+                </ion-col>
+              </ion-row>
+            </ion-grid>
+          </ion-col>
+        </ion-row>
+      </ion-grid>
+    </ion-card>
+  </div>
+
 
   <!-- Sección: Penalizados -->
-  <ion-list style="background-color: white;" *ngIf="eventosPenalizados.length > 0">
-    <ion-item-divider class="divider">Eventos Penalizados</ion-item-divider>
-    <div *ngFor="let evento of eventosPenalizados" class="event-card">
-      <div class="event-container">
-        <ion-thumbnail class="event-thumbnail">
-          <img [src]="evento.imagen" alt="Imagen del evento" class="event-image">
-        </ion-thumbnail>
-        <div class="event-details">
-          <h2>{{ evento.titulo }}</h2>
-          <p>Fecha de término: {{ evento.fecha_termino | date:'dd/MM/yyyy' }}</p>
-        </div>
-        <div class="event-badge badge-penalizado">Penalizado</div>
-      </div>
-    </div>
-  </ion-list>
+  <div *ngIf="eventosPenalizados.length > 0">
+    <h2 class="ion-padding pb-0">Eventos penalizados</h2>
+    <ion-card class="p-0" *ngFor="let evento of eventosPenalizados">
+      <ion-grid>
+        <ion-row class="ion-align-items-center">
+          <!--Columna imagen-->
+          <ion-col size="3" size-sm="2"><img [src]="evento.imagen" alt="Imagen del evento" style="aspect-ratio: 1 / 1; object-fit:cover;" loading="lazy" /></ion-col>
+          
+          <!--Columna todo lo demás-->
+          <ion-col>
+            
+            <!--Grid Título y lo demás-->
+            <ion-grid class="p-0 m-0">
+            
+              <!--Fila Título evento-->
+              <ion-row class="p-0 m-0">
+                <ion-col class="p-0 m-0">
+                  <ion-card-header class="p-2 ps-0">
+                    <ion-card-title style="font-weight: 500; font-size:large">{{ evento.titulo }}</ion-card-title>
+                  </ion-card-header>
+                </ion-col>
+              </ion-row>
+  
+              <!--Fila Datos y badge-->
+              <ion-row class="p-0 m-0 ion-align-items-center">
+                <!--Datos-->
+                <ion-col class="p-0 m-0">
+                  <ion-card-content class="p-0 m-0">
+                    <p style="font-weight: 300;">Fecha término:
+                      <br><b>{{ evento.fecha_termino | date:'dd/MM/yyyy' }}</b>
+                    </p> <!--¿<p> debería tener esto?: *ngIf="evento.fecha_termino"-->
+                  </ion-card-content>
+                </ion-col>
+  
+                <!--Badge-->
+                <ion-col size="auto" class="p-0 m-0 ion-align-self-stretch">
+                    <ion-button class="me-0" disabled="true" style="--background: #CF336D; opacity: 1; --border-radius: 0;">Penalizado<ion-icon name="alert-circle-outline" class="ms-1"></ion-icon></ion-button>
+                </ion-col>
+              </ion-row>
+            </ion-grid>
+          </ion-col>
+        </ion-row>
+      </ion-grid>
+    </ion-card>
+  </div>
+
 </ion-content>
 
 <app-tab-usuario></app-tab-usuario>

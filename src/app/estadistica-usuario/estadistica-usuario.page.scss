@@ -42,38 +42,3 @@
   align-items: center;
   height: 100%; /* Asegura que ocupe toda la pantalla */
 }
-
-/* Estilo para los iconos de redes sociales */
-.social-icons {
-  display: flex;
-  justify-content: center;
-  gap: 15px;
-  margin: 10px 0;
-}
-
-.social-icon {
-  font-size: 24px;
-  color: #0A49A7;
-  transition: transform 0.3s ease;
-}
-
-.social-icon:hover {
-  transform: scale(1.2);
-}
-
-/* Pie de página */
-.footer {
-  text-align: center;
-  margin-top: 20px;
-  padding: 20px;
-  background-color: #f2f2f2;
-  border-radius: 15px; /* Bordes redondeados */
-  color: #0A49A7;
-}
-
-/* Texto de derechos reservados */
-.footer p {
-  margin: 5px 0;
-  font-size: 14px;
-}
-

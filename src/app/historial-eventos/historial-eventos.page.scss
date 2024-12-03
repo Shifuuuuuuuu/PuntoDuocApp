@@ -155,28 +155,3 @@
   white-space: nowrap;
   z-index: 10;
 }
-
-.badge-acreditado {
-  background-color: #4caf50; /* Verde */
-}
-
-.badge-no-acreditado {
-  background-color: #9e9e9e; /* Gris */
-}
-
-.badge-penalizado {
-  background-color: #f44336; /* Rojo */
-}
-
-/* Dividers */
-ion-item-divider {
-  font-weight: bold;
-  margin: 10px 20px;
-  padding: 10px 15px;
-  background-color: #f4f4f4; /* Blanco medio gris */
-  border-radius: 15px;
-  color: #757575; /* Gris oscuro */
-  width: calc(100% - 40px);
-  box-sizing: border-box;
-
-}
