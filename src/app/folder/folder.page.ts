@@ -13,6 +13,7 @@ import firebase from 'firebase/compat/app';
 import { MessagingService } from '../services/messaging.service';
 register();
 import { MissionsAlertService } from '../services/missions-alert.service';
+import { Notificacion, UsuarioId } from '../interface/INotificacion';
 
 @Component({
   selector: 'app-folder',
@@ -179,51 +180,56 @@ export class FolderPage implements OnInit {
 
   async loadEvents() {
     this.loading = true;
+
     this.firestore.collection<Evento>('Eventos').snapshotChanges().subscribe(
-      (snapshots) => {
+      async (snapshots) => {
         this.loading = false;
 
-        this.allEvents = snapshots
-          .map((snapshot) => {
-            const eventData = snapshot.payload.doc.data() as Evento;
-            const docId = snapshot.payload.doc.id;
+        const today = new Date();
+        today.setHours(0, 0, 0, 0); // Inicio del día
 
-            const isFavorite =
-              Array.isArray(eventData.favoritos) &&
-              eventData.favoritos.some((fav: any) => fav.id === this.userId);
+        const nuevosEventos: Evento[] = []; // Eventos nuevos para notificar
+        const eventosHoy = snapshots.map((snapshot) => {
+          const eventData = snapshot.payload.doc.data() as Evento;
+          const docId = snapshot.payload.doc.id;
 
-            return {
-              ...eventData,
-              id_evento: docId,
-              verificado: false,
-              isFavorite: isFavorite || false,
-              show: false,
-              estaInscrito: false,
-              enListaEspera: false,
-            };
-          })
-          .filter((event) => {
-            // Filtrar eventos por tipo de usuario
-            if (event.tipo_usuario === 'Todos') {
-              return true; // Mostrar eventos para todos
-            }
-            if (this.isInvitado) {
-              return event.tipo_usuario === 'Invitado';
-            }
-            if (this.isStudent) {
-              return event.tipo_usuario === 'Estudiante';
-            }
-            return false; // Si no es invitado ni estudiante, no mostrar eventos
-          });
+          const fechaCreacion = this.convertToDate(eventData.fecha_creacion);
+
+          // Verificar si el evento fue creado hoy y no está en la lista de ya notificados
+          if (
+            fechaCreacion &&
+            fechaCreacion >= today &&
+            !this.allEvents.some((event) => event.id_evento === docId)
+          ) {
+            nuevosEventos.push({ ...eventData, id_evento: docId });
+          }
+
+          return {
+            ...eventData,
+            id_evento: docId,
+            verificado: false,
+            isFavorite: false,
+            show: false,
+            estaInscrito: false,
+            enListaEspera: false,
+          };
+        });
+
+        this.allEvents = eventosHoy.filter((event) => {
+          if (event.tipo_usuario === 'Todos') return true;
+          if (this.isInvitado) return event.tipo_usuario === 'Invitado';
+          if (this.isStudent) return event.tipo_usuario === 'Estudiante';
+          return false;
+        });
 
         this.filteredEvents = [...this.allEvents];
         this.sedeFilteredEvents = [...this.allEvents];
         this.events = [...this.sedeFilteredEvents];
 
-        // Filtrar eventos terminados usando la lista de eventos filtrados por sede
-        this.eventsTerminados = this.sedeFilteredEvents.filter(
-          (event) => event.estado === 'Terminado'
-        );
+        // Enviar notificaciones para los eventos nuevos
+        for (const nuevoEvento of nuevosEventos) {
+          await this.enviarNotificacionNuevoEvento(nuevoEvento);
+        }
 
         this.filterEvents();
         this.filterEventsByDate();
@@ -235,10 +241,7 @@ export class FolderPage implements OnInit {
         console.error('Error al obtener eventos de Firestore:', error);
       }
     );
-}
-
-
-
+  }
 
 getCategories(): { name: string; image: string }[] {
   if (this.isInvitado) {
@@ -466,6 +469,63 @@ getCategories(): { name: string; image: string }[] {
       console.error('Error al verificar eventos terminados:', error);
     });
   }
+  async enviarNotificacionNuevoEvento(evento: Evento) {
+    try {
+      // Verificar si la notificación ya existe
+      const existingNotification = await this.firestore.collection('Notificaciones')
+        .ref.where('id', '==', evento.id_evento).get();
+
+      if (!existingNotification.empty) {
+        console.log(`La notificación para el evento "${evento.titulo}" ya existe.`);
+        return; // No crear la notificación nuevamente
+      }
+
+      // Crear una nueva notificación
+      const notificacion: Notificacion = {
+        id: evento.id_evento,
+        titulo: `¡Nuevo evento disponible: ${evento.titulo}!`,
+        descripcion: `Ya puedes inscribirte en el evento "${evento.titulo}".`,
+        imagen: evento.imagen || '', // Imagen opcional del evento
+        url: `/event-details/${evento.id_evento}`, // URL para redirigir al detalle del evento
+        fecha: new Date(), // Fecha de creación de la notificación
+        fechaTermino: new Date(new Date().setDate(new Date().getDate() + 7)), // Fecha de expiración (7 días después)
+        usuarioIds: [], // Inicialmente vacío; se llenará según los destinatarios
+      };
+
+      // Obtener los usuarios según el tipo de evento
+      let usuarios: UsuarioId[] = [];
+      if (evento.tipo_usuario === 'Estudiante' || evento.tipo_usuario === 'Todos') {
+        const estudiantesSnapshot = await this.firestore.collection('Estudiantes').get().toPromise();
+        estudiantesSnapshot?.forEach(doc => {
+          const estudiante = doc.data() as { id_estudiante: string };
+          usuarios.push({ userId: estudiante.id_estudiante, leido: false });
+        });
+      }
+
+      if (evento.tipo_usuario === 'Invitado' || evento.tipo_usuario === 'Todos') {
+        const invitadosSnapshot = await this.firestore.collection('Invitados').get().toPromise();
+        invitadosSnapshot?.forEach(doc => {
+          const invitado = doc.data() as { id_Invitado: string };
+          usuarios.push({ userId: invitado.id_Invitado, leido: false });
+        });
+      }
+
+      // Evitar duplicados en la lista de usuarios
+      const uniqueUsuarios = Array.from(new Map(usuarios.map(user => [user.userId, user])).values());
+      notificacion.usuarioIds = uniqueUsuarios;
+
+      // Guardar la notificación en Firestore
+      await this.firestore.collection('Notificaciones').doc(notificacion.id).set(notificacion);
+
+
+      console.log(`Notificación de nuevo evento enviada: ${notificacion.titulo}`);
+      console.log('Usuarios notificados:', uniqueUsuarios);
+    } catch (error) {
+      console.error('Error al enviar notificación de nuevo evento:', error);
+    }
+  }
+
+
 
   async restarPuntosYNotificar(evento: Evento) {
     if (evento.Inscripciones && evento.Inscripciones.length > 0) {

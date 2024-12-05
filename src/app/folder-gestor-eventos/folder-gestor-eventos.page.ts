@@ -30,9 +30,9 @@ export class FolderGestorEventosPage implements OnInit {
   ) {}
 
   ngOnInit() {
-
+    console.log("Iniciando FolderGestorEventosPage...");
     this.obtenerGestorId().then(() => {
-
+      console.log("Gestor ID obtenido:", this.gestorId);
       this.cargarEventosHoy();
     });
     this.enviarRecordatorios();
@@ -75,7 +75,6 @@ export class FolderGestorEventosPage implements OnInit {
       const gestor = await this.gestorEventos.obtenerGestorAutenticado();
       if (gestor) {
         this.gestorId = gestor.id_Geventos || '';
-
       } else {
         console.error('No se encontró un gestor autenticado.');
       }
@@ -90,12 +89,14 @@ export class FolderGestorEventosPage implements OnInit {
   cargarEventosHoy() {
 
     this.eventosHoy$ = this.firestore
-      .collection<TareasGestor>('TareasGestor', ref => ref.where('gestor_id', '==', this.gestorId)) // Filtrar por gestor_id
+      .collection<TareasGestor>('TareasGestor', ref => ref.where('gestor_id', '==', this.gestorId))
       .valueChanges()
       .pipe(
         switchMap((tareas: TareasGestor[]) => {
 
-          const eventoIds = tareas.map(tarea => tarea.evento_id); // Extraer IDs de eventos
+
+          const eventoIds = tareas.map(tarea => tarea.evento_id);
+
 
           if (eventoIds.length === 0) {
 
@@ -103,23 +104,23 @@ export class FolderGestorEventosPage implements OnInit {
           }
 
           return this.firestore
-            .collection<Evento>('Eventos', ref => {
-
-              return ref.where(firebase.firestore.FieldPath.documentId(), 'in', eventoIds);
-            })
+            .collection<Evento>('Eventos', ref => ref.where(firebase.firestore.FieldPath.documentId(), 'in', eventoIds))
             .snapshotChanges();
         }),
         map(snapshot => {
 
+
           const eventos = snapshot.map(doc => {
             const data = doc.payload.doc.data() as Evento;
             const id = doc.payload.doc.id;
-
             const fechaInicio = this.transformarFecha(data.fecha);
             const fechaFin = this.transformarFecha(data.fecha_termino);
+
+
             return { ...data, id_evento: id, fechaInicio, fechaFin };
           });
 
+          console.log("Lista final de eventos hoy:", eventos);
           return eventos;
         })
       );
