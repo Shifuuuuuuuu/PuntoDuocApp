@@ -24,9 +24,3 @@ export interface NotificacionesDirectas {
   tipo?: string; // Nuevo campo para tipo de usuario
   destinatario: string;
 }
-export interface PushNotification {
-  title: string;
-  body: string;
-  image?: string;
-  click_action?: string;
-}

@@ -27,6 +27,27 @@ export class RecompensaService {
       throw error;
     }
   }
+    // Obtener recompensas disponibles (con cantidad mayor a 0)
+    async getRecompensasFiltradas(): Promise<Recompensa[]> {
+      try {
+        const snapshot = await this.firestore.collection<Recompensa>('Recompensas', ref =>
+          ref.where('cantidad', '>', 0) // Solo recompensas con stock disponible
+        ).get().toPromise();
+
+        if (!snapshot || snapshot.empty) {
+          console.warn('No se encontraron recompensas disponibles');
+          return [];
+        }
+
+        return snapshot.docs.map((doc) => {
+          const data = doc.data() as Recompensa;
+          return { id_recompensa: doc.id, ...data }; // Incluye el ID de la recompensa
+        });
+      } catch (error) {
+        console.error('Error al obtener las recompensas disponibles:', error);
+        throw error;
+      }
+    }
 
   // Obtener todas las recompensas
   async getRecompensas(): Promise<Recompensa[]> {

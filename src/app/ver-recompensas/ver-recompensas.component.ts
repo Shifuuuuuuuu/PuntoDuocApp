@@ -31,54 +31,68 @@ export class VerRecompensasComponent implements OnInit {
   ) {}
 
   async ngOnInit() {
-    this.tipoUsuario = localStorage.getItem('tipousuario');
-    this.userEmail = localStorage.getItem('currentUserEmail') || '';
-    this.userId = localStorage.getItem('id') || '';
+    try {
+      this.tipoUsuario = localStorage.getItem('tipousuario');
+      this.userEmail = localStorage.getItem('currentUserEmail') || '';
+      this.userId = localStorage.getItem('id') || '';
 
-    if (this.userEmail) {
-      this.tienePermisos = this.verificarUsuarioVentasOEventos(this.userEmail);
-      await this.loadUserData();
-
-      if (this.tienePermisos) {
-        const todasLasRecompensas = await this.recompensaService.getRecompensas();
-
-        this.recompensas = todasLasRecompensas.filter(r =>
-          r.cantidad > 0 &&
-          (!r.estudiantesReclamaron || !r.estudiantesReclamaron.some(e => e.fechaReclamacion && e.estado && this.isRecompensaCaducada(e)))
-        );
-
-        this.recompensasConQR = todasLasRecompensas
-          .filter(r => Array.isArray(r.estudiantesReclamaron) &&
-            r.estudiantesReclamaron.some(e =>
-              e.id_estudiante === this.userId &&
-              e.qrCode &&
-              !e.reclamado &&
-              e.fechaReclamacion &&
-              e.estado &&
-              !this.isRecompensaCaducada(e)
-            )
-          )
-          .map(r => {
-            const reclamacion = r.estudiantesReclamaron!.find(e =>
-              e.id_estudiante === this.userId &&
-              !e.reclamado &&
-              e.fechaReclamacion &&
-              e.estado &&
-              !this.isRecompensaCaducada(e)
-            );
-            return {
-              recompensa: r,
-              qrCode: reclamacion?.qrCode || '',
-              fechaCaducidad: this.calcularFechaCaducidad(reclamacion?.fechaReclamacion)
-            };
-          });
-      } else {
-        this.errorMessage = 'No tienes permisos para ver las recompensas.';
+      if (!this.userEmail) {
+        this.errorMessage = 'No se pudo obtener el correo del usuario.';
+        return;
       }
-    } else {
-      this.errorMessage = 'No se pudo obtener el correo del usuario.';
+
+      this.tienePermisos = this.verificarUsuarioVentasOEventos(this.userEmail);
+      if (!this.tienePermisos) {
+        this.errorMessage = 'No tienes permisos para ver las recompensas.';
+        return;
+      }
+
+      // Mostrar indicador de carga
+      await this.cargarRecompensas();
+    } catch (error) {
+      console.error('Error al cargar recompensas:', error);
+      this.errorMessage = 'Ocurrió un error al cargar las recompensas.';
     }
   }
+  // Cargar recompensas disponibles
+  async cargarRecompensas() {
+    try {
+      const todasLasRecompensas = await this.recompensaService.getRecompensasFiltradas();
+
+      // Filtrar recompensas disponibles
+      this.recompensas = todasLasRecompensas.filter(r => r.cantidad > 0);
+
+      // Filtrar recompensas con QR
+      this.recompensasConQR = todasLasRecompensas
+        .filter(r =>
+          r.estudiantesReclamaron?.some(e =>
+            e.id_estudiante === this.userId &&
+            e.qrCode &&
+            !e.reclamado &&
+            e.estado === 'activo' &&
+            !this.isRecompensaCaducada(e)
+          )
+        )
+        .map(r => {
+          const reclamacion = r.estudiantesReclamaron!.find(e =>
+            e.id_estudiante === this.userId &&
+            !e.reclamado &&
+            e.qrCode &&
+            e.estado === 'activo' &&
+            !this.isRecompensaCaducada(e)
+          );
+          return {
+            recompensa: r,
+            qrCode: reclamacion?.qrCode || '',
+            fechaCaducidad: this.calcularFechaCaducidad(reclamacion?.fechaReclamacion)
+          };
+        });
+    } catch (error) {
+      console.error('Error al cargar recompensas filtradas:', error);
+      this.errorMessage = 'Error al cargar recompensas.';
+    }
+  }
+  // Calcular fecha de caducidad
   calcularFechaCaducidad(fechaReclamacion: string | undefined): string {
     if (!fechaReclamacion) return 'N/A';
     const fechaReclamacionDate = new Date(fechaReclamacion);
@@ -109,22 +123,18 @@ export class VerRecompensasComponent implements OnInit {
     }
   }
 
-  isRecompensaCaducada(reclamacion: { fechaReclamacion?: string; estado?: string }): boolean {
-    if (!reclamacion.fechaReclamacion || !reclamacion.estado) {
-      return false; // Si faltan los campos, no se considera caducada
-    }
+   // Validar si la recompensa ha caducado
+   isRecompensaCaducada(reclamacion: { fechaReclamacion?: string }): boolean {
+    if (!reclamacion?.fechaReclamacion) return false;
 
     const fechaReclamacion = new Date(reclamacion.fechaReclamacion);
     const fechaActual = new Date();
-    const unAnioDespues = new Date(fechaReclamacion);
-    unAnioDespues.setFullYear(fechaReclamacion.getFullYear() + 1);
+    const fechaCaducidad = new Date(fechaReclamacion);
+    fechaCaducidad.setFullYear(fechaReclamacion.getFullYear() + 1);
 
-    if (fechaActual >= unAnioDespues) {
-      reclamacion.estado = 'caducado';
-      return true;
-    }
-    return false;
+    return fechaActual >= fechaCaducidad;
   }
+
 
   async reclamarRecompensa(id_recompensa: string | undefined) {
     const confirmResult = await Swal.fire({
@@ -205,11 +215,8 @@ export class VerRecompensasComponent implements OnInit {
               icon: 'success',
               confirmButtonText: 'OK'
             });
-            await this.actualizarDatos();
+            await this.cargarRecompensas();
           }
-        } else {
-          console.error('ID del estudiante es undefined');
-          return;
         }
       } catch (error) {
         console.error('Error al reclamar la recompensa:', error);
