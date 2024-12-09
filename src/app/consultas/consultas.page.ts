@@ -6,6 +6,7 @@ import { firstValueFrom } from 'rxjs';
 import Swal from 'sweetalert2';
 import { MenuController } from '@ionic/angular';
 import { NotificationService } from '../services/notification.service';
+import { MissionsAlertService } from '../services/missions-alert.service';
 @Component({
   selector: 'app-consultas',
   templateUrl: './consultas.page.html',
@@ -19,15 +20,21 @@ export class ConsultasPage implements OnInit {
     correo: '',
     estado: 'Pendiente'
   };
+  isStudent: boolean = false;
   unreadNotificationsCount: number = 0;
   constructor(
     private consultaService: ConsultaService,
     private estudianteService: EstudianteService,
     private invitadoService: InvitadoService,
     private menu: MenuController,
-    private notificationService: NotificationService
+    private notificationService: NotificationService,
+    private missionsAlertService: MissionsAlertService
   ) {
     this.obtenerUsuario();
+  }
+
+  openMissionsModal() {
+    this.missionsAlertService.showMissionsAlert();
   }
   ngOnInit() {
     // Suscríbete al observable para actualizar el contador de notificaciones en la interfaz

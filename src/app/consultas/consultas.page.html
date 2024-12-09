@@ -1,13 +1,12 @@
-<ion-header [translucent]="true" class="custom-header">
-  <ion-toolbar class="custom-toolbar" style="background-color: black;">
+<ion-header>
+  <ion-toolbar style="background-color: black;">
     <ion-buttons slot="start">
-      <ion-back-button defaultHref="/perfil-usuario" style="color: white;"></ion-back-button>
+      <ion-back-button defaultHref="/perfil-usuario" style="color: #666;"></ion-back-button>
     </ion-buttons>
-    <ion-title style="color:  white">Enviar Consulta</ion-title>
+    <ion-title style="color: #666; font-size: 1.2rem; font-weight: 500;">Enviar Consulta</ion-title>
     <ion-buttons slot="end">
       <ion-button [routerLink]="['/notifications']" style="position: relative;">
-        <ion-icon slot="icon-only" name="notifications-outline" style="color: white;"></ion-icon>
-        <!-- Badge para mostrar el número de notificaciones -->
+        <ion-icon slot="icon-only" name="notifications-outline" style="color: #666;"></ion-icon>
         <ion-badge *ngIf="unreadNotificationsCount > 0" color="danger" style="position: absolute; top: -5px; right: -5px;">
           {{ unreadNotificationsCount }}
         </ion-badge>

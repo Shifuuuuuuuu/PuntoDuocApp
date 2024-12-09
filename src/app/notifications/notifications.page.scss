@@ -1,152 +1,99 @@
 .custom-header {
-  position: relative;
-  z-index: 10; /* Asegura que el header esté siempre al frente */
+  --background: var(--ion-color-primary);
+  color: white;
+
+  .custom-toolbar {
+    background-color: var(--ion-color-primary);
+    color: white;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  }
+
+  .back-button {
+    color: white;
+  }
+
+  .toolbar-title {
+    font-size: 1.5rem;
+    font-weight: bold;
+  }
 }
 
-.custom-toolbar {
-  height: 120px; /* Aumenta la altura del toolbar */
-  display: flex;
-  justify-content: center; /* Centra horizontalmente */
-  align-items: center; /* Centra verticalmente */
-  border-bottom-left-radius: 50px; /* Bordes redondeados */
-  border-bottom-right-radius: 50px;
-  background-color: black;
-  --background: transparent;
-}
-
-.custom-toolbar ion-title {
-  font-size: 24px;
-  font-weight: bold;
-  color: white; /* Texto en blanco */
-  text-align: center;
-}
-
-/* Para crear una curva en el borde inferior */
-.custom-header::after {
-  position: absolute;
-  bottom: -30px; /* Ajusta la altura de la curva */
-  left: 0;
-  width: 100%;
-  height: 60px; /* Altura de la curva */
-  background-color: white;
-  border-top-left-radius: 50%;
-  border-top-right-radius: 50%;
-}
-
-
-/* Ajustes del contenido */
 .content-center {
-  --background: #ffffff;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  height: 100%; /* Asegura que ocupe toda la pantalla */
-}
+  background: #f8f9fa;
 
-/* Estilo para los iconos de redes sociales */
-.social-icons {
-  display: flex;
-  justify-content: center;
-  gap: 15px;
-  margin: 10px 0;
-}
+  .notification-list {
+    padding: 16px;
+  }
 
-.social-icon {
-  font-size: 24px;
-  color: #0A49A7;
-  transition: transform 0.3s ease;
-}
+  .notification-card {
+    display: flex;
+    align-items: center;
+    border-radius: 10px;
+    margin-bottom: 16px;
+    padding: 16px;
+    background: white;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 
-.social-icon:hover {
-  transform: scale(1.2);
-}
+    .notification-image {
+      display: flex;
+      justify-content: center;
+      align-items: center;
 
-/* Pie de página */
-.footer {
-  text-align: center;
-  margin-top: 20px;
-  padding: 20px;
-  background-color: #f2f2f2;
-  border-radius: 15px; /* Bordes redondeados */
-  color: #0A49A7;
-}
+      img {
+        width: 100%;
+        height: auto;
+        border-radius: 10px;
+        object-fit: cover;
+      }
 
-/* Texto de derechos reservados */
-.footer p {
-  margin: 5px 0;
-  font-size: 14px;
-}
-.notification-card {
-  margin: 10px;
-  cursor: pointer;
-  border-radius: 15px;
-  transition: box-shadow 0.3s ease;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-  background-color: rgb(245, 243, 243);
-}
+      ion-icon {
+        font-size: 2rem;
+        color: var(--ion-color-secondary);
+      }
+    }
 
-.notification-card:hover {
-  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
-}
+    .notification-details {
+      padding-left: 12px;
 
-.notification-image img {
-  border-radius: 10px;
-  width: 100%;
-  height: auto;
-}
+      .notification-title {
+        font-size: 1.2rem;
+        font-weight: bold;
+        margin-bottom: 4px;
+        color: var(--ion-color-dark);
+      }
 
-.notification-details {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-}
-.notification-image {
-  display: flex;
-  padding-top: 15px;
-  justify-content: center; /* Centra el contenido horizontalmente */
-  align-items: center;     /* Centra el contenido verticalmente */
-  height: 100%;            /* Asegura que el contenedor tenga altura completa */
-}
-.notification-image ion-icon,
-.notification-image img {
-  max-width: 100%;  /* Hace que el ícono o la imagen no se desborde del contenedor */
-  max-height: 100%; /* Limita el tamaño del ícono o imagen para que no se desborde */
-}
-.notification-title {
-  font-size: 16px;
-  font-weight: bold;
-  color: black;
-}
+      .notification-description {
+        font-size: 0.9rem;
+        color: var(--ion-color-medium);
+        margin-bottom: 8px;
+      }
 
-.notification-description {
-  font-size: 14px;
-  color: #666;
-}
+      .notification-date {
+        font-size: 0.8rem;
+        color: var(--ion-color-medium);
+      }
+    }
 
-.notification-date {
-  font-size: 12px;
-  color: gray;
-}
+    .notification-close {
+      display: flex;
+      justify-content: flex-end;
+      align-items: center;
 
+      .close-button {
+        color: var(--ion-color-danger);
+      }
+    }
+  }
 
+  .direct-notification-card {
+    border-left: 4px solid var(--ion-color-warning);
+    background: #fff9f0;
+  }
 
-.notification-close ion-button {
-  --padding-start: 0;
-  --padding-end: 0;
-  --icon-size: 20px;
-  --background: transparent; /* Fondo transparente */
-  color: black; /* Cambia el color del icono a negro */
-}
-
-.notification-close ion-button:focus {
-  outline: none; /* Elimina el contorno azul al hacer clic */
-  box-shadow: none; /* Elimina la sombra azul */
-}
-
-.notification-close ion-button:hover {
-  background-color: transparent; /* Elimina cualquier fondo al pasar el cursor */
-}
-
-.notification-close ion-icon {
-  color: black; /* Asegúrate de que el icono también sea negro */
+  .empty-notifications {
+    text-align: center;
+    margin-top: 24px;
+    font-size: 1rem;
+    color: var(--ion-color-medium);
+  }
 }
