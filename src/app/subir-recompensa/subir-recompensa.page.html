@@ -1,54 +1,58 @@
-<ion-header [translucent]="true" class="custom-header">
-  <ion-toolbar class="custom-toolbar" style="background-color: black;">
+<ion-header [translucent]="true">
+  <ion-toolbar >
     <ion-buttons slot="start">
-      <ion-back-button defaultHref="/folder-ventas" style="color: white;"></ion-back-button>
+      <ion-back-button defaultHref="/folder-ventas" style="color: #666;"></ion-back-button>
     </ion-buttons>
-    <ion-title style="color: white;">Subir recompensa</ion-title>
+    <ion-title style="color: #666; font-weight: 500; text-align: center;">Subir Recompensa</ion-title>
   </ion-toolbar>
 </ion-header>
 
-<ion-content [fullscreen]="true" class="content-center">
-  <form style="background-color: white;" [formGroup]="recompensaForm" (ngSubmit)="onSubmit()">
-    <ion-card style="background-color: white;">
-      <ion-card-header>
-        <ion-card-title style="color: black;">Información de la Recompensa</ion-card-title>
+<ion-content [fullscreen]="true" style="background-color: #f0f2f5; padding: 20px;">
+  <form [formGroup]="recompensaForm" (ngSubmit)="onSubmit()" style="max-width: 420px; margin: auto; background: #ffffff; border-radius: 16px; padding: 24px; box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);">
+    <ion-card style="--background: transparent; box-shadow: none; border: none;">
+      <ion-card-header style="text-align: center; margin-bottom: 16px;">
+        <ion-card-title style="color: #333; font-size: 1.5rem; font-weight: bold;">Sube Recompensa</ion-card-title>
+        <p style="font-size: 0.9rem; color: #777; margin-top: 4px;">Llena los campos para agregar una nueva recompensa</p>
       </ion-card-header>
-            <!-- Mostrar la vista previa de la imagen -->
-            <div *ngIf="imagePreview" class="image-preview-container">
-              <img [src]="imagePreview" alt="Vista previa de la imagen" />
-            </div>
-      <ion-item style="--background: transparent;">
-        <ion-label style="color: black;" position="floating">Subir Imagen</ion-label>
-        <input
-          type="file"
-          (change)="onImageChange($event)"
-          accept="image/*"
-          style="margin-top: 20px;"
-        />
+
+      <!-- Vista Previa de la Imagen -->
+      <div *ngIf="imagePreview" style="text-align: center; margin-bottom: 16px;">
+        <div style="background-color: #f9f9f9; padding: 10px; border-radius: 12px; display: inline-block;">
+          <img [src]="imagePreview" alt="Vista previa de la imagen" style="width: 100%; max-width: 220px; border-radius: 12px; object-fit: cover;"/>
+        </div>
+      </div>
+
+      <!-- Subir Imagen -->
+      <ion-item style="--background: #f9f9f9; margin-bottom: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);">
+        <ion-label position="stacked" style="color: #555; font-size: 1rem;">Subir Imagen</ion-label>
+        <input type="file" (change)="onImageChange($event)" accept="image/*" style="margin-top: 8px;"/>
       </ion-item>
-      <ion-card-content style="--background: transparent;">
-        <!-- Descripción -->
-        <ion-item style="--background: transparent;">
-          <ion-label style="color: black;" position="floating">Descripción</ion-label>
-          <ion-input style="color: black;" formControlName="descripcion"></ion-input>
-        </ion-item>
 
-        <!-- Cantidad -->
-        <ion-item style="--background: transparent;">
-          <ion-label style="color: black;" position="floating">Cantidad</ion-label>
-          <ion-input style="color: black;" type="number" formControlName="cantidad"></ion-input>
-        </ion-item>
+      <!-- Descripción -->
+      <ion-item style="--background: #f9f9f9; margin-bottom: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);">
+        <ion-label position="stacked" style="color: #555; font-size: 1rem;">Descripción</ion-label>
+        <ion-input formControlName="descripcion" placeholder="Ej. Tarjeta de regalo"></ion-input>
+      </ion-item>
 
-        <!-- Puntos Requeridos -->
-        <ion-item style="--background: transparent;">
-          <ion-label style="color: black;" position="floating">Puntos Requeridos</ion-label>
-          <ion-input style="color: black;" type="number" formControlName="puntos_requeridos"></ion-input>
-        </ion-item>
+      <!-- Cantidad -->
+      <ion-item style="--background: #f9f9f9; margin-bottom: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);">
+        <ion-label position="stacked" style="color: #555; font-size: 1rem;">Cantidad</ion-label>
+        <ion-input type="number" formControlName="cantidad" placeholder="Ej. 10"></ion-input>
+      </ion-item>
 
+      <!-- Puntos Requeridos -->
+      <ion-item style="--background: #f9f9f9; margin-bottom: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);">
+        <ion-label position="stacked" style="color: #555; font-size: 1rem;">Puntos Requeridos</ion-label>
+        <ion-input type="number" formControlName="puntos_requeridos" placeholder="Ej. 500"></ion-input>
+      </ion-item>
 
-        <ion-button shape="round" expand="full" type="submit" color="primary">Subir Recompensa</ion-button>
-      </ion-card-content>
+      <!-- Botón -->
+      <ion-button expand="block" type="submit" style="background: linear-gradient(45deg, #0A49A7, #007BFF); color: white; border-radius: 12px; font-weight: bold; font-size: 1rem; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.15);">
+        Subir Recompensa
+      </ion-button>
     </ion-card>
   </form>
 </ion-content>
+
+
 <app-tab-bar></app-tab-bar>

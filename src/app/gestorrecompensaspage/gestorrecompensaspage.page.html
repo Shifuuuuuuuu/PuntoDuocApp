@@ -1,0 +1,43 @@
+<ion-header [translucent]="true">
+  <ion-toolbar style="background-color: black;">
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/folder-ventas" style="color: #666;"></ion-back-button>
+    </ion-buttons>
+    <ion-title style="color: #666; font-size: 1.5rem; font-weight: 600;">Gestor de Recompensas</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true" style="background-color: #f9f9f9; padding: 16px;">
+  <!-- Cargando recompensas -->
+  <ion-card *ngIf="isLoading" style="text-align: center; padding: 20px; border-radius: 12px;">
+    <ion-spinner name="bubbles"></ion-spinner>
+    <p>Cargando recompensas...</p>
+  </ion-card>
+
+  <!-- Lista de recompensas -->
+  <ion-list *ngIf="!isLoading && recompensas.length > 0" style="background: white; border-radius: 12px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
+    <ion-item *ngFor="let recompensa of recompensas">
+      <ion-thumbnail slot="start" *ngIf="recompensa.imagen">
+        <img [src]="recompensa.imagen" alt="Imagen de recompensa" />
+      </ion-thumbnail>
+      <ion-label>
+        <h2>{{ recompensa.descripcion }}</h2>
+        <p>Puntos requeridos: {{ recompensa.puntos_requeridos }}</p>
+        <p>Cantidad disponible: {{ recompensa.cantidad }}</p>
+      </ion-label>
+      <ion-buttons slot="end">
+        <ion-button (click)="editarRecompensa(recompensa)" fill="clear">
+          <ion-icon slot="icon-only" name="create-outline"></ion-icon>
+        </ion-button>
+        <ion-button *ngIf="recompensa.id_recompensa" (click)="eliminarRecompensa(recompensa.id_recompensa)" color="danger" fill="clear">
+          <ion-icon slot="icon-only" name="trash-outline"></ion-icon>
+        </ion-button>
+      </ion-buttons>
+    </ion-item>
+  </ion-list>
+
+  <!-- No hay recompensas -->
+  <ion-card *ngIf="!isLoading && recompensas.length === 0" style="text-align: center; padding: 20px; border-radius: 12px;">
+    <p>No hay recompensas disponibles.</p>
+  </ion-card>
+</ion-content>

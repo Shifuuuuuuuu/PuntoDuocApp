@@ -21,37 +21,98 @@ export class FolderVentasPage {
   errorMessage: string | undefined;
   recompensas: any[] = [];
   recompensasReclamadas: any[] = [];
+  isLoadingRecompensas = true;
+  isLoadingRecompensasReclamadas = true;
 
-
-
-  constructor(private firestore: AngularFirestore,private router: Router, private ventasAuthService: VentasAuthService,private modalController: ModalController, private recompensaService: RecompensaService) {}
+  constructor(
+    private firestore: AngularFirestore,
+    private router: Router,
+    private ventasAuthService: VentasAuthService,
+    private modalController: ModalController,
+    private recompensaService: RecompensaService
+  ) {}
 
   async ngOnInit() {
+    await this.cargarRecompensas();
+    await this.cargarRecompensasReclamadas();
+  }
+
+  // Cargar recompensas optimizadas
+  async cargarRecompensas() {
     try {
-      // Obtener todas las recompensas desde Firestore
       this.recompensas = await this.recompensaService.getRecompensas();
-
-      // Filtrar recompensas que tienen estudiantes reclamados y que el estado es "activo"
-      this.recompensasReclamadas = this.recompensas
-        .filter(r => {
-          return Array.isArray(r.estudiantesReclamaron);
-        })
-        .map(r => {
-          const estudiantesReclamados = r.estudiantesReclamaron.filter((e: { reclamado: boolean; estado: string }) => {
-            return e.reclamado && e.estado === 'activo';
-          });
-          return {
-            ...r,
-            estudiantesReclamaron: estudiantesReclamados
-          };
-        })
-        .filter(r => r.estudiantesReclamaron.length > 0);
-
     } catch (error) {
       this.errorMessage = 'Hubo un problema al cargar las recompensas.';
+    } finally {
+      this.isLoadingRecompensas = false;
     }
   }
 
+  // Cargar recompensas reclamadas optimizadas
+  async cargarRecompensasReclamadas() {
+    try {
+      // Iterar y transformar las recompensas
+      this.recompensasReclamadas = await Promise.all(
+        this.recompensas
+          .filter(r => Array.isArray(r.estudiantesReclamaron)) // Validar que `estudiantesReclamaron` sea un array
+          .map(async r => {
+            const estudiantesReclamados = await Promise.all(
+              r.estudiantesReclamaron
+                .filter((e: { reclamado: boolean; estado: string }) => e.reclamado && e.estado === 'activo') // Filtrar solo estudiantes activos
+                .map(async (e: { id_estudiante: string }) => {
+                  const estudianteDoc = await this.firestore.collection('Estudiantes').doc(e.id_estudiante).get().toPromise();
+
+                  // Asegurarte de que existe el documento y usar un tipo explícito
+                  if (estudianteDoc?.exists) {
+                    const estudianteData = estudianteDoc.data() as { nombre_completo: string }; // Asegurarte de que el documento tiene el campo
+                    return {
+                      id_estudiante: e.id_estudiante,
+                      nombre_completo: estudianteData.nombre_completo
+                    };
+                  } else {
+                    return {
+                      id_estudiante: e.id_estudiante,
+                      nombre_completo: 'No encontrado' // Si no se encuentra el estudiante
+                    };
+                  }
+                })
+            );
+            return { ...r, estudiantesReclamaron: estudiantesReclamados };
+          })
+      );
+    } catch (error) {
+      this.errorMessage = 'Hubo un problema al cargar las recompensas reclamadas.';
+    } finally {
+      this.isLoadingRecompensasReclamadas = false;
+    }
+  }
+
+
+  async verRecompensas() {
+    if (this.isLoadingRecompensas) return;
+    const modal = await this.modalController.create({
+      component: RecompensasModalComponent,
+      componentProps: { recompensas: this.recompensas },
+      cssClass: 'custom-modal'
+    });
+    await modal.present();
+  }
+
+  async verRecompensasReclamadas() {
+    if (this.isLoadingRecompensasReclamadas) return;
+    const modal = await this.modalController.create({
+      component: RecompensasReclamadasModalComponent,
+      componentProps: { recompensasReclamadas: await Promise.all(this.recompensasReclamadas) },
+      cssClass: 'custom-modal'
+    });
+    await modal.present();
+  }
+
+  calcularFechaCaducidad(fechaReclamacion: string): string {
+    const date = new Date(fechaReclamacion);
+    date.setFullYear(date.getFullYear() + 1);
+    return date.toISOString().split('T')[0];
+  }
 
   subirRecompensa() {
     this.router.navigate(['/subir-recompensa']);
@@ -61,102 +122,29 @@ export class FolderVentasPage {
     this.router.navigate(['/dashboard-vendedor']);
   }
 
-  async verRecompensas() {
-    const modal = await this.modalController.create({
-      component: RecompensasModalComponent,
-      componentProps: {
-        recompensas: this.recompensas
-      },
-      cssClass: 'custom-modal' // Añadir esta línea para aplicar la clase CSS del modal
-    });
-    return await modal.present();
-  }
-
-  async verRecompensasReclamadas() {
-    // Obtener recompensas con nombres de estudiantes
-    const recompensasConNombres: Recompensa[] = await Promise.all(
-      this.recompensasReclamadas.map(async (recompensa) => {
-        // Mapear estudiantes y obtener sus nombres
-        const estudiantesConNombres = await Promise.all(
-          recompensa.estudiantesReclamaron.map(async (estudiante: { id_estudiante: string | undefined; }) => {
-            const estudianteDoc = await this.firestore.collection('Estudiantes').doc(estudiante.id_estudiante).get().toPromise();
-
-
-            // Verificar si el documento existe y obtener el nombre
-            if (estudianteDoc && estudianteDoc.exists) {
-              const estudianteData = estudianteDoc.data() as { nombre_completo: string }; // Usar tipo anónimo aquí
-
-              return {
-                id_estudiante: estudiante.id_estudiante,
-                nombre_completo: estudianteData.nombre_completo,
-
-              };
-            } else {
-              return {
-                id_estudiante: estudiante.id_estudiante,
-                nombre_completo: 'No encontrado', // Valor predeterminado si no se encuentra
-              };
-
-            }
-          })
-        );
-
-        return {
-          ...recompensa,
-          estudiantesReclamaron: estudiantesConNombres, // Mantener el array de estudiantes con sus nombres
-        };
-      })
-    );
-
-    // Crear el modal y pasar las recompensas con los nombres de estudiantes
-    const modal = await this.modalController.create({
-      component: RecompensasReclamadasModalComponent,
-      componentProps: {
-        recompensasReclamadas: recompensasConNombres, // Asegúrate de que esto es un array de recompensas
-      },
-      cssClass: 'custom-modal', // Asegúrate de que esto ajuste la altura
-    });
-    return await modal.present();
-  }
-
-  calcularFechaCaducidad(fechaReclamacion: string): string {
-    const date = new Date(fechaReclamacion);
-    date.setFullYear(date.getFullYear() + 1);
-    return date.toISOString().split('T')[0]; // Formato YYYY-MM-DD
-  }
-
-
-
-
   logoutt() {
     console.log('Cerrando sesión...');
     this.ventasAuthService.logout();
-    this.router.navigate(['/iniciar-sesion']); // Redirigir a la página de inicio de sesión
+    this.router.navigate(['/iniciar-sesion']);
   }
+
   async startScan() {
     try {
-        const result = await CapacitorBarcodeScanner.scanBarcode({
-            hint: 17,
-            cameraDirection: 1,
-        });
+      const result = await CapacitorBarcodeScanner.scanBarcode({
+        hint: 17,
+        cameraDirection: 1
+      });
 
-        const qrData = result.ScanResult; // Obtener la información del QR
+      const qrData = result.ScanResult;
+      const qrDataObject = JSON.parse(qrData);
 
-        // Suponiendo que el QR contiene un JSON con los datos necesarios
-        const qrDataObject = JSON.parse(qrData); // Analiza el JSON
-
-        // Llama a confirmarReclamacion con los datos extraídos
-        await this.ventasAuthService.confirmarReclamacion(
-            qrDataObject.id_recompensa,
-            qrDataObject.id_estudiante
-        );
-        return
-
+      await this.ventasAuthService.confirmarReclamacion(qrDataObject.id_recompensa, qrDataObject.id_estudiante);
     } catch (e) {
-        console.error('Error al escanear el código:', e);
-        throw e;
+      console.error('Error al escanear el código:', e);
+      throw e;
     }
-
-}
-
+  }
+  gestionarRecompensas() {
+    this.router.navigate(['/gestorrecompensaspage']);
+  }
 }

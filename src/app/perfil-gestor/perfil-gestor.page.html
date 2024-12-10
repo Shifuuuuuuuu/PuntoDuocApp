@@ -1,84 +1,84 @@
-<ion-header [translucent]="true" class="custom-header">
-  <ion-toolbar class="custom-toolbar">
-    <ion-buttons slot="start">
-      <ion-back-button defaultHref="/folder-gestor-eventos" style="color: white;"></ion-back-button>
-    </ion-buttons>
-    <ion-title style="color: white;">Perfil del Gestor</ion-title>
+<ion-header>
+  <ion-toolbar style="background-color: black;">
+    <ion-title style="color: #666; font-size: 1.5rem; font-weight: 600;">Perfil del Gestor</ion-title>
   </ion-toolbar>
 </ion-header>
 
-<ion-content [fullscreen]="true" class="ion-padding">
-  <ion-card *ngIf="errorMessage" class="error-card">
+<ion-content [fullscreen]="true" style="background-color: #f9f9f9; padding: 16px;">
+  <!-- Error Message -->
+  <ion-card *ngIf="errorMessage" style="border-radius: 8px; margin-bottom: 16px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
     <ion-card-header>
-      <ion-card-title>Error</ion-card-title>
+      <ion-card-title style="color: #dc3545; font-weight: 600;">Error</ion-card-title>
     </ion-card-header>
     <ion-card-content>
-      <p>{{ errorMessage }}</p>
+      <p style="color: black;">{{ errorMessage }}</p>
     </ion-card-content>
   </ion-card>
 
-  <div class="form-container">
-    <div class="header-container">
-      <h1>Información personal</h1>
-      <div class="icon-container">
-        <ion-icon style="color: black;" *ngIf="!isEditing" name="create-outline" (click)="editProfile()"></ion-icon>
-        <ion-icon *ngIf="isEditing" name="checkmark-outline" (click)="saveProfile()"></ion-icon>
-        <ion-icon *ngIf="isEditing" name="close-outline" (click)="cancelEdit()"></ion-icon>
-      </div>
-    </div>
+  <!-- Información personal -->
+  <ion-card class="ion-padding" style="border-radius:1rem;">
 
-    <div class="profile-container centered-profile">
-      <div class="profile-image">
-        <!-- Imagen de perfil o ícono predeterminado -->
-        <img *ngIf="profileImageUrl" [src]="profileImageUrl"/>
-        <ion-icon *ngIf="!profileImageUrl" name="person-circle-outline" class="default-icon"></ion-icon>
+      <ion-grid>
+        <ion-row class="ion-align-items-center justify-content-space-between mb-1">
 
-        <!-- Botón para cambiar imagen -->
-        <div class="upload-overlay" [class.hidden]="!isEditing">
-          <ion-icon name="camera-outline"></ion-icon>
-          <input
-            type="file"
-            accept="image/*"
-            (change)="uploadProfileImage($event)"
-            hidden
-            id="fileInput"
-          />
-          <label for="fileInput" class="upload-label"></label>
+          <ion-col>
+            <h2 class="m-0 text-start" style="color: #000;">Información personal</h2>
+          </ion-col>
+
+          <ion-col size="auto">
+            <div>
+              <ion-icon class="ion-icon-custom" color="dark" size="large" *ngIf="!isEditing" name="create-outline" (click)="editProfile()"></ion-icon>
+              <ion-icon class="ion-icon-custom" color="dark" size="large" *ngIf="isEditing" name="checkmark-outline" (click)="saveProfile()"></ion-icon>
+              <ion-icon class="ion-icon-custom" color="dark" size="large" *ngIf="isEditing" name="close-outline" (click)="cancelEdit()"></ion-icon>
+            </div>
+          </ion-col>
+        </ion-row>
+      </ion-grid>
+
+
+    <ion-card-content>
+      <div style="text-align: center; margin-bottom: 16px;">
+        <div class="profile-image mx-auto">
+          <!-- Imagen de perfil o ícono predeterminado -->
+          <img *ngIf="profileImageUrl" [src]="profileImageUrl" alt="Imagen de perfil" />
+          <ion-icon *ngIf="!profileImageUrl" name="person-circle-outline" class="default-icon"></ion-icon>
+
+          <!-- Botón para cambiar imagen -->
+          <div class="upload-overlay" [class.hidden]="!isEditing">
+            <ion-icon name="camera-outline"></ion-icon>
+            <input
+              type="file"
+              accept="image/*"
+              (change)="uploadProfileImage($event)"
+              hidden
+              id="fileInput"
+            />
+            <label for="fileInput" class="upload-label"></label>
+          </div>
         </div>
       </div>
-    </div>
 
-    <br>
-    <form *ngIf="gestor">
-      <div class="mb-3 position-relative">
-        <ion-item class="custom-item">
-          <ion-label>
-            <h2 style="color: black;">Nombre Completo</h2>
-            <p *ngIf="!isEditing">{{ gestor.Nombre_completo }}</p>
-            <ion-input *ngIf="isEditing" [(ngModel)]="tempNombreCompleto" [placeholder]="gestor.Nombre_completo" [ngModelOptions]="{ standalone: true }"></ion-input>
-          </ion-label>
-        </ion-item>
-      </div>
+      <!-- Nombre Completo -->
+      <ion-item style="--background: transparent; margin-bottom: 12px;">
+        <ion-label position="stacked" style="color: black; font-size: 1rem;">Nombre Completo</ion-label>
+        <p *ngIf="!isEditing" style="margin: 0; font-size: 1rem; color: #666;">{{ gestor?.Nombre_completo}}</p>
+        <ion-input *ngIf="isEditing" [(ngModel)]="tempNombreCompleto" [placeholder]="gestor?.Nombre_completo" style="font-size: 1rem; color: black;"></ion-input>
+      </ion-item>
 
-      <div class="mb-3 position-relative">
-        <ion-item class="custom-item">
-          <ion-label>
-            <h2 style="color: black;">Correo Electrónico</h2>
-            <p>{{ gestor.email }}</p>
-          </ion-label>
-        </ion-item>
-      </div>
+      <!-- Correo Electrónico -->
+      <ion-item style="--background: transparent; margin-bottom: 12px;">
+        <ion-label position="stacked" style="color: black; font-size: 1rem;">Correo Electrónico</ion-label>
+        <p style="margin: 0; font-size: 1rem; color: #666;">{{ gestor?.email }}</p>
+      </ion-item>
 
-      <div class="mb-3 position-relative">
-        <ion-item class="custom-item">
-          <ion-label>
-            <h2 style="color: black;">RUT</h2>
-            <p *ngIf="!isEditing">{{ gestor.rut }}</p>
-            <ion-input *ngIf="isEditing" [(ngModel)]="tempRut" [placeholder]="gestor.rut" [ngModelOptions]="{ standalone: true }"></ion-input>
-          </ion-label>
-        </ion-item>
-      </div>
-    </form>
-  </div>
+      <!-- RUT -->
+      <ion-item style="--background: transparent; margin-bottom: 12px;">
+        <ion-label position="stacked" style="color: black; font-size: 1rem;">RUT</ion-label>
+        <p *ngIf="!isEditing" style="margin: 0; font-size: 1rem; color: #666;">{{ gestor?.rut}}</p>
+        <ion-input *ngIf="isEditing" [(ngModel)]="tempRut" [placeholder]="gestor?.rut" style="font-size: 1rem; color: black;"></ion-input>
+      </ion-item>
+    </ion-card-content>
+  </ion-card>
+
 </ion-content>
-<app-tab-bar-admin></app-tab-bar-admin>
+

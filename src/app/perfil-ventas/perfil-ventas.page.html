@@ -1,26 +1,17 @@
-<ion-header [translucent]="true" class="custom-header">
-  <ion-toolbar class="custom-toolbar">
-    <ion-title style="color: white;">Mi Perfil</ion-title>
+<ion-header>
+  <ion-toolbar style="background-color: black;">
+    <ion-title style="color: #666; font-size: 1.5rem; font-weight: 600;">Perfil del Gestor</ion-title>
   </ion-toolbar>
 </ion-header>
 
 <ion-content [fullscreen]="true" class="ion-padding">
-  <ion-card *ngIf="errorMessage" class="error-card">
-    <ion-card-header>
-      <ion-card-title>Error</ion-card-title>
-    </ion-card-header>
-    <ion-card-content>
-      <p>{{ errorMessage }}</p>
-    </ion-card-content>
-  </ion-card>
-
   <div *ngIf="usuarioVentas" style="max-width: 380px; margin: auto; padding: 25px; background-color: white; border-radius: 20px;" class="form-container">
     <div class="header-container">
-      <h1>Información personal</h1>
+      <h1 style="color: black;">Información personal</h1>
       <div class="icon-container">
-        <ion-icon *ngIf="!isEditing" name="create-outline" (click)="editProfile()"></ion-icon>
-        <ion-icon *ngIf="isEditing" name="checkmark-outline" (click)="saveProfile()"></ion-icon>
-        <ion-icon *ngIf="isEditing" name="close-outline" (click)="cancelEdit()"></ion-icon>
+        <ion-icon style="color: black;" *ngIf="!isEditing" name="create-outline" (click)="editProfile()"></ion-icon>
+        <ion-icon style="color: black;" *ngIf="isEditing" name="checkmark-outline" (click)="saveProfile()"></ion-icon>
+        <ion-icon style="color: black;" *ngIf="isEditing" name="close-outline" (click)="cancelEdit()"></ion-icon>
       </div>
     </div>
     <div class="profile-container centered-profile">
@@ -43,37 +34,24 @@
     </div>
     <br>
     <form>
-      <!-- Nombre Completo -->
-      <div class="mb-3 position-relative">
-        <ion-item class="custom-item">
-          <ion-label>
-            <h2 style="color: black;">Nombre Completo</h2>
-            <p *ngIf="!isEditing">{{ usuarioVentas.nombre_completo }}</p>
-            <ion-input *ngIf="isEditing" [(ngModel)]="tempNombreCompleto" [placeholder]="usuarioVentas.nombre_completo" [ngModelOptions]="{ standalone: true }"></ion-input>
-          </ion-label>
-        </ion-item>
-      </div>
+      <!-- Detalles del perfil -->
+      <ion-item style="--background: transparent; margin-bottom: 12px;">
+        <ion-label position="stacked" style="font-size: 1rem; color: #666;">Nombre Completo</ion-label>
+        <p *ngIf="!isEditing" style="margin: 0; font-size: 1rem; color: #000;">{{ usuarioVentas.nombre_completo }}</p>
+        <ion-input *ngIf="isEditing" [(ngModel)]="tempNombreCompleto" [placeholder]="usuarioVentas.nombre_completo" [ngModelOptions]="{ standalone: true }" style="font-size: 1rem; color: #000;"></ion-input>
+      </ion-item>
 
-      <!-- Correo Electrónico -->
-      <div class="mb-3 position-relative">
-        <ion-item class="custom-item">
-          <ion-label>
-            <h2 style="color: black;">Correo Electrónico</h2>
-            <p>{{ usuarioVentas.email }}</p>
-          </ion-label>
-        </ion-item>
-      </div>
+      <ion-item style="--background: transparent; margin-bottom: 12px;">
+        <ion-label position="stacked" style="font-size: 1rem; color: #666;">Correo Electrónico</ion-label>
+        <p style="margin: 0; font-size: 1rem; color: #000;">{{ usuarioVentas.email }}</p>
+      </ion-item>
 
-      <!-- RUT -->
-      <div class="mb-3 position-relative">
-        <ion-item class="custom-item">
-          <ion-label>
-            <h2 style="color: black;">RUT</h2>
-            <p *ngIf="!isEditing">{{ usuarioVentas.rut }}</p>
-            <ion-input *ngIf="isEditing" [(ngModel)]="tempRut" [placeholder]="usuarioVentas.rut" [ngModelOptions]="{ standalone: true }"></ion-input>
-          </ion-label>
-        </ion-item>
-      </div>
+      <ion-item style="--background: transparent; margin-bottom: 12px;">
+        <ion-label position="stacked" style="font-size: 1rem; color: #666;">RUT</ion-label>
+        <p *ngIf="!isEditing" style="margin: 0; font-size: 1rem; color: #000;">{{ usuarioVentas.rut }}</p>
+        <ion-input *ngIf="isEditing" [(ngModel)]="tempRut" [placeholder]="usuarioVentas.rut" [ngModelOptions]="{ standalone: true }" style="font-size: 1rem; color: #000;"></ion-input>
+      </ion-item>
+
     </form>
   </div>
 </ion-content>

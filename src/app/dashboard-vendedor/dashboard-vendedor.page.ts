@@ -25,12 +25,27 @@ export class DashboardVendedorPage implements OnInit {
   }
 
   async loadDashboardData() {
-    this.totalVentas = await this.firestoreService.getTotalVentas();
-    this.recompensasEntregadas = await this.firestoreService.getRecompensasEntregadas();
-    this.recompensasPendientes = await this.firestoreService.getRecompensasPendientes();
-    this.topRecompensas = await this.firestoreService.getTopRecompensas();
-    this.topEstudiantes = await this.firestoreService.getTopEstudiantes();
+    try {
+      // Cargar datos en paralelo
+      const [ventas, entregadas, pendientes, recompensas, estudiantes] = await Promise.all([
+        this.firestoreService.getTotalVentas(),
+        this.firestoreService.getRecompensasEntregadas(),
+        this.firestoreService.getRecompensasPendientes(),
+        this.firestoreService.getTopRecompensas(),
+        this.firestoreService.getTopEstudiantes(),
+      ]);
+
+      // Asignar resultados a las variables
+      this.totalVentas = ventas;
+      this.recompensasEntregadas = entregadas;
+      this.recompensasPendientes = pendientes;
+      this.topRecompensas = recompensas;
+      this.topEstudiantes = estudiantes;
+    } catch (error) {
+      console.error('Error al cargar los datos del dashboard:', error);
+    }
   }
+
 
   loadActividadRecompensasChart() {
     const ctx = document.getElementById('actividadRecompensasChart') as HTMLCanvasElement;

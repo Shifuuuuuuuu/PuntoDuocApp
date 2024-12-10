@@ -1,57 +1,83 @@
-<ion-header [translucent]="true" class="custom-header">
-  <ion-toolbar class="custom-toolbar" style="background-color: black;">
+<ion-header>
+  <ion-toolbar style="background-color: black;">
     <ion-buttons slot="start">
-      <ion-back-button defaultHref="/folder-gestor-eventos" style="color: white;"></ion-back-button>
+      <ion-back-button defaultHref="/folder-gestor-eventos" style="color: #666;"></ion-back-button>
     </ion-buttons>
-    <ion-title style="color:  white">Estadísticas del Evento</ion-title>
+    <ion-title style="color: #666; font-size: 1.5rem; font-weight: 600;">Estadísticas del Evento</ion-title>
   </ion-toolbar>
 </ion-header>
-<ion-content [fullscreen]="true" class="content-center">
-  <div class="stats-container">
-    <ion-grid>
-      <ion-row>
-        <ion-col size="12">
-          <ion-card>
-            <ion-card-header>
-              <ion-card-subtitle style="color: black;">Inscritos Totales</ion-card-subtitle>
-              <ion-card-title style="color: black;">{{ inscritos }}</ion-card-title>
-            </ion-card-header>
-          </ion-card>
-        </ion-col>
-      </ion-row>
-      <ion-row>
-        <ion-col size="6">
-          <ion-card>
-            <ion-card-header>
-              <ion-card-subtitle style="color: black;">Acreditados</ion-card-subtitle>
-              <ion-card-title style="color: black;">{{ verificados }}</ion-card-title>
-            </ion-card-header>
-          </ion-card>
-        </ion-col>
-        <ion-col size="6">
-          <ion-card>
-            <ion-card-header>
-              <ion-card-subtitle style="color: black;">No Acreditados</ion-card-subtitle>
-              <ion-card-title style="color: black;">{{ noVerificados }}</ion-card-title>
-            </ion-card-header>
-          </ion-card>
-        </ion-col>
-      </ion-row>
-      <ion-row>
-        <ion-col size="12">
-          <canvas #barChart></canvas>
-        </ion-col>
-      </ion-row>
-      <ion-row>
-        <ion-col size="12">
-          <canvas #pieChart></canvas>
-        </ion-col>
-      </ion-row>
-      <ion-row>
-        <ion-col size="12">
-          <canvas #carreraPieChart></canvas>
-        </ion-col>
-      </ion-row>
-    </ion-grid>
-  </div>
+
+<ion-content [fullscreen]="true" style="background-color: #f9f9f9; padding: 16px;">
+  <ion-grid>
+    <!-- Inscritos Totales -->
+    <ion-row>
+      <ion-col size="12">
+        <ion-card style="border-radius: 8px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); margin-bottom: 16px;">
+          <ion-card-header>
+            <ion-card-subtitle style="color: #007bff; font-weight: 500;">Inscritos Totales</ion-card-subtitle>
+            <ion-card-title style="color: black; font-size: 1.5rem;">{{ inscritos }}</ion-card-title>
+          </ion-card-header>
+        </ion-card>
+      </ion-col>
+    </ion-row>
+
+    <!-- Acreditados y No Acreditados -->
+    <ion-row>
+      <ion-col size="6">
+        <ion-card style="border-radius: 8px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); margin-bottom: 16px;">
+          <ion-card-header>
+            <ion-card-subtitle style="color: #28a745; font-weight: 500;">Acreditados</ion-card-subtitle>
+            <ion-card-title style="color: black; font-size: 1.2rem;">{{ verificados }}</ion-card-title>
+          </ion-card-header>
+        </ion-card>
+      </ion-col>
+      <ion-col size="6">
+        <ion-card style="border-radius: 8px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); margin-bottom: 16px;">
+          <ion-card-header>
+            <ion-card-subtitle style="color: #dc3545; font-weight: 500;">No Acreditados</ion-card-subtitle>
+            <ion-card-title style="color: black; font-size: 1.2rem;">{{ noVerificados }}</ion-card-title>
+          </ion-card-header>
+        </ion-card>
+      </ion-col>
+    </ion-row>
+
+    <!-- Gráficos -->
+    <ion-row>
+      <ion-col size="12">
+        <ion-card style="border-radius: 8px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); margin-bottom: 16px;">
+          <ion-card-header>
+            <ion-card-title style="color: black; font-weight: 500;">Distribución de Inscritos</ion-card-title>
+          </ion-card-header>
+          <ion-card-content>
+            <canvas #barChart></canvas>
+          </ion-card-content>
+        </ion-card>
+      </ion-col>
+    </ion-row>
+    <ion-row>
+      <ion-col size="12">
+        <ion-card style="border-radius: 8px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); margin-bottom: 16px;">
+          <ion-card-header>
+            <ion-card-title style="color: black; font-weight: 500;">Porcentaje de Acreditación</ion-card-title>
+          </ion-card-header>
+          <ion-card-content>
+            <canvas #pieChart></canvas>
+          </ion-card-content>
+        </ion-card>
+      </ion-col>
+    </ion-row>
+    <ion-row>
+      <ion-col size="12">
+        <ion-card style="border-radius: 8px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); margin-bottom: 16px;">
+          <ion-card-header>
+            <ion-card-title style="color: black; font-weight: 500;">Inscripción por Usuarios</ion-card-title>
+          </ion-card-header>
+          <ion-card-content>
+            <canvas #carreraPieChart></canvas>
+          </ion-card-content>
+        </ion-card>
+      </ion-col>
+    </ion-row>
+  </ion-grid>
 </ion-content>
+<app-tab-bar-admin></app-tab-bar-admin>

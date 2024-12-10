@@ -1,34 +1,31 @@
-<ion-header [translucent]="true" class="custom-header">
-  <ion-toolbar class="custom-toolbar" style="background-color: black;">
-    <ion-title style="color:  white">Punto Estudiantil</ion-title>
+<ion-header>
+  <ion-toolbar style="background-color: black;">
+    <ion-title style="color: #666;font-size: 1.5rem; font-weight: 600;">Punto Estudiantil</ion-title>
   </ion-toolbar>
 </ion-header>
 
-<ion-content [fullscreen]="true" class="content-center">
-  <div style="text-align: center;" class="user-info">
-    <h2>Bienvenido</h2>
-    <p></p>
-  </div>
+<ion-content [fullscreen]="true" style="background-color: #f9f9f9; padding: 16px;">
 
-  <ion-grid class="insights-grid">
+
+  <ion-grid>
     <ion-row>
       <!-- Escanear y Validar QR -->
       <ion-col size="6" class="ion-text-center">
-        <ion-card class="custom-card" (click)="startScan()">
-          <ion-thumbnail [style.background]="'rgba(0,122,255,0.2)'">
-            <ion-icon name="qr-code-outline" color="primary"></ion-icon>
-          </ion-thumbnail>
-          <ion-label>Escanear Código QR</ion-label>
+        <ion-card (click)="startScan()" style="border-radius: 12px; padding: 16px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
+          <div style="background: rgba(0,122,255,0.2); border-radius: 50%; width: 70px; height: 70px; margin: 0 auto; display: flex; align-items: center; justify-content: center;">
+            <ion-icon name="qr-code-outline" color="primary" style="font-size: 2rem;"></ion-icon>
+          </div>
+          <p style="margin-top: 8px; font-size: 1rem; font-weight: 500; color: black;">Escanear Código QR</p>
         </ion-card>
       </ion-col>
 
       <!-- Subir Recompensa -->
       <ion-col size="6" class="ion-text-center">
-        <ion-card class="custom-card" (click)="subirRecompensa()">
-          <ion-thumbnail [style.background]="'rgba(0,122,255,0.2)'">
-            <ion-icon name="cloud-upload-outline" color="tertiary"></ion-icon>
-          </ion-thumbnail>
-          <ion-label>Subir Recompensa</ion-label>
+        <ion-card (click)="subirRecompensa()" style="border-radius: 12px; padding: 16px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
+          <div style="background: rgba(0,122,255,0.2); border-radius: 50%; width: 70px; height: 70px; margin: 0 auto; display: flex; align-items: center; justify-content: center;">
+            <ion-icon name="cloud-upload-outline" color="tertiary" style="font-size: 2rem;"></ion-icon>
+          </div>
+          <p style="margin-top: 8px; font-size: 1rem; font-weight: 500; color: black;">Subir Recompensa</p>
         </ion-card>
       </ion-col>
     </ion-row>
@@ -36,34 +33,42 @@
     <ion-row>
       <!-- Listar Recompensas -->
       <ion-col size="6" class="ion-text-center">
-        <ion-card class="custom-card" (click)="verRecompensas()">
-          <ion-thumbnail [style.background]="'rgba(255,204,0,0.2)'">
-            <ion-icon name="list-outline" color="warning"></ion-icon>
-          </ion-thumbnail>
-          <ion-label>Listar Recompensas</ion-label>
+        <ion-card  (click)="verRecompensas()" style="border-radius: 12px; padding: 16px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
+          <div style="background: rgba(255,204,0,0.2); border-radius: 50%; width: 70px; height: 70px; margin: 0 auto; display: flex; align-items: center; justify-content: center;">
+            <ion-icon name="list-outline" color="warning" style="font-size: 2rem;"></ion-icon>
+          </div>
+          <p style="margin-top: 8px; font-size: 1rem; font-weight: 500; color: black;">Listar Recompensas</p>
         </ion-card>
       </ion-col>
 
       <!-- Recompensas Reclamadas -->
       <ion-col size="6" class="ion-text-center">
-        <ion-card class="custom-card" (click)="verRecompensasReclamadas()">
-          <ion-thumbnail [style.background]="'rgba(76,175,80,0.2)'">
-            <ion-icon name="checkmark-done-outline" color="success"></ion-icon>
-          </ion-thumbnail>
-          <ion-label>Recompensas Reclamadas</ion-label>
+        <ion-card (click)="verRecompensasReclamadas()" style="border-radius: 12px; padding: 16px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
+          <div style="background: rgba(76,175,80,0.2); border-radius: 50%; width: 70px; height: 70px; margin: 0 auto; display: flex; align-items: center; justify-content: center;">
+            <ion-icon name="checkmark-done-outline" color="success" style="font-size: 2rem;"></ion-icon>
+          </div>
+          <p style="margin-top: 8px; font-size: 1rem; font-weight: 500; color: black;">Recompensas Reclamadas</p>
         </ion-card>
       </ion-col>
+      <ion-col size="6" class="ion-text-center">
+        <ion-card (click)="verDashboard()" style="border-radius: 12px; padding: 16px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
+          <div style="background: rgba(76,175,80,0.2); border-radius: 50%; width: 70px; height: 70px; margin: 0 auto; display: flex; align-items: center; justify-content: center;">
+            <ion-icon name="analytics-outline" color="success" style="font-size: 2rem;"></ion-icon>
+          </div>
+          <p style="margin-top: 8px; font-size: 1rem; font-weight: 500; color: black;">Dashboards</p>
+        </ion-card>
+      </ion-col>
+       <!-- Gestor de Recompensas -->
+      <ion-col size="6" class="ion-text-center">
+        <ion-card (click)="gestionarRecompensas()" style="border-radius: 12px; padding: 16px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
+          <div style="background: rgba(100,149,237,0.2); border-radius: 50%; width: 70px; height: 70px; margin: 0 auto; display: flex; align-items: center; justify-content: center;">
+            <ion-icon name="settings-outline" color="tertiary" style="font-size: 2rem;"></ion-icon>
+          </div>
+          <p style="margin-top: 8px; font-size: 1rem; font-weight: 500; color: black;">Gestor de Recompensas</p>
+        </ion-card>
+      </ion-col>
+
     </ion-row>
-      <ion-row class="ion-justify-content-center">
-        <ion-col size="auto" class="ion-text-center">
-          <ion-card class="custom-card" (click)="verDashboard()">
-            <ion-thumbnail [style.background]="'rgba(76,175,80,0.2)'">
-              <ion-icon name="analytics-outline" color="success"></ion-icon>
-            </ion-thumbnail>
-            <ion-label>Dashboards</ion-label>
-          </ion-card>
-        </ion-col>
-      </ion-row>
   </ion-grid>
 </ion-content>
 

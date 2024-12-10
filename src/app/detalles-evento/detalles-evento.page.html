@@ -1,112 +1,116 @@
-<ion-header [translucent]="true" class="custom-header">
-  <ion-toolbar class="custom-toolbar" style="background-color: black;">
+<ion-header>
+  <ion-toolbar style="background-color: black;">
     <ion-buttons slot="start">
-      <ion-back-button defaultHref="/folder-gestor-eventos" style="color: white;"></ion-back-button>
+      <ion-back-button defaultHref="/folder-gestor-eventos" style="color:#666;"></ion-back-button>
     </ion-buttons>
-    <ion-title style="color: white;">Detalle del evento</ion-title>
+    <ion-title style="color: #666; font-size: 1.5rem; font-weight: 600;">Detalle del Evento</ion-title>
   </ion-toolbar>
 </ion-header>
 
-<ion-content [fullscreen]="true" class="content-center">
+<ion-content [fullscreen]="true" style="background-color: #f9f9f9; padding: 16px;">
+  <ion-grid>
+    <!-- Botón Escanear QR -->
+    <ion-row>
+      <ion-col size="6" class="ion-text-center">
+        <ion-card  style="border-radius: 12px; text-align: center; padding: 16px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);" (click)="verificarInscripcion()" >
+          <div style="background: rgba(0,122,255,0.2); border-radius: 50%; width: 70px; height: 70px; margin: 0 auto; display: flex; align-items: center; justify-content: center;">
+            <ion-icon name="scan-outline" color="primary" style="font-size: 2rem;"></ion-icon>
+          </div>
+          <p style="margin-top: 8px; font-size: 1rem; font-weight: 500; color: black;">Escanear Código QR</p>
+        </ion-card>
+      </ion-col>
 
-  <ion-row class="ion-margin">
-    <!-- Escanear Código QR -->
-    <ion-col size="6" class="ion-text-center">
-      <ion-card class="custom-card" (click)="verificarInscripcion()">
-        <ion-thumbnail [style.background]="'rgba(0,122,255,0.2)'">
-          <ion-icon name="scan-outline" color="primary"></ion-icon>
-        </ion-thumbnail>
-        <ion-label>Escanear Código QR</ion-label>
-      </ion-card>
-    </ion-col>
+      <!-- Botón Acreditados y No Acreditados -->
+      <ion-col size="6" class="ion-text-center">
+        <ion-card style="border-radius: 12px; text-align: center; padding: 16px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);" (click)="toggleListas()">
+          <div style="background: rgba(100,149,237,0.2); border-radius: 50%; width: 70px; height: 70px; margin: 0 auto; display: flex; align-items: center; justify-content: center;">
+            <ion-icon name="people-circle-outline" color="tertiary" style="font-size: 2rem;"></ion-icon>
+          </div>
+          <p style="margin-top: 8px; font-size: 1rem; font-weight: 500; color: black;">Acreditados y No Acreditados</p>
+        </ion-card>
+      </ion-col>
+    </ion-row>
 
-    <!-- Botón de Lista de Verificados y No Verificados -->
-    <ion-col size="6" class="ion-text-center">
-      <ion-card class="custom-card" (click)="toggleListas()">
-        <ion-thumbnail [style.background]="'rgba(100,149,237,0.2)'">
-          <ion-icon name="people-circle-outline" color="tertiary"></ion-icon>
-        </ion-thumbnail>
-        <ion-label>Acreditados y No Acreditados</ion-label>
-      </ion-card>
-    </ion-col>
+    <!-- Botón Lista de Espera -->
+    <ion-row>
+      <ion-col size="12" class="ion-text-center">
+        <ion-card style="border-radius: 12px; text-align: center; padding: 16px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);" (click)="toggleListaEspera()">
+          <div style="background: rgba(255,204,0,0.2); border-radius: 50%; width: 70px; height: 70px; margin: 0 auto; display: flex; align-items: center; justify-content: center;">
+            <ion-icon name="time-outline" color="warning" style="font-size: 2rem;"></ion-icon>
+          </div>
+          <p style="margin-top: 8px; font-size: 1rem; font-weight: 500; color: black;">Lista de Espera</p>
+        </ion-card>
+      </ion-col>
+    </ion-row>
 
-    <!-- Botón de Lista de Espera -->
-    <ion-col size="12" class="ion-text-center">
-      <ion-card class="custom-card" (click)="toggleListaEspera()">
-        <ion-thumbnail [style.background]="'rgba(255,204,0,0.2)'">
-          <ion-icon name="time-outline" color="warning"></ion-icon>
-        </ion-thumbnail>
-        <ion-label>Lista de Espera</ion-label>
-      </ion-card>
-    </ion-col>
-  </ion-row>
+    <!-- Gráfico de pastel -->
+    <ion-row *ngIf="mostrarDashboard">
+      <ion-col size="12">
+        <ion-card style="border-radius: 12px; padding: 16px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
+          <ion-card-header style="text-align: center; background-color: white; border-bottom: 1px solid #f0f0f0;">
+            <ion-card-title style="font-size: 1.2rem; font-weight: 600; color: black;">Estado de Acreditados</ion-card-title>
+          </ion-card-header>
+          <ion-card-content>
+            <canvas #pieChart></canvas>
+          </ion-card-content>
+        </ion-card>
+      </ion-col>
+    </ion-row>
 
-  <!-- Gráfico de pastel para verificación, visible solo si mostrarDashboard es true -->
-  <ion-card *ngIf="mostrarDashboard" style="background-color: white;">
-    <ion-card-header>
-      <ion-card-title class="ion-text-center" style="color: black;">Estado de Acreditados</ion-card-title>
-    </ion-card-header>
-    <ion-card-content>
-      <canvas #pieChart></canvas>
-    </ion-card-content>
-  </ion-card>
+    <!-- Listas de usuarios -->
+    <ion-row *ngIf="mostrarListas">
+      <!-- No Verificados -->
+      <ion-col size="6">
+        <ion-card style="border-radius: 12px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
+          <ion-card-header style="background-color: white; border-bottom: 1px solid #f0f0f0;">
+            <ion-card-title style="font-size: 1.2rem; font-weight: 600; color: black;">Usuarios No Acreditados</ion-card-title>
+          </ion-card-header>
+          <ion-card-content>
+            <ion-list>
+              <ion-item *ngFor="let user of usuariosNoVerificados" style="--background: transparent;">
+                <ion-label style="font-size: 1rem; color: black;">{{ user.Nombre_completo }}</ion-label>
+              </ion-item>
+            </ion-list>
+          </ion-card-content>
+        </ion-card>
+      </ion-col>
 
-  <!-- Mostrar listas de usuarios verificados y no verificados en paralelo -->
-  <ion-row *ngIf="mostrarListas" class="listas-paralelas">
-    <!-- Lista de No Verificados (Izquierda) -->
-    <ion-col size="6">
-      <ion-card>
-        <ion-card-header style="background-color: white;">
-          <ion-card-title style="color: black;">Usuarios No Acreditados</ion-card-title>
-        </ion-card-header>
-        <ion-card-content style="background-color: white;">
-          <ion-list style="background-color: white;">
-            <ion-item *ngFor="let user of usuariosNoVerificados">
-              <ion-label style="color: black;">{{ user.Nombre_completo }}</ion-label>
-            </ion-item>
-          </ion-list>
-        </ion-card-content>
-      </ion-card>
-    </ion-col>
+      <!-- Verificados -->
+      <ion-col size="6">
+        <ion-card style="border-radius: 12px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
+          <ion-card-header style="background-color: white; border-bottom: 1px solid #f0f0f0;">
+            <ion-card-title style="font-size: 1.2rem; font-weight: 600; color: black;">Usuarios Acreditados</ion-card-title>
+          </ion-card-header>
+          <ion-card-content>
+            <ion-list>
+              <ion-item *ngFor="let user of usuariosVerificados" style="--background: transparent;">
+                <ion-label style="font-size: 1rem; color: black;">{{ user.Nombre_completo }}</ion-label>
+                <ion-icon name="checkmark-circle" color="success" slot="end"></ion-icon>
+              </ion-item>
+            </ion-list>
+          </ion-card-content>
+        </ion-card>
+      </ion-col>
+    </ion-row>
 
-    <!-- Lista de Verificados (Derecha) -->
-    <ion-col size="6">
-      <ion-card>
-        <ion-card-header style="background-color: white;">
-          <ion-card-title style="color: black;">Usuarios Acreditados</ion-card-title>
-        </ion-card-header>
-        <ion-card-content style="background-color: white;">
-          <ion-list style="background-color: white;">
-            <ion-item *ngFor="let user of usuariosVerificados">
-              <ion-label style="color: black;">{{ user.Nombre_completo }}</ion-label>
-              <ion-icon name="checkmark-circle" color="success" slot="end"></ion-icon>
-            </ion-item>
-          </ion-list>
-        </ion-card-content>
-      </ion-card>
-    </ion-col>
-  </ion-row>
-
-  <!-- Mostrar lista de espera con fondo blanco y letras negras -->
-  <ion-row *ngIf="mostrarListaEspera">
-    <ion-col size="12">
-      <ion-card class="white-background-card">
-        <ion-card-header style="background-color: white;">
-          <ion-card-title style="color: black;">Lista de Espera</ion-card-title>
-        </ion-card-header>
-        <ion-card-content style="background-color: white;">
-          <ion-list style="background-color: white;">
-            <ion-item *ngFor="let user of listaEspera">
-              <ion-label style="color: black;">{{ user.userName }}</ion-label>
-            </ion-item>
-          </ion-list>
-        </ion-card-content>
-      </ion-card>
-    </ion-col>
-  </ion-row>
+    <!-- Lista de Espera -->
+    <ion-row *ngIf="mostrarListaEspera">
+      <ion-col size="12">
+        <ion-card style="border-radius: 12px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
+          <ion-card-header style="background-color: white; border-bottom: 1px solid #f0f0f0;">
+            <ion-card-title style="font-size: 1.2rem; font-weight: 600; color: black;">Lista de Espera</ion-card-title>
+          </ion-card-header>
+          <ion-card-content>
+            <ion-list>
+              <ion-item *ngFor="let user of listaEspera" style="--background: transparent;">
+                <ion-label style="font-size: 1rem; color: black;">{{ user.userName }}</ion-label>
+              </ion-item>
+            </ion-list>
+          </ion-card-content>
+        </ion-card>
+      </ion-col>
+    </ion-row>
+  </ion-grid>
 </ion-content>
 
-
 <app-tab-bar-admin></app-tab-bar-admin>
-
-

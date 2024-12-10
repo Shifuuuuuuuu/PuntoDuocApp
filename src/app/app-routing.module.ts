@@ -87,7 +87,11 @@ const routes: Routes = [
   {
     path: 'graficos-evento/:id',
     loadChildren: () => import('./graficos-evento/graficos-evento.module').then( m => m.GraficosEventoPageModule),canActivate: [AuthGuard]
+  },  {
+    path: 'gestorrecompensaspage',
+    loadChildren: () => import('./gestorrecompensaspage/gestorrecompensaspage.module').then( m => m.GestorrecompensaspagePageModule)
   },
+
 
 ];
 
