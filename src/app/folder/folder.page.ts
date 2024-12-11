@@ -185,28 +185,28 @@ export class FolderPage implements OnInit {
       async (snapshots) => {
         this.loading = false;
 
-        const today = new Date();
-        today.setHours(0, 0, 0, 0); // Inicio del día
+        console.log('Snapshots obtenidos:', snapshots); // Verifica que las instantáneas tengan datos
 
-        const nuevosEventos: Evento[] = []; // Eventos nuevos para notificar
-        const eventosHoy = snapshots.map((snapshot) => {
+        const eventosProcesados = snapshots.map((snapshot) => {
           const eventData = snapshot.payload.doc.data() as Evento;
           const docId = snapshot.payload.doc.id;
 
-          const fechaCreacion = this.convertToDate(eventData.fecha_creacion);
+          console.log(`Evento procesado (ID: ${docId}):`, eventData); // Verifica los datos completos del evento
 
-          // Verificar si el evento fue creado hoy y no está en la lista de ya notificados
-          if (
-            fechaCreacion &&
-            fechaCreacion >= today &&
-            !this.allEvents.some((event) => event.id_evento === docId)
-          ) {
-            nuevosEventos.push({ ...eventData, id_evento: docId });
-          }
+          const fechaCreacion = this.convertToDate(eventData.fecha_creacion);
+          const fechaTermino = this.convertToDate(eventData.fecha_termino);
+
+          console.log(`Evento "${eventData.titulo}":`, {
+            fechaCreacion,
+            fechaTermino,
+          }); // Verifica las fechas procesadas
 
           return {
             ...eventData,
             id_evento: docId,
+            fecha: this.convertToDate(eventData.fecha) || null,
+            fecha_termino: fechaTermino || null, // Convertir a null si es undefined
+            estado: eventData.estado || '',
             verificado: false,
             isFavorite: false,
             show: false,
@@ -215,26 +215,24 @@ export class FolderPage implements OnInit {
           };
         });
 
-        this.allEvents = eventosHoy.filter((event) => {
+        this.allEvents = eventosProcesados.filter((event) => {
           if (event.tipo_usuario === 'Todos') return true;
           if (this.isInvitado) return event.tipo_usuario === 'Invitado';
           if (this.isStudent) return event.tipo_usuario === 'Estudiante';
           return false;
         });
 
-        this.filteredEvents = [...this.allEvents];
-        this.sedeFilteredEvents = [...this.allEvents];
-        this.events = [...this.sedeFilteredEvents];
+        console.log('Eventos procesados:', this.allEvents); // Verifica todos los eventos procesados
 
-        // Enviar notificaciones para los eventos nuevos
-        for (const nuevoEvento of nuevosEventos) {
-          await this.enviarNotificacionNuevoEvento(nuevoEvento);
-        }
+        this.events = this.allEvents.filter((event) => event.estado !== 'Terminado');
+        this.eventsTerminados = this.allEvents.filter((event) => event.estado === 'Terminado');
 
-        this.filterEvents();
-        this.filterEventsByDate();
-        this.getPopularEvents();
-        this.getRecentEvents();
+        console.log('Eventos activos:', this.events); // Verifica eventos activos
+        console.log('Eventos terminados:', this.eventsTerminados); // Verifica eventos terminados
+
+        this.filteredEvents = [...this.events];
+        this.sedeFilteredEvents = [...this.events];
+        this.segmentFilteredEvents = [...this.sedeFilteredEvents];
       },
       (error) => {
         this.loading = false;
@@ -242,6 +240,11 @@ export class FolderPage implements OnInit {
       }
     );
   }
+
+
+
+
+
 
 getCategories(): { name: string; image: string }[] {
   if (this.isInvitado) {
@@ -262,15 +265,16 @@ getCategories(): { name: string; image: string }[] {
 }
 
 
-  getRecentEvents() {
-    const oneWeekAgo = new Date();
-    oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
+getRecentEvents() {
+  const oneWeekAgo = new Date();
+  oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
 
-    this.recentEvents = this.sedeFilteredEvents.filter(event => {
-      const eventCreationDate = this.convertToDate(event.fecha_creacion);
-      return eventCreationDate >= oneWeekAgo;
-    });
-  }
+  this.recentEvents = this.sedeFilteredEvents.filter(event => {
+    const eventCreationDate = this.convertToDate(event.fecha_creacion);
+    return eventCreationDate && eventCreationDate >= oneWeekAgo; // Verificar que no sea undefined
+  });
+}
+
 
   async toggleFavorite(event: Evento) {
     if (!this.userName || !this.userEmail) {
@@ -308,46 +312,53 @@ getCategories(): { name: string; image: string }[] {
 
 
 
-  filterEventsByDate() {
-    const today = new Date();
-    switch (this.selectedSegment) {
-      case 'today':
-        this.segmentFilteredEvents = this.sedeFilteredEvents.filter(event =>
-          this.isSameDay(this.convertToDate(event.fecha), today)
-        );
-        break;
-      case 'tomorrow':
-        const tomorrow = addDays(today, 1);
-        this.segmentFilteredEvents = this.sedeFilteredEvents.filter(event =>
-          this.isSameDay(this.convertToDate(event.fecha), tomorrow)
-        );
-        break;
-      case 'thisWeek':
-        this.segmentFilteredEvents = this.sedeFilteredEvents.filter(event =>
-          this.isWithinRange(this.convertToDate(event.fecha), startOfWeek(today), endOfWeek(today))
-        );
-        break;
-      case 'nextWeek':
-        const nextWeekStart = addDays(endOfWeek(today), 1);
-        const nextWeekEnd = endOfWeek(nextWeekStart);
-        this.segmentFilteredEvents = this.sedeFilteredEvents.filter(event =>
-          this.isWithinRange(this.convertToDate(event.fecha), nextWeekStart, nextWeekEnd)
-        );
-        break;
-      case 'thisMonth':
-        this.segmentFilteredEvents = this.sedeFilteredEvents.filter(event =>
-          this.isWithinRange(this.convertToDate(event.fecha), startOfMonth(today), endOfMonth(today))
-        );
-        break;
-      case 'nextMonth':
-        const nextMonthStart = addDays(endOfMonth(today), 1);
-        const nextMonthEnd = endOfMonth(nextMonthStart);
-        this.segmentFilteredEvents = this.sedeFilteredEvents.filter(event =>
-          this.isWithinRange(this.convertToDate(event.fecha), nextMonthStart, nextMonthEnd)
-        );
-        break;
-    }
+filterEventsByDate() {
+  const today = new Date();
+  switch (this.selectedSegment) {
+    case 'today':
+      this.segmentFilteredEvents = this.sedeFilteredEvents.filter(event => {
+        const eventDate = this.convertToDate(event.fecha);
+        return eventDate && this.isSameDay(eventDate, today);
+      });
+      break;
+    case 'tomorrow':
+      const tomorrow = addDays(today, 1);
+      this.segmentFilteredEvents = this.sedeFilteredEvents.filter(event => {
+        const eventDate = this.convertToDate(event.fecha);
+        return eventDate && this.isSameDay(eventDate, tomorrow);
+      });
+      break;
+    case 'thisWeek':
+      this.segmentFilteredEvents = this.sedeFilteredEvents.filter(event => {
+        const eventDate = this.convertToDate(event.fecha);
+        return eventDate && this.isWithinRange(eventDate, startOfWeek(today), endOfWeek(today));
+      });
+      break;
+    case 'nextWeek':
+      const nextWeekStart = addDays(endOfWeek(today), 1);
+      const nextWeekEnd = endOfWeek(nextWeekStart);
+      this.segmentFilteredEvents = this.sedeFilteredEvents.filter(event => {
+        const eventDate = this.convertToDate(event.fecha);
+        return eventDate && this.isWithinRange(eventDate, nextWeekStart, nextWeekEnd);
+      });
+      break;
+    case 'thisMonth':
+      this.segmentFilteredEvents = this.sedeFilteredEvents.filter(event => {
+        const eventDate = this.convertToDate(event.fecha);
+        return eventDate && this.isWithinRange(eventDate, startOfMonth(today), endOfMonth(today));
+      });
+      break;
+    case 'nextMonth':
+      const nextMonthStart = addDays(endOfMonth(today), 1);
+      const nextMonthEnd = endOfMonth(nextMonthStart);
+      this.segmentFilteredEvents = this.sedeFilteredEvents.filter(event => {
+        const eventDate = this.convertToDate(event.fecha);
+        return eventDate && this.isWithinRange(eventDate, nextMonthStart, nextMonthEnd);
+      });
+      break;
   }
+}
+
 
   segments = [
     { value: 'today', label: 'Hoy' },
@@ -418,57 +429,58 @@ getCategories(): { name: string; image: string }[] {
   }
 
 
-  convertToDate(fecha: any): Date {
-    if (!fecha) return new Date();
-    if (typeof fecha === 'string') return new Date(fecha);
-    if (fecha.seconds) return new Date(fecha.seconds * 1000);
-    return new Date();
+  convertToDate(fecha: any): Date | null {
+    if (!fecha) return null; // Si la fecha es nula o indefinida
+    if (fecha.seconds) return new Date(fecha.seconds * 1000); // Caso Timestamp de Firestore
+    if (typeof fecha === 'string' && !isNaN(Date.parse(fecha))) return new Date(fecha); // Caso String ISO válido
+    return null; // Cualquier otro caso, devuelve null
   }
+
+
+
   async verificarEventosTerminados() {
     const now = new Date();
 
-    // Obtener todos los eventos de Firestore
-    this.firestore.collection<Evento>('Eventos').get().toPromise().then(snapshot => {
+    try {
+      const snapshot = await this.firestore.collection<Evento>('Eventos').get().toPromise();
+
       if (snapshot && !snapshot.empty) {
-        snapshot.docs.forEach(async doc => {
+        const eventosTerminados: Evento[] = [];
+
+        snapshot.docs.forEach(async (doc) => {
           const evento = doc.data() as Evento;
           evento.id_evento = doc.id;
 
-          if (evento.fecha_termino && this.convertToDate(evento.fecha_termino) <= now && evento.estado !== 'Terminado') {
+          console.log(`Evento "${evento.titulo}" antes de convertir fechas:`, evento);
+
+          const fechaTermino = this.convertToDate(evento.fecha_termino);
+
+          console.log(`Evento "${evento.titulo}" - Fecha de término convertida:`, fechaTermino);
+
+          if (fechaTermino && fechaTermino <= now && evento.estado !== 'Terminado') {
             console.log(`El evento "${evento.titulo}" ha terminado.`);
-
-            // Actualizar el estado del evento a "Terminado"
             await this.firestore.collection('Eventos').doc(evento.id_evento).update({ estado: 'Terminado' });
+          }
 
-            // Enviar notificación por Cloud Messaging y agregar a Firestore
-            if (evento.Inscripciones && evento.Inscripciones.length > 0) {
-              for (const inscrito of evento.Inscripciones) {
-                const userId = inscrito.id_estudiante || inscrito.id_invitado;
-
-                if (inscrito.verificado) {
-                  // Notificación para usuarios verificados
-                  const notificacionVerificado = {
-                    id: evento.id_evento,
-                    titulo: `¿Disfrutaste el evento "${evento.titulo}"?`,
-                    descripcion: 'Deja tu comentario y calificación en el evento.',
-                    imagen: evento.imagen || '', // Agrega la imagen del evento
-                    url: `/event-details/${evento.id_evento}`,
-                    fecha: new Date(),
-                    usuarioIds: [{ userId, leido: false }]
-                  };
-                  await this.enviarNotificacion(notificacionVerificado);
-                }
-              }
-            }
+          if (fechaTermino) {
+            eventosTerminados.push(evento);
+          } else {
+            console.warn(`El evento "${evento.titulo}" no tiene fecha de término definida.`);
           }
         });
+
+        console.log('Eventos terminados procesados:', eventosTerminados);
+        this.eventsTerminados = eventosTerminados;
       } else {
         console.log('No hay eventos en la colección.');
       }
-    }).catch(error => {
+    } catch (error) {
       console.error('Error al verificar eventos terminados:', error);
-    });
+    }
   }
+
+
+
   async enviarNotificacionNuevoEvento(evento: Evento) {
     try {
       // Verificar si la notificación ya existe

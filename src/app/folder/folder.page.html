@@ -284,34 +284,31 @@
 
 
 
-  <!--------------->
   <h2 class="ion-padding pb-0">Eventos finalizados</h2>
-  <!--------------->
 
+  <!-- Grid de eventos terminados -->
   <ion-grid *ngIf="eventsTerminados.length > 0" class="pt-0">
     <ion-row>
       <ion-col size="12" size-md="6" *ngFor="let event of eventsTerminados" (click)="goToEventDetails(event)">
-
         <ion-card>
           <ion-grid>
             <ion-row class="ion-align-items-stretch">
-
+              <!-- Imagen del evento -->
               <ion-col size="3" style="aspect-ratio: 1 / 1;">
-                <img alt="Imagen del evento" [src]="event.imagen" class="event-image-finished" loading="lazy"/>
-
-                <!-- Icono de estrella para marcar como favorito -->
+                <img alt="Imagen del evento" [src]="event.imagen" class="event-image-finished" loading="lazy" />
+                <!-- Botón de favorito -->
                 <ion-button shape="round" color="light" (click)="toggleFavorite(event); $event.stopPropagation()" class="card-favoritos">
                   <ion-icon name="star" slot="icon-only" [style.color]="event.isFavorite ? '#FFD700' : 'gray'"></ion-icon>
                 </ion-button>
-
               </ion-col>
 
+              <!-- Información del evento -->
               <ion-col size="9">
                 <ion-card-header class="p-0">
                   <ion-badge color="warning" style="font-weight: 300;" class="text-center">{{ event.sede }}</ion-badge>
-                  <!--Título de evento-->
-                  <ion-card-title class="" style="font-weight: 500; font-size:medium">{{ event.titulo.length > 58 ? (event.titulo.substring(0, 55) + '...') : event.titulo }}</ion-card-title>
-                  <!--Fecha del evento-->
+                  <ion-card-title style="font-weight: 500; font-size:medium">
+                    {{ event.titulo.length > 58 ? (event.titulo.substring(0, 55) + '...') : event.titulo }}
+                  </ion-card-title>
                 </ion-card-header>
               </ion-col>
             </ion-row>
@@ -320,25 +317,24 @@
               <ion-col size="12">
                 <ion-card-content class="p-0 pt-1">
                   <ion-badge color="medium" style="font-weight: 300;" class="text-center ion-badge-custom">{{ event.estado }}</ion-badge>
-                  <p style="font-weight: 300;"><b>Finalizado:</b> {{ transformarFecha(event.fecha_termino) | date: 'dd-MM-yyyy' }}, {{ transformarFecha(event.fecha_termino) | date: 'h:mm a' }}</p>
 
-                  <!--Mensajes [verificado], [inscrito], [en lista de espera]-->
+
+
+                  <!-- Estado de verificación -->
                   <div class="text-center mt-3" *ngIf="event.estaInscrito">
                     <ion-badge color="success" class="ion-badge-custom" *ngIf="event.estaInscrito && event.verificado">¡Estás verificado en este evento!</ion-badge>
-                    <ion-badge color="danger" class="ion-badge-custom"  *ngIf="event.estaInscrito && !event.verificado">No has verificado tu asistencia al evento.</ion-badge>
+                    <ion-badge color="danger" class="ion-badge-custom" *ngIf="event.estaInscrito && !event.verificado">No has verificado tu asistencia al evento.</ion-badge>
                   </div>
                 </ion-card-content>
-
               </ion-col>
             </ion-row>
-
           </ion-grid>
         </ion-card>
       </ion-col>
     </ion-row>
   </ion-grid>
 
-  <!--Si no hay eventos finalizados disponibles-->
+  <!-- Mensaje si no hay eventos finalizados -->
   <div *ngIf="eventsTerminados.length === 0" class="ion-padding text-center">
     <p>No hay eventos terminados.</p>
   </div>

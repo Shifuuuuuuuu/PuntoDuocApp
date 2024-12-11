@@ -1,13 +1,12 @@
-<ion-header [translucent]="true" class="custom-header">
-  <ion-toolbar class="custom-toolbar" style="background-color: black;">
+<ion-header [translucent]="true">
+  <ion-toolbar style="background-color: black;">
     <ion-buttons slot="start">
-      <ion-back-button defaultHref="/folder/Inicio" style="color: white;"></ion-back-button>
+      <ion-back-button defaultHref="/folder/Inicio" style="color: #666;"></ion-back-button>
     </ion-buttons>
-    <ion-title>Eventos de {{ category }}</ion-title>
+    <ion-title style="color: #666; font-size: 1.5rem; font-weight: 500;">Eventos de {{ category }}</ion-title>
     <ion-buttons slot="end">
       <ion-button [routerLink]="['/notifications']" style="position: relative;">
-        <ion-icon slot="icon-only" name="notifications-outline" style="color: white;"></ion-icon>
-        <!-- Badge para mostrar el número de notificaciones -->
+        <ion-icon slot="icon-only" name="notifications-outline" style="color: #666;"></ion-icon>
         <ion-badge *ngIf="unreadNotificationsCount > 0" color="danger" style="position: absolute; top: -5px; right: -5px;">
           {{ unreadNotificationsCount }}
         </ion-badge>
@@ -16,18 +15,28 @@
   </ion-toolbar>
 </ion-header>
 
-<ion-content [fullscreen]="true" class="content-center">
-  <ion-list style="background-color: white;" *ngIf="events.length > 0">
-    <ion-item style="--background: transparent;" *ngFor="let event of events" (click)="goToEventDetails(event)">
-      <ion-thumbnail  slot="start">
-        <img [src]="event.imagen" alt="Imagen del evento">
-      </ion-thumbnail>
-      <ion-label style="background-color: white;">
-        <h2 style="color: black;">{{ event.titulo }}</h2>
-        <p style="color: black;">Lugar: {{ event.lugar }}</p>
-      </ion-label>
-    </ion-item>
-  </ion-list>
-  <ion-text style="color: black;" *ngIf="events.length === 0">No hay eventos disponibles para esta categoría.</ion-text>
+<ion-content [fullscreen]="true" style="background-color: #f9f9f9; padding: 16px;">
+  <!-- Lista de eventos -->
+  <div *ngIf="events.length > 0">
+    <ion-card *ngFor="let event of events" style="margin-bottom: 16px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
+      <ion-item lines="none" (click)="goToEventDetails(event)" style="--background: transparent; border-radius: 12px;">
+        <ion-thumbnail slot="start" style="border-radius: 8px; overflow: hidden; width: 80px; height: 80px;">
+          <img [src]="event.imagen" alt="Imagen del evento" style="object-fit: cover;" />
+        </ion-thumbnail>
+        <ion-label>
+          <h2 style="font-size: 1.2rem; font-weight: 500; color: #000; margin-bottom: 4px;">{{ event.titulo }}</h2>
+          <p style="color: #666; font-size: 0.9rem;">Lugar: {{ event.lugar }}</p>
+        </ion-label>
+      </ion-item>
+    </ion-card>
+  </div>
+
+  <!-- Mensaje si no hay eventos -->
+  <div *ngIf="events.length === 0" style="text-align: center; padding: 16px;">
+    <ion-icon name="calendar-outline" style="font-size: 3rem; color: #ccc;"></ion-icon>
+    <p style="font-size: 1.2rem; color: #666; margin-top: 8px;">No hay eventos disponibles para esta categoría.</p>
+  </div>
 </ion-content>
+
 <app-tab-usuario></app-tab-usuario>
+

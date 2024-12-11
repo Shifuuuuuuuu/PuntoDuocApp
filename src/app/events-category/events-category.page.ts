@@ -24,6 +24,7 @@ export class EventsCategoryPage implements OnInit {
   ngOnInit() {
     this.category = this.route.snapshot.paramMap.get('category') || '';
     this.loadEventsByCategory();
+
     // Suscríbete al observable para actualizar el contador de notificaciones en la interfaz
     this.notificationService.unreadCount$.subscribe((count) => {
       this.unreadNotificationsCount = count;
@@ -33,12 +34,18 @@ export class EventsCategoryPage implements OnInit {
   loadEventsByCategory() {
     this.firestore.collection<Evento>('Eventos', ref =>
       ref.where('categoria', '==', this.category)
-    ).valueChanges().subscribe((events) => {
-      this.events = events;
+    ).get().subscribe((snapshot) => {
+      this.events = snapshot.docs.map((doc) => {
+        return { id: doc.id, ...doc.data() } as Evento; // Incluye el ID del documento como `id`
+      });
     });
   }
 
   goToEventDetails(event: Evento) {
-    this.router.navigate(['/event-details', event.id_evento]);
+    if (event.id) {
+      this.router.navigate(['/event-details', event.id]); // Usa el `id` del documento
+    } else {
+      console.error('El evento no tiene un ID válido.');
+    }
   }
 }

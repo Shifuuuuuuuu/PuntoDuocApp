@@ -1,6 +1,7 @@
 import { Inscripcion } from "./IInscripcion";
 
 export interface Evento {
+  id?: string;
   Cupos: number;
   descripcion: string;
   estado: string;
