@@ -317,9 +317,7 @@
               <ion-col size="12">
                 <ion-card-content class="p-0 pt-1">
                   <ion-badge color="medium" style="font-weight: 300;" class="text-center ion-badge-custom">{{ event.estado }}</ion-badge>
-
-
-
+                  <p style="font-weight: 300;"><b>Finalizado:</b> {{ transformarFecha(event.fecha_termino) | date: 'dd-MM-yyyy' }}, {{ transformarFecha(event.fecha_termino) | date: 'h:mm a' }}</p>
                   <!-- Estado de verificación -->
                   <div class="text-center mt-3" *ngIf="event.estaInscrito">
                     <ion-badge color="success" class="ion-badge-custom" *ngIf="event.estaInscrito && event.verificado">¡Estás verificado en este evento!</ion-badge>

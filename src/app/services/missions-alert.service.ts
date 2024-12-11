@@ -110,34 +110,34 @@ async claimReward(missionId: string, puntaje: number, userId: string, categoria:
           misionesCompletadas: firebase.firestore.FieldValue.arrayUnion(missionId),
       });
 
-      // Lógica para actualizar colecciones relacionadas
-      const collectionsToUpdate = [
-          { collection: 'Eventos', filterKey: 'Inscripciones', isArray: true },
-      ];
+      // Actualizar estado de verificación en eventos relacionados
+      const eventosSnapshot = await this.firestore.collection('Eventos').get().toPromise();
 
-      for (const { collection, filterKey, isArray } of collectionsToUpdate) {
-          console.log(`Buscando documentos en la colección ${collection}...`);
+      if (eventosSnapshot && !eventosSnapshot.empty) {
+          console.log(`Documentos encontrados en la colección de eventos: ${eventosSnapshot.size}`);
+          for (const doc of eventosSnapshot.docs) {
+              const data = doc.data() as {
+                  favoritos?: Array<{ id: string; email: string; nombre: string; tipoUsuario: string; verificado?: boolean }>;
+                  verificadoPorMision?: Array<{ userId: string; categoria: string; utilizado: boolean }>;
+              };
 
-          const snapshot = await this.firestore.collection(collection).get().toPromise();
+              const verificadoPorMision = data.verificadoPorMision || [];
 
-          if (snapshot && !snapshot.empty) {
-              console.log(`Documentos encontrados en ${collection}: ${snapshot.size}`);
-              for (const doc of snapshot.docs) {
-                  const data = doc.data() as {
-                      Inscripciones?: Array<{ id_estudiante?: string; verificado?: boolean }>;
-                      verificadoPorMision?: Array<{ userId: string; utilizado: boolean }>;
-                  };
+              // Verificar si ya existe una entrada para esta misión y categoría
+              if (!verificadoPorMision.some(verificado => verificado.userId === userId && verificado.categoria === categoria)) {
+                  // Actualizar según la categoría
+                  if (categoria === 'Favoritos' && data.favoritos) {
+                      const favoritoIndex = data.favoritos.findIndex(fav => fav.id === userId && !fav.verificado);
+                      if (favoritoIndex > -1) {
+                          // Marcar el favorito como verificado
+                          data.favoritos[favoritoIndex].verificado = true;
 
-                  console.log(`Datos del documento ${doc.id}:`, data);
-
-                  if (isArray) {
-                      const verificadoPorMision = data.verificadoPorMision || [];
-
-                      // Verificar si ya existe una entrada para este usuario
-                      if (!verificadoPorMision.some(verificado => verificado.userId === userId && verificado.utilizado)) {
-                          await this.firestore.collection(collection).doc(doc.id).update({
+                          // Agregar la entrada en `verificadoPorMision`
+                          await this.firestore.collection('Eventos').doc(doc.id).update({
+                              favoritos: data.favoritos,
                               verificadoPorMision: firebase.firestore.FieldValue.arrayUnion({
                                   missionId,
+                                  categoria,
                                   id_estudiante,
                                   Nombre_completo,
                                   email,
@@ -145,14 +145,26 @@ async claimReward(missionId: string, puntaje: number, userId: string, categoria:
                                   utilizado: true,
                               }),
                           });
-                          console.log(`Actualizado: verificadoPorMision para ${doc.id} en colección ${collection}`);
-                      } else {
-                          console.log(`Ya verificado o utilizado: ${doc.id} en colección ${collection}`);
+                          console.log(`Actualizado: verificadoPorMision para la categoría "${categoria}" en el evento ${doc.id}`);
                       }
+                  } else if (categoria === 'Inscripción') {
+                      // Otras categorías como Inscripción pueden manejarse aquí
+                      console.log(`Procesando categoría "${categoria}" para el evento ${doc.id}`);
+                      await this.firestore.collection('Eventos').doc(doc.id).update({
+                          verificadoPorMision: firebase.firestore.FieldValue.arrayUnion({
+                              missionId,
+                              categoria,
+                              id_estudiante,
+                              Nombre_completo,
+                              email,
+                              userId,
+                              utilizado: true,
+                          }),
+                      });
                   }
+              } else {
+                  console.log(`Ya existe una entrada verificada para esta categoría (${categoria}) en el evento ${doc.id}`);
               }
-          } else {
-              console.log(`No se encontraron documentos en la colección ${collection}`);
           }
       }
 
@@ -170,6 +182,7 @@ async claimReward(missionId: string, puntaje: number, userId: string, categoria:
       Swal.fire('Error', 'No se pudo reclamar la recompensa. Inténtalo nuevamente.', 'error');
   }
 }
+
 
   private async getMissionsFromDatabase(userId: string): Promise<any[]> {
     try {
@@ -222,9 +235,6 @@ async claimReward(missionId: string, puntaje: number, userId: string, categoria:
             return progress;
         }
 
-        console.log(`Procesando misión: ${mission.titulo}`);
-        console.log(`ID del usuario actual (estudiante): ${userId}`);
-        console.log(`Categoría: ${categoria}, Meta: ${meta}`);
 
         switch (categoria) {
             case 'Inscripción':
@@ -254,7 +264,7 @@ async claimReward(missionId: string, puntaje: number, userId: string, categoria:
                         const alreadyUsed = verificadoPorMision.some(verificado => verificado.userId === userId && verificado.utilizado);
 
                         if (!alreadyUsed) {
-                            console.log(`Elemento válido para el progreso: ${doc.id}`);
+
                             totalCount++;
                         } else {
                             console.log(`Elemento ignorado porque ya está utilizado/verificado: ${doc.id}`);
@@ -269,42 +279,60 @@ async claimReward(missionId: string, puntaje: number, userId: string, categoria:
             }
 
             case 'Favoritos': {
-                const eventosSnapshot = await this.firestore
-                    .collection('Eventos', ref => ref.where('favoritos', 'array-contains', userId))
-                    .get()
-                    .toPromise();
+              try {
+                  console.log(`Iniciando cálculo de progreso para la categoría "Favoritos".`);
+                  console.log(`ID del usuario: ${userId}`);
 
-                if (!eventosSnapshot || eventosSnapshot.empty) {
-                    console.log(`No se encontraron eventos favoritos para el usuario.`);
-                    break;
-                }
+                  // Obtener todos los eventos
+                  const eventosSnapshot = await this.firestore.collection('Eventos').get().toPromise();
 
-                let totalFavoritos = 0;
-                eventosSnapshot.docs.forEach(doc => {
-                    const eventoData = doc.data() as {
-                        verificadoPorMision?: Array<{
-                            userId: string;
-                            utilizado: boolean;
-                            verificado: boolean;
-                        }>;
-                    };
-                    const verificadoPorMision = eventoData?.verificadoPorMision || [];
+                  if (!eventosSnapshot || eventosSnapshot.empty) {
+                      console.log(`No se encontraron eventos en la colección.`);
+                      break;
+                  }
 
-                    const alreadyUsed = verificadoPorMision.some(verificado => verificado.userId === userId && verificado.utilizado);
+                  console.log(`Eventos encontrados: ${eventosSnapshot.docs.length}`);
 
-                    if (!alreadyUsed) {
-                        console.log(`Favorito válido para el progreso: ${doc.id}`);
-                        totalFavoritos++;
-                    } else {
-                        console.log(`Favorito ignorado porque ya está utilizado/verificado: ${doc.id}`);
-                    }
-                });
+                  let totalFavoritos = 0;
 
-                console.log(`Total de favoritos encontrados: ${totalFavoritos}`);
-                progress = Math.min(totalFavoritos / meta, 1);
-                console.log(`Progreso de favoritos (${totalFavoritos} / ${meta}):`, progress);
-                break;
-            }
+                  for (const doc of eventosSnapshot.docs) {
+                      const eventoData = doc.data() as {
+                          favoritos?: Array<{ id: string; email: string; nombre: string; tipoUsuario: string; verificado?: boolean }>;
+                      };
+
+                      console.log(`Procesando evento con ID: ${doc.id}`);
+                      const favoritos = eventoData.favoritos || [];
+                      console.log(`Favoritos del evento:`, favoritos);
+
+                      // Verificar si el usuario está en favoritos
+                      const favoritoIndex = favoritos.findIndex(fav => fav.id === userId);
+                      if (favoritoIndex > -1) {
+                          const favorito = favoritos[favoritoIndex];
+
+                          if (!favorito.verificado) {
+                              console.log(`Favorito válido para el progreso: ${doc.id}`);
+                              totalFavoritos++;
+
+                              // Actualizar el estado del favorito como verificado
+                              favoritos[favoritoIndex] = { ...favorito, verificado: true };
+                              await this.firestore.collection('Eventos').doc(doc.id).update({ favoritos });
+                              console.log(`Favorito marcado como verificado para el evento ${doc.id}`);
+                          } else {
+                              console.log(`Favorito ya utilizado/verificado para el evento ${doc.id}`);
+                          }
+                      }
+                  }
+
+                  console.log(`Total de favoritos válidos encontrados: ${totalFavoritos}`);
+                  progress = Math.min(totalFavoritos / meta, 1);
+                  console.log(`Progreso de favoritos (${totalFavoritos} / ${meta}):`, progress);
+              } catch (error) {
+                  console.error('Error al calcular el progreso de favoritos:', error);
+              }
+              break;
+          }
+
+
 
             case 'Comentario': {
                 const comentariosSnapshot = await this.firestore
@@ -313,7 +341,6 @@ async claimReward(missionId: string, puntaje: number, userId: string, categoria:
                     .toPromise();
 
                 if (!comentariosSnapshot || comentariosSnapshot.empty) {
-                    console.log('No se encontraron comentarios realizados por el usuario.');
                     break;
                 }
 
@@ -324,51 +351,70 @@ async claimReward(missionId: string, puntaje: number, userId: string, categoria:
                     const isValid = comentarioData.verificadoPorMision !== true;
 
                     if (isValid) {
-                        console.log(`Comentario válido para el progreso: ${doc.id}`);
+
                         totalComentarios++;
                     } else {
-                        console.log(`Comentario ignorado porque ya está verificado: ${doc.id}`);
+
                     }
                 });
 
-                console.log(`Total de comentarios encontrados: ${totalComentarios}`);
+
                 progress = Math.min(totalComentarios / meta, 1);
                 console.log(`Progreso de comentarios (${totalComentarios} / ${meta}):`, progress);
                 break;
             }
 
-            case 'Consulta':
+            case 'Consultas':
             case 'Sugerencia': {
-                const motivo = categoria === 'Consulta' ? 'Consulta' : 'Sugerencia';
-                const consultasSnapshot = await this.firestore
-                    .collection('Consultas', ref => ref.where('userId', '==', userId).where('motivo', '==', motivo))
-                    .get()
-                    .toPromise();
+                try {
+                    const motivo = categoria === 'Consulta' ? 'Consulta' : 'Sugerencias';
 
-                if (!consultasSnapshot || consultasSnapshot.empty) {
-                    console.log(`No se encontraron ${categoria.toLowerCase()}s para el usuario.`);
-                    break;
-                }
+                    console.log(`Iniciando cálculo de progreso para la categoría "${categoria}".`);
+                    console.log(`ID del usuario: ${userId}`);
+                    console.log(`Motivo para filtro: ${motivo}`);
 
-                let totalConsultas = 0;
-                consultasSnapshot.docs.forEach(doc => {
-                    const consultaData = doc.data() as { verificadoPorMision?: boolean };
+                    // Consultar Firestore para obtener registros de consultas o sugerencias
+                    const consultasSnapshot = await this.firestore
+                        .collection('Consultas', ref =>
+                            ref.where('userId', '==', userId).where('motivo', '==', motivo)
+                        )
+                        .get()
+                        .toPromise();
 
-                    const isValid = consultaData.verificadoPorMision !== true;
-
-                    if (isValid) {
-                        console.log(`${categoria} válida para el progreso: ${doc.id}`);
-                        totalConsultas++;
-                    } else {
-                        console.log(`${categoria} ignorada porque ya está verificada: ${doc.id}`);
+                    if (!consultasSnapshot || consultasSnapshot.empty) {
+                        console.log(`No se encontraron registros para "${categoria}" con motivo "${motivo}".`);
+                        break;
                     }
-                });
 
-                console.log(`Total de ${categoria.toLowerCase()}s encontrados: ${totalConsultas}`);
-                progress = Math.min(totalConsultas / meta, 1);
-                console.log(`Progreso de ${categoria.toLowerCase()}s (${totalConsultas} / ${meta}):`, progress);
+                    console.log(`Total de registros encontrados para "${categoria}": ${consultasSnapshot.docs.length}`);
+
+                    let totalConsultas = 0;
+
+                    consultasSnapshot.docs.forEach(doc => {
+                        const consultaData = doc.data() as { verificadoPorMision?: boolean };
+
+                        console.log(`Procesando documento con ID: ${doc.id}`);
+                        console.log(`Datos del documento:`, consultaData);
+
+                        const isValid = consultaData.verificadoPorMision !== true;
+
+                        if (isValid) {
+                            console.log(`Registro válido para el progreso: ${doc.id}`);
+                            totalConsultas++;
+                        } else {
+                            console.log(`Registro ignorado porque ya está marcado como verificado: ${doc.id}`);
+                        }
+                    });
+
+                    console.log(`Total de registros válidos para "${categoria}": ${totalConsultas}`);
+                    progress = Math.min(totalConsultas / meta, 1);
+                    console.log(`Progreso de "${categoria}" (${totalConsultas} / ${meta}):`, progress);
+                } catch (error) {
+                    console.error(`Error al calcular el progreso para la categoría "${categoria}":`, error);
+                }
                 break;
             }
+
 
             default:
                 console.warn(`Categoría "${categoria}" no reconocida.`);

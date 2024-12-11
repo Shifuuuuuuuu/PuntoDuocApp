@@ -155,14 +155,12 @@ export class DetallesEventoPage implements OnInit {
 
   async startScan() {
     try {
-      // Verificar y solicitar permisos de cámara
       const permiso = await this.verificarPermisoCamara();
       if (!permiso) {
         console.error('Permiso de cámara denegado');
         return;
       }
 
-      // Iniciar el escaneo
       const result: CapacitorBarcodeScannerScanResult = await CapacitorBarcodeScanner.scanBarcode({
         hint: 17,
         cameraDirection: 1,
@@ -172,8 +170,11 @@ export class DetallesEventoPage implements OnInit {
         const qrData = JSON.parse(result.ScanResult);
 
         if (qrData.userId && qrData.nombreCompleto) {
+          // Normaliza los datos del QR
+          qrData.userId = qrData.userId.trim();
+          qrData.tipoUsuario = qrData.tipoUsuario?.toLowerCase() || 'estudiante';
           console.log('Datos del QR escaneado:', qrData);
-          return qrData; // Retorna los datos escaneados si son válidos
+          return qrData;
         } else {
           throw new Error('Los datos del QR no son válidos');
         }
@@ -185,6 +186,7 @@ export class DetallesEventoPage implements OnInit {
       throw error;
     }
   }
+
 
   async verificarPermisoCamara(): Promise<boolean> {
     try {

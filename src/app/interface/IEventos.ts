@@ -5,9 +5,9 @@ export interface Evento {
   Cupos: number;
   descripcion: string;
   estado: string;
-  fecha: { seconds: number; nanoseconds: number } | Date | null;  // Timestamp o string
-  fecha_creacion: string;
-  fecha_termino: { seconds: number; nanoseconds: number } | Date | null;
+  fecha: { seconds: number; nanoseconds: number } | Date | null | string;  // Timestamp o string
+  fecha_creacion: string | Date | null ;
+  fecha_termino: { seconds: number; nanoseconds: number } | Date | null | string;
   fechaInicio: Date | null; // Cambiado a Date | null
   fechaFin: Date | null;
   id_evento: string;

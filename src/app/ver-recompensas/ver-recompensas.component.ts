@@ -36,24 +36,46 @@ export class VerRecompensasComponent implements OnInit {
       this.userEmail = localStorage.getItem('currentUserEmail') || '';
       this.userId = localStorage.getItem('id') || '';
 
+      console.log('Tipo de usuario:', this.tipoUsuario);
+      console.log('Email del usuario:', this.userEmail);
+      console.log('ID del usuario:', this.userId);
+
       if (!this.userEmail) {
         this.errorMessage = 'No se pudo obtener el correo del usuario.';
+        console.log('Error: No se encontró el correo del usuario en localStorage.');
         return;
       }
 
       this.tienePermisos = this.verificarUsuarioVentasOEventos(this.userEmail);
+      console.log('Tiene permisos:', this.tienePermisos);
+
       if (!this.tienePermisos) {
         this.errorMessage = 'No tienes permisos para ver las recompensas.';
+        console.log('Error: El usuario no tiene permisos para acceder a recompensas.');
         return;
       }
 
-      // Mostrar indicador de carga
+      // Cargar datos del usuario
+      await this.loadUserData();
+
+      if (!this.estudiante) {
+        console.log('Estudiante no encontrado. Intentando recargar.');
+        const estudiante = await this.estudianteService.getEstudianteByEmail(this.userEmail);
+        if (estudiante) {
+          this.estudiante = estudiante;
+          console.log('Estudiante recargado con éxito:', estudiante);
+        } else {
+          console.log('Error: No se pudo cargar el estudiante desde el servicio.');
+        }
+      }
+
       await this.cargarRecompensas();
     } catch (error) {
-      console.error('Error al cargar recompensas:', error);
-      this.errorMessage = 'Ocurrió un error al cargar las recompensas.';
+      console.error('Error al inicializar componente:', error);
+      this.errorMessage = 'Ocurrió un error al inicializar la vista de recompensas.';
     }
   }
+
   // Cargar recompensas disponibles
   async cargarRecompensas() {
     try {
@@ -110,11 +132,13 @@ export class VerRecompensasComponent implements OnInit {
 
   async loadUserData() {
     try {
-      this.recompensas = await this.recompensaService.getRecompensas();
+      console.log('Cargando datos del usuario...');
       const estudiante = await this.estudianteService.getEstudianteByEmail(this.userEmail);
       if (estudiante) {
         this.estudiante = estudiante;
+        console.log('Estudiante cargado con éxito:', estudiante);
       } else {
+        console.log('Error: No se encontró el estudiante con el correo especificado.');
         this.errorMessage = 'No se encontró el estudiante con el correo especificado.';
       }
     } catch (error) {
@@ -147,7 +171,12 @@ export class VerRecompensasComponent implements OnInit {
     });
 
     if (confirmResult.isConfirmed) {
+      console.log('Usuario confirmado para reclamar recompensa.');
+      console.log('Email del usuario:', this.userEmail);
+      console.log('Estudiante actual:', this.estudiante);
+
       if (!this.userEmail || !this.estudiante) {
+        console.log('Error: El usuario no está autenticado o no se encontró un estudiante válido.');
         Swal.fire({
           title: 'Error',
           text: 'Por favor, inicia sesión.',
@@ -158,8 +187,10 @@ export class VerRecompensasComponent implements OnInit {
       }
 
       try {
+        console.log('Obteniendo recompensa con ID:', id_recompensa);
         const recompensaDoc = await firstValueFrom(this.recompensaService.getRecompensaById(id_recompensa));
-        const recompensa = recompensaDoc?.data(); // Accede a los datos del documento
+        const recompensa = recompensaDoc?.data();
+        console.log('Recompensa obtenida:', recompensa);
 
         if (!recompensa) {
           Swal.fire({
@@ -172,6 +203,7 @@ export class VerRecompensasComponent implements OnInit {
         }
 
         if (this.estudiante.puntaje < recompensa.puntos_requeridos) {
+          console.log('Error: Puntos insuficientes para reclamar la recompensa.');
           Swal.fire({
             title: 'Puntos insuficientes',
             text: 'No tienes suficientes puntos para reclamar esta recompensa.',
@@ -181,10 +213,15 @@ export class VerRecompensasComponent implements OnInit {
           return;
         }
 
+        console.log('Generando QR para la recompensa.');
         await this.generarQR(recompensa);
 
         const nuevaCantidad = recompensa.cantidad - 1;
         const nuevoPuntaje = this.estudiante.puntaje - recompensa.puntos_requeridos;
+
+        console.log('Actualizando recompensa y puntaje del estudiante.');
+        console.log('Nueva cantidad de la recompensa:', nuevaCantidad);
+        console.log('Nuevo puntaje del estudiante:', nuevoPuntaje);
 
         if (this.estudiante.id_estudiante) {
           const estudianteReclamado = {
@@ -209,6 +246,7 @@ export class VerRecompensasComponent implements OnInit {
 
             await this.estudianteService.updateEstudiantePuntaje(this.estudiante.id_estudiante, nuevoPuntaje);
 
+            console.log('Recompensa y puntaje actualizados correctamente.');
             Swal.fire({
               title: 'Recompensa reclamada',
               text: 'Recompensa reclamada con éxito. Tu puntaje ha sido descontado.',

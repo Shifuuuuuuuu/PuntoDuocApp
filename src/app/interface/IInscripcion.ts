@@ -1,3 +1,4 @@
+import firebase from 'firebase/compat/app';
 export interface Inscripcion2 {
   inscripcionId?: string;
   eventoId: string;
@@ -12,6 +13,6 @@ export interface Inscripcion {
   verificado?: boolean;
   puntaje?: number;
   carrera: string;
-  fechaVerificacion?: Date;
+  fechaVerificacion?: Date | firebase.firestore.Timestamp;
   email: string
 }

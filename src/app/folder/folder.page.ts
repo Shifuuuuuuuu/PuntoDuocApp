@@ -185,30 +185,23 @@ export class FolderPage implements OnInit {
       async (snapshots) => {
         this.loading = false;
 
-        console.log('Snapshots obtenidos:', snapshots); // Verifica que las instantáneas tengan datos
-
         const eventosProcesados = snapshots.map((snapshot) => {
           const eventData = snapshot.payload.doc.data() as Evento;
           const docId = snapshot.payload.doc.id;
 
-          console.log(`Evento procesado (ID: ${docId}):`, eventData); // Verifica los datos completos del evento
-
-          const fechaCreacion = this.convertToDate(eventData.fecha_creacion);
-          const fechaTermino = this.convertToDate(eventData.fecha_termino);
-
-          console.log(`Evento "${eventData.titulo}":`, {
-            fechaCreacion,
-            fechaTermino,
-          }); // Verifica las fechas procesadas
+          // Verifica si el usuario ya marcó como favorito el evento
+          const favoritosArray = Array.isArray(eventData.favoritos) ? eventData.favoritos : []; // Asegurarse de que sea un array
+          const isFavorite = favoritosArray.some((fav: any) => fav.id === this.userId);
 
           return {
             ...eventData,
             id_evento: docId,
-            fecha: this.convertToDate(eventData.fecha) || null,
-            fecha_termino: fechaTermino || null, // Convertir a null si es undefined
+            fecha: this.convertToDate(eventData.fecha)?.toISOString() || null,
+            fecha_termino: this.convertToDate(eventData.fecha_termino)?.toISOString() || null,
+            fecha_creacion: this.convertToDate(eventData.fecha_creacion)?.toISOString() || null,
             estado: eventData.estado || '',
             verificado: false,
-            isFavorite: false,
+            isFavorite: isFavorite || false, // Inicializa `isFavorite`
             show: false,
             estaInscrito: false,
             enListaEspera: false,
@@ -222,25 +215,21 @@ export class FolderPage implements OnInit {
           return false;
         });
 
-        console.log('Eventos procesados:', this.allEvents); // Verifica todos los eventos procesados
-
         this.events = this.allEvents.filter((event) => event.estado !== 'Terminado');
         this.eventsTerminados = this.allEvents.filter((event) => event.estado === 'Terminado');
 
-        console.log('Eventos activos:', this.events); // Verifica eventos activos
-        console.log('Eventos terminados:', this.eventsTerminados); // Verifica eventos terminados
-
+        this.getRecentEvents(); // Actualizar eventos recientes
         this.filteredEvents = [...this.events];
         this.sedeFilteredEvents = [...this.events];
-        this.segmentFilteredEvents = [...this.sedeFilteredEvents];
+        this.filterEventsByDate();
+        this.getPopularEvents();
       },
       (error) => {
         this.loading = false;
         console.error('Error al obtener eventos de Firestore:', error);
       }
     );
-  }
-
+}
 
 
 
@@ -269,45 +258,52 @@ getRecentEvents() {
   const oneWeekAgo = new Date();
   oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
 
-  this.recentEvents = this.sedeFilteredEvents.filter(event => {
-    const eventCreationDate = this.convertToDate(event.fecha_creacion);
-    return eventCreationDate && eventCreationDate >= oneWeekAgo; // Verificar que no sea undefined
+  this.recentEvents = this.allEvents.filter(event => {
+    const fechaCreacion = this.convertToDate(event.fecha_creacion);
+    return fechaCreacion && fechaCreacion >= oneWeekAgo;
   });
+
+  console.log('Eventos recientes:', this.recentEvents);
 }
 
 
-  async toggleFavorite(event: Evento) {
-    if (!this.userName || !this.userEmail) {
-        console.error('El nombre o el email del usuario no están definidos.');
-        return; // Salir de la función si los datos del usuario no están completos
+async toggleFavorite(event: Evento) {
+  if (!this.userName || !this.userEmail) {
+    console.error('El nombre o el email del usuario no están definidos.');
+    return; // Salir de la función si los datos del usuario no están completos
+  }
+
+  const userType = this.isInvitado ? 'Invitado' : 'Estudiante';
+  const userFavorite = {
+    id: this.userId,
+    nombre: this.userName,
+    email: this.userEmail,
+    tipoUsuario: userType,
+  };
+
+  try {
+    if (!event.isFavorite) {
+      // Añadir a favoritos
+      await this.firestore.collection('Eventos').doc(event.id_evento).update({
+        favoritos: firebase.firestore.FieldValue.arrayUnion(userFavorite),
+      });
+      event.isFavorite = true;
+      console.log('Evento añadido a favoritos');
+    } else {
+      // Eliminar de favoritos
+      await this.firestore.collection('Eventos').doc(event.id_evento).update({
+        favoritos: firebase.firestore.FieldValue.arrayRemove(userFavorite),
+      });
+      event.isFavorite = false;
+      console.log('Evento eliminado de favoritos');
     }
 
-    const userType = this.isInvitado ? 'Invitado' : 'Estudiante';
-    const userFavorite = {
-        id: this.userId,
-        nombre: this.userName,
-        email: this.userEmail,
-        tipoUsuario: userType
-    };
-
-    try {
-        if (!event.isFavorite) {
-            event.isFavorite = true;
-            await this.firestore.collection('Eventos').doc(event.id_evento).update({
-                favoritos: firebase.firestore.FieldValue.arrayUnion(userFavorite)
-            });
-            console.log('Evento añadido a favoritos');
-        } else {
-            event.isFavorite = false;
-            await this.firestore.collection('Eventos').doc(event.id_evento).update({
-                favoritos: firebase.firestore.FieldValue.arrayRemove(userFavorite)
-            });
-            console.log('Evento eliminado de favoritos');
-        }
-    } catch (error) {
-        console.error('Error al actualizar favoritos:', error);
-        event.isFavorite = !event.isFavorite;
-    }
+    // Fuerza la detección de cambios si es necesario
+  } catch (error) {
+    console.error('Error al actualizar favoritos:', error);
+    // Revertir el cambio local si hubo un error
+    event.isFavorite = !event.isFavorite;
+  }
 }
 
 
@@ -387,11 +383,9 @@ filterEventsByDate() {
   }
 
   transformarFecha(fecha: any): Date | null {
-    if (fecha && fecha.seconds) {
-      return new Date(fecha.seconds * 1000);
-    }
-    return null;
+    return this.convertToDate(fecha);
   }
+
 
   customAlertOptions: any = {
     header: 'Seleccionar Sede',
@@ -429,13 +423,12 @@ filterEventsByDate() {
   }
 
 
-  convertToDate(fecha: any): Date | null {
-    if (!fecha) return null; // Si la fecha es nula o indefinida
-    if (fecha.seconds) return new Date(fecha.seconds * 1000); // Caso Timestamp de Firestore
-    if (typeof fecha === 'string' && !isNaN(Date.parse(fecha))) return new Date(fecha); // Caso String ISO válido
-    return null; // Cualquier otro caso, devuelve null
-  }
-
+convertToDate(fecha: any): Date | null {
+  if (!fecha) return null; // Maneja valores nulos o indefinidos
+  if (fecha.seconds) return new Date(fecha.seconds * 1000); // Firestore Timestamp
+  if (typeof fecha === 'string' && !isNaN(Date.parse(fecha))) return new Date(fecha); // ISO string
+  return null; // Cualquier otro caso
+}
 
 
   async verificarEventosTerminados() {
@@ -445,39 +438,22 @@ filterEventsByDate() {
       const snapshot = await this.firestore.collection<Evento>('Eventos').get().toPromise();
 
       if (snapshot && !snapshot.empty) {
-        const eventosTerminados: Evento[] = [];
-
         snapshot.docs.forEach(async (doc) => {
           const evento = doc.data() as Evento;
           evento.id_evento = doc.id;
 
-          console.log(`Evento "${evento.titulo}" antes de convertir fechas:`, evento);
-
           const fechaTermino = this.convertToDate(evento.fecha_termino);
-
-          console.log(`Evento "${evento.titulo}" - Fecha de término convertida:`, fechaTermino);
-
           if (fechaTermino && fechaTermino <= now && evento.estado !== 'Terminado') {
-            console.log(`El evento "${evento.titulo}" ha terminado.`);
             await this.firestore.collection('Eventos').doc(evento.id_evento).update({ estado: 'Terminado' });
-          }
-
-          if (fechaTermino) {
-            eventosTerminados.push(evento);
-          } else {
-            console.warn(`El evento "${evento.titulo}" no tiene fecha de término definida.`);
+            console.log(`El evento "${evento.titulo}" ha sido marcado como terminado.`);
           }
         });
-
-        console.log('Eventos terminados procesados:', eventosTerminados);
-        this.eventsTerminados = eventosTerminados;
-      } else {
-        console.log('No hay eventos en la colección.');
       }
     } catch (error) {
       console.error('Error al verificar eventos terminados:', error);
     }
   }
+
 
 
 

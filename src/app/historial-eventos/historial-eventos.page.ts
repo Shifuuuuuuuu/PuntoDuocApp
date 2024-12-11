@@ -4,7 +4,7 @@ import { NotificationService } from '../services/notification.service';
 import { MissionsAlertService } from '../services/missions-alert.service';
 import { Timestamp } from 'firebase/firestore';
 import { Inscripcion } from '../interface/IInscripcion';
-
+import firebase from 'firebase/compat/app';
 @Component({
   selector: 'app-historial-eventos',
   templateUrl: './historial-eventos.page.html',
@@ -55,18 +55,22 @@ export class HistorialEventosPage implements OnInit {
         (eventos) => {
           eventos.forEach(evento => {
             // Convertir fechas de evento
-            if (evento.fecha && 'seconds' in evento.fecha) {
+            if (evento.fecha && typeof evento.fecha === 'object' && 'seconds' in evento.fecha) {
               evento.fecha = new Date(evento.fecha.seconds * 1000);
             }
-            if (evento.fecha_termino && 'seconds' in evento.fecha_termino) {
+            if (evento.fecha_termino && typeof evento.fecha_termino === 'object' && 'seconds' in evento.fecha_termino) {
               evento.fecha_termino = new Date(evento.fecha_termino.seconds * 1000);
             }
 
             // Convertir fechas en inscripciones
             if (evento.Inscripciones && evento.Inscripciones.length > 0) {
               evento.Inscripciones.forEach((inscripcion: Inscripcion) => {
-                if (inscripcion.fechaVerificacion instanceof Timestamp) {
-                  inscripcion.fechaVerificacion = inscripcion.fechaVerificacion.toDate();
+                if (
+                  inscripcion.fechaVerificacion &&
+                  typeof inscripcion.fechaVerificacion === 'object' &&
+                  'toDate' in inscripcion.fechaVerificacion
+                ) {
+                  inscripcion.fechaVerificacion = (inscripcion.fechaVerificacion as firebase.firestore.Timestamp).toDate();
                 }
               });
             }
@@ -97,7 +101,5 @@ export class HistorialEventosPage implements OnInit {
       this.loading = false;
     }
   }
-
-
 
 }
